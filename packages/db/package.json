@@ -1,0 +1,26 @@
+{
+  "name": "@centime/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./schema": "./src/schema.ts"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "generate": "drizzle-kit generate",
+    "migrate": "tsx src/migrate-cli.ts"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31.11",
+    "tsx": "^4.23.15"
+  },
+  "dependencies": {
+    "@centime/core": "workspace:*",
+    "@libsql/client": "^0.18.0",
+    "drizzle-orm": "^0.45.3"
+  }
+}

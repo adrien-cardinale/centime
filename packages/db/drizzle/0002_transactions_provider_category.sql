@@ -1,0 +1,1 @@
+ALTER TABLE `transactions` ADD `provider_category` text;

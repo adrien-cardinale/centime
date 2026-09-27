@@ -1,0 +1,65 @@
+import { TRANSACTION_STATUSES } from "@centime/core"
+import { Plus, Trash2 } from "lucide-react"
+import { useFieldArray } from "react-hook-form"
+import { Button } from "@/components/ui/button"
+import { FormControl, FormField, FormItem } from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { transactionStatusLabels } from "@/lib/labels"
+import type { CsvProfileControl } from "./csv-profile-fields"
+
+export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) {
+  const { fields, append, remove } = useFieldArray({ control, name: "statuses" })
+
+  return (
+    <div className="space-y-3">
+      {fields.length === 0 && (
+        <p className="text-sm text-muted-foreground">Sans correspondance, toutes les transactions sont comptabilisées.</p>
+      )}
+      {fields.map((entry, index) => (
+        <div key={entry.id} className="flex items-start gap-2">
+          <FormField
+            control={control}
+            name={`statuses.${index}.value`}
+            render={({ field }) => (
+              <FormItem className="flex-1">
+                <FormControl>
+                  <Input placeholder="Valeur dans le fichier" aria-label="Valeur dans le fichier" {...field} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={control}
+            name={`statuses.${index}.status`}
+            render={({ field }) => (
+              <FormItem className="w-44">
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <FormControl>
+                    <SelectTrigger className="w-full" aria-label="Statut">
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {TRANSACTION_STATUSES.map((status) => (
+                      <SelectItem key={status} value={status}>
+                        {transactionStatusLabels[status]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+          <Button type="button" variant="ghost" size="icon" aria-label="Retirer" onClick={() => remove(index)}>
+            <Trash2 />
+          </Button>
+        </div>
+      ))}
+      <Button type="button" variant="outline" size="sm" onClick={() => append({ value: "", status: "booked" })}>
+        <Plus />
+        Ajouter un statut
+      </Button>
+    </div>
+  )
+}

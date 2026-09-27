@@ -1,0 +1,22 @@
+{
+  "name": "centime",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.18.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @centime/server --filter @centime/web dev",
+    "build": "pnpm --filter @centime/core build && pnpm --filter @centime/db build && pnpm --filter @centime/web build && pnpm --filter @centime/server build",
+    "typecheck": "pnpm -r typecheck",
+    "test": "pnpm -r --if-present test",
+    "db:generate": "pnpm --filter @centime/db generate",
+    "db:migrate": "pnpm --filter @centime/db migrate"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.4",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.2"
+  }
+}

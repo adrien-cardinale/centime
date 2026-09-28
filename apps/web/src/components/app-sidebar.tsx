@@ -1,4 +1,5 @@
 import { Link, useMatchRoute } from "@tanstack/react-router"
+import { lazy, Suspense } from "react"
 import {
   Sidebar,
   SidebarContent,
@@ -10,9 +11,23 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { isDesktop } from "@/lib/runtime"
 import { LogoutButton } from "./logout-button"
 import { navigationItems } from "./navigation"
 import { ThemeToggle } from "./theme-toggle"
+
+const SyncIndicator = __CENTIME_DESKTOP__ ? lazy(() => import("./sync/sync-indicator")) : null
+
+function SessionMenuItem() {
+  if (isDesktop && SyncIndicator) {
+    return (
+      <Suspense fallback={null}>
+        <SyncIndicator />
+      </Suspense>
+    )
+  }
+  return <LogoutButton />
+}
 
 export function AppSidebar() {
   const matchRoute = useMatchRoute()
@@ -50,7 +65,7 @@ export function AppSidebar() {
             <ThemeToggle />
           </SidebarMenuItem>
           <SidebarMenuItem>
-            <LogoutButton />
+            <SessionMenuItem />
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>

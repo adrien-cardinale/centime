@@ -5,3 +5,5 @@ interface ImportMetaEnv {
 interface ImportMeta {
   readonly env: ImportMetaEnv
 }
+
+declare const __CENTIME_DESKTOP__: boolean

@@ -5,4 +5,3 @@ const serverRoot = fileURLToPath(new URL("..", import.meta.url))
 
 export const projectRoot = resolve(serverRoot, "../..")
 export const defaultStaticDir = resolve(projectRoot, "apps/web/dist")
-export const migrationsFolder = resolve(projectRoot, "packages/db/drizzle")

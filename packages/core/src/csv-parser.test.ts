@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import type { CsvProfile } from "./csv-profile"
 import { csvProfileSchema } from "./csv-profile"
 import { detectCsvProfile, parseCsv } from "./csv-parser"

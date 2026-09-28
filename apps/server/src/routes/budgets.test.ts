@@ -1,8 +1,8 @@
 import { budgets, categories, type Db, fixedItems } from "@centime/db"
 import { eq } from "drizzle-orm"
-import { beforeEach, describe, expect, it } from "vitest"
-import type { budgetsOverview, BudgetEntry } from "../services/budgets"
-import { createTestAccount, createTestDb, insertTestTransactions, readJson } from "../test-support/database"
+import { beforeEach, describe, expect, it } from "bun:test"
+import type { budgetsOverview, BudgetEntry } from "@centime/services"
+import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
 import { createBudgetRoutes } from "./budgets"
 
 let db: Db
@@ -18,7 +18,7 @@ function json(method: string, body: unknown): RequestInit {
 }
 
 function routes() {
-  return createBudgetRoutes(db, () => TODAY)
+  return withErrorHandling(createBudgetRoutes(db, () => TODAY))
 }
 
 async function insertCategory(name: string, parentId: string | null = null): Promise<string> {

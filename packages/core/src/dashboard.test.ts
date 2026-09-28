@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { periodContaining } from "./budgets"
 import { balanceSeries, type BreakdownEntry, latestBalance, lastMonths, limitBreakdown } from "./dashboard"
 

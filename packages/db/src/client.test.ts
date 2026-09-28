@@ -1,6 +1,8 @@
 import { eq } from "drizzle-orm"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createDb, runMigrations, type Db } from "./client"
+import { beforeEach, describe, expect, it } from "bun:test"
+import type { Db } from "./client"
+import { runMigrations } from "./migrations"
+import { createDb } from "./node"
 import { accounts, transactions } from "./schema"
 
 let db: Db
@@ -43,7 +45,7 @@ describe("createDb", () => {
     }
 
     await db.insert(transactions).values(transaction)
-    await expect(db.insert(transactions).values(transaction)).rejects.toThrow()
+    await expect(db.insert(transactions).values(transaction).execute()).rejects.toThrow()
 
     const stored = await db.select().from(transactions).where(eq(transactions.accountId, accountId))
     expect(stored).toHaveLength(1)

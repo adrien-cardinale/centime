@@ -1,7 +1,7 @@
-import { serveStatic } from "@hono/node-server/serve-static"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 import type { Hono } from "hono"
+import { serveStatic } from "hono/bun"
 
 export function mountSpa(app: Hono, staticDir: string): void {
   const indexFile = join(staticDir, "index.html")

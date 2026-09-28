@@ -1,5 +1,4 @@
-import { resolveDatabaseUrl } from "@centime/db"
-import { existsSync } from "node:fs"
+import { loadEnvFile, resolveDatabaseUrl } from "@centime/db/node"
 import { resolve } from "node:path"
 import { defaultStaticDir, projectRoot } from "./paths"
 
@@ -15,8 +14,7 @@ export type Config = {
 export class ConfigError extends Error {}
 
 function loadDotEnv(): void {
-  const envFile = resolve(projectRoot, ".env")
-  if (existsSync(envFile)) process.loadEnvFile(envFile)
+  loadEnvFile(resolve(projectRoot, ".env"))
 }
 
 function requireEnv(name: string): string {

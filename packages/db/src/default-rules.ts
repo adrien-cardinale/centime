@@ -1,4 +1,5 @@
 import type { DbExecutor } from "./client"
+import { type SeedOptions, seedTimestamps } from "./seed-options"
 import { DEFAULT_CATEGORY_IDS } from "./default-categories"
 import { type NewRuleRow, rules } from "./schema"
 
@@ -41,6 +42,7 @@ export const DEFAULT_RULES: DefaultRule[] = [
   labelRule("9d2f6b1a-4c3e-4f5a-9b8c-7d6e5f4a3b25", "Assura|\\b(Generali|CSS|Helsana)\\b", "regex", DEFAULT_CATEGORY_IDS.insurance),
 ]
 
-export async function seedDefaultRules(db: DbExecutor): Promise<void> {
-  await db.insert(rules).values(DEFAULT_RULES).onConflictDoNothing({ target: rules.id })
+export async function seedDefaultRules(db: DbExecutor, options: SeedOptions = {}): Promise<void> {
+  const rows = DEFAULT_RULES.map((row) => ({ ...row, ...seedTimestamps(options) }))
+  await db.insert(rules).values(rows).onConflictDoNothing({ target: rules.id })
 }

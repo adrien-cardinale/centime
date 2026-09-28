@@ -1,6 +1,6 @@
 import { categories, type Db, rules, transactions } from "@centime/db"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createTestAccount, createTestDb, insertTestTransactions } from "../test-support/database"
+import { beforeEach, describe, expect, it } from "bun:test"
+import { createTestAccount, createTestDb, insertTestTransactions, withErrorHandling } from "../test-support/database"
 import { createRuleRoutes } from "./rules"
 
 let db: Db
@@ -43,7 +43,7 @@ beforeEach(async () => {
 
 describe("rule routes", () => {
   it("applies rules to uncategorized transactions only", async () => {
-    const response = await createRuleRoutes(db).request("/apply", post({ scope: "uncategorized" }))
+    const response = await withErrorHandling(createRuleRoutes(db)).request("/apply", post({ scope: "uncategorized" }))
     expect(await response.json()).toEqual({ examined: 3, categorized: 1, markedAsTransfer: 1, linkedToFixedItem: 0 })
     const stored = await storedByLabel()
     expect(stored.get("Achat EPICERIE FICTIVE")?.categoryId).toBe(food)
@@ -53,7 +53,7 @@ describe("rule routes", () => {
   })
 
   it("recomputes every transaction but keeps manual categories without a match", async () => {
-    const response = await createRuleRoutes(db).request("/apply", post({ scope: "all" }))
+    const response = await withErrorHandling(createRuleRoutes(db)).request("/apply", post({ scope: "all" }))
     expect(await response.json()).toEqual({ examined: 5, categorized: 2, markedAsTransfer: 1, linkedToFixedItem: 0 })
     const stored = await storedByLabel()
     expect(stored.get("Achat Epicerie du coin")?.categoryId).toBe(food)
@@ -61,7 +61,7 @@ describe("rule routes", () => {
   })
 
   it("tests a pattern against stored transactions", async () => {
-    const response = await createRuleRoutes(db).request(
+    const response = await withErrorHandling(createRuleRoutes(db)).request(
       "/test",
       post({ pattern: "EPICERIE", matchKind: "contains", field: "raw_label" }),
     )
@@ -70,7 +70,7 @@ describe("rule routes", () => {
   })
 
   it("rejects an invalid regex with a clear message", async () => {
-    const response = await createRuleRoutes(db).request(
+    const response = await withErrorHandling(createRuleRoutes(db)).request(
       "/",
       post({ pattern: "(", matchKind: "regex", field: "raw_label", categoryId: food, markAsTransfer: false, priority: 0 }),
     )
@@ -79,7 +79,7 @@ describe("rule routes", () => {
   })
 
   it("rejects a rule without target", async () => {
-    const response = await createRuleRoutes(db).request(
+    const response = await withErrorHandling(createRuleRoutes(db)).request(
       "/",
       post({ pattern: "x", matchKind: "contains", field: "raw_label", categoryId: null, markAsTransfer: false, priority: 0 }),
     )

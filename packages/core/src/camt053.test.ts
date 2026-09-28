@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { parseCamt053 } from "./camt053"
 import { detectImportFormat } from "./import-format"
 import { encodeLatin1, encodeUtf8 } from "./test-fixtures/encoding"

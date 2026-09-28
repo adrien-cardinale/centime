@@ -1,0 +1,25 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "default",
+  "description": "Permissions de la fenêtre principale de centime",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-destroy",
+    "fs:allow-exists",
+    "fs:allow-read-file",
+    "fs:allow-write-file",
+    "fs:allow-rename",
+    "fs:allow-mkdir",
+    {
+      "identifier": "fs:scope",
+      "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]
+    },
+    {
+      "identifier": "http:default",
+      "allow": [{ "url": "https://*" }, { "url": "https://*:*" }, { "url": "http://*" }, { "url": "http://*:*" }]
+    },
+    "os:allow-hostname"
+  ]
+}

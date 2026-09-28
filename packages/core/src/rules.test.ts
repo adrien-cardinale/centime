@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { applyRules, compileRules, type RuleInput, ruleMatches, type RuleSubject, suggestRulePattern } from "./rules"
 
 function rule(overrides: Partial<RuleInput> & Pick<RuleInput, "id" | "pattern">): RuleInput {

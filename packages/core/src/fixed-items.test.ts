@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { fixedItemPayloadSchema } from "./fixed-item-payload"
 import {
   defaultOverviewRange,
@@ -106,7 +106,7 @@ describe("occurrencesBetween", () => {
     expect(yearly).toMatchObject({ windowStart: "2025-12-16", windowEnd: "2026-02-14" })
   })
 
-  it.each(PERIODICITIES)("never overlaps the windows of consecutive %s occurrences", (periodicity) => {
+  it.each([...PERIODICITIES])("never overlaps the windows of consecutive %s occurrences", (periodicity) => {
     for (const dueDay of [1, 15, 28, 29, 30, 31]) {
       for (const dueMonth of periodicity === "monthly" ? [null] : [1, 2, 3]) {
         const occurrences = occurrencesBetween(

@@ -1,4 +1,5 @@
 import { type Db, sessions } from "@centime/db"
+import { verifyApiToken } from "@centime/services"
 import { eq } from "drizzle-orm"
 import type { Context } from "hono"
 import { deleteCookie, getSignedCookie, setSignedCookie } from "hono/cookie"
@@ -7,7 +8,8 @@ import type { Config } from "../config"
 
 const SESSION_COOKIE = "centime_session"
 const SESSION_DURATION_SECONDS = 30 * 24 * 60 * 60
-const PUBLIC_API_PATHS = new Set(["/api/health", "/api/auth/login", "/api/auth/me"])
+const PUBLIC_API_PATHS = new Set(["/api/health", "/api/auth/login", "/api/auth/me", "/api/auth/token"])
+const BEARER_PREFIX = "Bearer "
 
 export type AuthDeps = { db: Db; config: Config }
 
@@ -46,9 +48,25 @@ export async function destroySession(c: Context, { db, config }: AuthDeps): Prom
   deleteCookie(c, SESSION_COOKIE, { path: "/", secure: config.isProduction })
 }
 
-export function requireSession(deps: AuthDeps) {
+function bearerTokenOf(c: Context): string | null {
+  const header = c.req.header("Authorization")
+  if (!header?.startsWith(BEARER_PREFIX)) return null
+  const token = header.slice(BEARER_PREFIX.length).trim()
+  return token.length > 0 ? token : null
+}
+
+async function hasValidBearerToken(c: Context, { db }: AuthDeps): Promise<boolean> {
+  const token = bearerTokenOf(c)
+  return token !== null && (await verifyApiToken(db, token))
+}
+
+async function isAuthenticated(c: Context, deps: AuthDeps): Promise<boolean> {
+  return (await hasValidSession(c, deps)) || (await hasValidBearerToken(c, deps))
+}
+
+export function requireAuth(deps: AuthDeps) {
   return createMiddleware(async (c, next) => {
-    if (PUBLIC_API_PATHS.has(c.req.path) || (await hasValidSession(c, deps))) {
+    if (PUBLIC_API_PATHS.has(c.req.path) || (await isAuthenticated(c, deps))) {
       await next()
       return
     }

@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
-import { Download } from "lucide-react"
 import { useState } from "react"
 import { PageHeader } from "@/components/page-header"
 import { BulkActionsBar } from "@/components/transactions/bulk-actions-bar"
+import { ExportButton } from "@/components/transactions/export-button"
 import { Pagination } from "@/components/transactions/pagination"
 import { type TransactionFilterValues, TransactionFilters } from "@/components/transactions/transaction-filters"
 import { TransactionsTable } from "@/components/transactions/transactions-table"
@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
-import { api, type TransactionsPage as TransactionsPageData } from "@/lib/api"
+import type { TransactionsPage as TransactionsPageData } from "@/lib/api"
 import { isIsoDate } from "@/lib/budgets"
 import { accountsQuery, categoriesQuery, fixedItemsQuery, transactionsQuery } from "@/lib/queries"
 
@@ -132,7 +132,7 @@ function TransactionsPage() {
         values={filters}
         onChange={changeFilters}
         includeChildren={urlFilters.includeChildren === true}
-        actions={<ExportButton url={api.transactions.exportUrl(queryFilters)} disabled={!data || data.total === 0} />}
+        actions={<ExportButton filters={queryFilters} disabled={!data || data.total === 0} />}
       />
       {selectedIds.size > 0 && <BulkActionsBar selectedIds={[...selectedIds]} onClear={clearSelection} />}
       <Card className="py-0">
@@ -170,25 +170,6 @@ function TransactionsResult({ data, filtered, onPageChange, selectedIds, onSelec
       <TransactionsTable items={data.items} selectedIds={selectedIds} onSelectionChange={onSelectionChange} />
       <Pagination page={data.page} pageCount={pageCount} onPageChange={onPageChange} />
     </>
-  )
-}
-
-function ExportButton({ url, disabled }: { url: string; disabled: boolean }) {
-  if (disabled) {
-    return (
-      <Button variant="outline" disabled>
-        <Download />
-        Exporter
-      </Button>
-    )
-  }
-  return (
-    <Button variant="outline" asChild>
-      <a href={url} download>
-        <Download />
-        Exporter
-      </a>
-    </Button>
   )
 }
 

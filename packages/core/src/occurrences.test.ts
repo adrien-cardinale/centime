@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { parseCsv } from "./csv-parser"
 import { RAIFFEISEN_CSV_PROFILE } from "./default-csv-profiles"
 import { assignOccurrences } from "./occurrences"

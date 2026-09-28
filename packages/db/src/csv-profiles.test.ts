@@ -1,7 +1,9 @@
 import { DEFAULT_CSV_PROFILES, RAIFFEISEN_CSV_PROFILE } from "@centime/core"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createDb, runMigrations, type Db } from "./client"
+import { beforeEach, describe, expect, it } from "bun:test"
+import type { Db } from "./client"
 import { csvProfileFromRow, seedDefaultCsvProfiles } from "./csv-profiles"
+import { runMigrations } from "./migrations"
+import { createDb } from "./node"
 import { csvProfiles } from "./schema"
 
 let db: Db

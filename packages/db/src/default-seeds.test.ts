@@ -1,9 +1,11 @@
 import { compileRules } from "@centime/core"
 import { isNotNull } from "drizzle-orm"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createDb, type Db, runMigrations } from "./client"
+import { beforeEach, describe, expect, it } from "bun:test"
+import type { Db } from "./client"
 import { DEFAULT_CATEGORIES, seedDefaultCategories } from "./default-categories"
 import { DEFAULT_RULES, seedDefaultRules } from "./default-rules"
+import { runMigrations } from "./migrations"
+import { createDb } from "./node"
 import { categories, rules } from "./schema"
 
 let db: Db
@@ -40,5 +42,13 @@ describe("default seeds", () => {
     await seedDefaultRules(db)
     const stored = await db.select().from(rules)
     expect(compileRules(stored).invalid).toEqual([])
+  })
+
+  it("stamps seeded rows with a fixed timestamp", async () => {
+    const timestamp = "2000-01-01T00:00:00.000Z"
+    await seedDefaultCategories(db, { timestamp })
+    await seedDefaultRules(db, { timestamp })
+    const stamped = [...(await db.select().from(categories)), ...(await db.select().from(rules))]
+    expect(stamped.every((row) => row.createdAt === timestamp && row.updatedAt === timestamp)).toBe(true)
   })
 })

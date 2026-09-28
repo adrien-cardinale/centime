@@ -1,7 +1,10 @@
 **/node_modules
 **/dist
+**/dist-desktop
 data
 .env
 .git
 *.db
 *.db-*
+apps/desktop/src-tauri/target
+apps/desktop/src-tauri/gen

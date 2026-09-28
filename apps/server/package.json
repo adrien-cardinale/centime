@@ -7,24 +7,19 @@
     ".": "./src/app.ts"
   },
   "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsup",
-    "start": "node dist/index.js",
+    "dev": "cd ../.. && bun --watch apps/server/src/index.ts",
+    "start": "bun src/index.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "bun test"
   },
   "dependencies": {
     "@centime/core": "workspace:*",
     "@centime/db": "workspace:*",
-    "@hono/node-server": "^2.1.1",
+    "@centime/services": "workspace:*",
     "@hono/zod-validator": "^0.9.1",
     "@libsql/client": "^0.18.0",
     "drizzle-orm": "^0.45.3",
     "hono": "^4.13.9",
     "zod": "^4.6.5"
-  },
-  "devDependencies": {
-    "tsup": "^8.5.1",
-    "tsx": "^4.23.15"
   }
 }

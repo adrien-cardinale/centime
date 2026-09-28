@@ -1,6 +1,6 @@
 import { categories, type Db, fixedItems, transactions } from "@centime/db"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createTestAccount, createTestDb, insertTestTransactions, readJson } from "../test-support/database"
+import { beforeEach, describe, expect, it } from "bun:test"
+import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
 import { createTransactionRoutes } from "./transactions"
 
 type Page = { items: { rawLabel: string; fixedItemId: string | null; fixedItemName: string | null }[] }
@@ -40,7 +40,7 @@ describe("transaction routes and fixed items", () => {
       { rawLabel: "Loyer sans catégorie" },
       { rawLabel: "Loyer catégorisé", categoryId: leisure[0]?.id ?? null },
     ])
-    const response = await createTransactionRoutes(db).request("/", patch({ ids, fixedItemId: rent }))
+    const response = await withErrorHandling(createTransactionRoutes(db)).request("/", patch({ ids, fixedItemId: rent }))
     expect(await response.json()).toEqual({ updated: 2 })
     const rows = await db.select().from(transactions)
     const byLabel = new Map(rows.map((row) => [row.rawLabel, row]))
@@ -50,15 +50,15 @@ describe("transaction routes and fixed items", () => {
 
   it("filters and exposes the fixed item", async () => {
     await insertTestTransactions(db, accountId, [{ rawLabel: "Loyer", fixedItemId: rent }, { rawLabel: "Kiosque" }])
-    const linked = await createTransactionRoutes(db).request(`/?fixedItemId=${rent}`)
+    const linked = await withErrorHandling(createTransactionRoutes(db)).request(`/?fixedItemId=${rent}`)
     expect(await linked.json()).toMatchObject({ total: 1, items: [{ rawLabel: "Loyer", fixedItemName: "Loyer fictif" }] })
-    const unlinked = await createTransactionRoutes(db).request("/?fixedItemId=none")
+    const unlinked = await withErrorHandling(createTransactionRoutes(db)).request("/?fixedItemId=none")
     expect(await unlinked.json()).toMatchObject({ total: 1, items: [{ rawLabel: "Kiosque", fixedItemId: null }] })
   })
 
   it("rejects an unknown fixed item", async () => {
     const [id] = await insertTestTransactions(db, accountId, [{ rawLabel: "Loyer" }])
-    const response = await createTransactionRoutes(db).request(`/${id}`, patch({ fixedItemId: "inconnu" }))
+    const response = await withErrorHandling(createTransactionRoutes(db)).request(`/${id}`, patch({ fixedItemId: "inconnu" }))
     expect(response.status).toBe(400)
   })
 })
@@ -77,18 +77,18 @@ describe("category filter with subcategories", () => {
       { rawLabel: "Autre" },
     ])
     const direct = await readJson<Page & { total: number }>(
-      await createTransactionRoutes(db).request(`/?categoryId=${housing}`),
+      await withErrorHandling(createTransactionRoutes(db)).request(`/?categoryId=${housing}`),
     )
     expect(direct.total).toBe(1)
     const withChildren = await readJson<Page & { total: number }>(
-      await createTransactionRoutes(db).request(`/?categoryId=${housing}&includeChildren=true`),
+      await withErrorHandling(createTransactionRoutes(db)).request(`/?categoryId=${housing}&includeChildren=true`),
     )
     expect(withChildren.items.map((item) => item.rawLabel).sort()).toEqual(["Enfant", "Parent", "Petit-enfant"])
   })
 })
 
 describe("transaction export", () => {
-  const exportRoutes = () => createTransactionRoutes(db, () => new Date(2026, 8, 27))
+  const exportRoutes = () => withErrorHandling(createTransactionRoutes(db, () => new Date(2026, 8, 27)))
 
   it("returns a semicolon CSV with BOM, French headers and escaped values", async () => {
     await insertTestTransactions(db, accountId, [

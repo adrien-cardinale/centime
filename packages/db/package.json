@@ -5,18 +5,20 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./schema": "./src/schema.ts"
+    "./node": "./src/node.ts",
+    "./schema": "./src/schema.ts",
+    "./orm": "./src/orm.ts"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run",
-    "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate-cli.ts"
+    "test": "bun test",
+    "generate": "drizzle-kit generate && bun scripts/bundle-migrations.ts",
+    "migrate": "bun src/migrate-cli.ts",
+    "bundle": "bun scripts/bundle-migrations.ts"
   },
   "devDependencies": {
-    "drizzle-kit": "^0.31.11",
-    "tsx": "^4.23.15"
+    "drizzle-kit": "^0.31.11"
   },
   "dependencies": {
     "@centime/core": "workspace:*",

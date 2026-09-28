@@ -7,6 +7,11 @@ export const authQuery = queryOptions({
   staleTime: 60_000,
 })
 
+export const apiTokensQuery = queryOptions({
+  queryKey: ["auth", "tokens"],
+  queryFn: api.auth.tokens,
+})
+
 export const accountsQuery = queryOptions({
   queryKey: ["accounts"],
   queryFn: api.accounts.list,
@@ -124,4 +129,17 @@ export async function invalidateAfterImport(queryClient: QueryClient): Promise<v
     queryClient.invalidateQueries({ queryKey: fixedItemsQuery.queryKey }),
     invalidateBudgetData(queryClient),
   ])
+}
+
+type MutationListener = () => void
+
+const mutationListeners = new Set<MutationListener>()
+
+export function onMutationSettled(listener: MutationListener): () => void {
+  mutationListeners.add(listener)
+  return () => mutationListeners.delete(listener)
+}
+
+export function notifyMutationSettled(): void {
+  for (const listener of mutationListeners) listener()
 }

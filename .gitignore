@@ -6,4 +6,7 @@ dist
 *.db-journal
 *.db-wal
 *.db-shm
-.vitest/
+dist-desktop
+apps/desktop/src-tauri/target
+apps/desktop/src-tauri/gen
+*.tsbuildinfo

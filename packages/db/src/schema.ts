@@ -1,4 +1,5 @@
 import { ACCOUNT_KINDS, IMPORT_FORMATS, PERIODICITIES, RULE_FIELDS, RULE_MATCH_KINDS, TRANSACTION_STATUSES } from "@centime/core"
+import { sql } from "drizzle-orm"
 import { type AnySQLiteColumn, index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
 const nowIso = () => new Date().toISOString()
@@ -10,52 +11,77 @@ const syncColumns = {
   createdAt: text("created_at").notNull().$defaultFn(nowIso),
   updatedAt: text("updated_at").notNull().$defaultFn(nowIso).$onUpdateFn(nowIso),
   deletedAt: text("deleted_at"),
+  syncVersion: integer("sync_version").$onUpdateFn(() => sql`null`),
 }
 
-export const accounts = sqliteTable("accounts", {
-  ...syncColumns,
-  name: text("name").notNull(),
-  kind: text("kind", { enum: ACCOUNT_KINDS }).notNull(),
-  identifier: text("identifier").notNull().unique(),
-  currency: text("currency").notNull().default("CHF"),
-})
+function syncVersionIndex(tableName: string, table: { syncVersion: AnySQLiteColumn }) {
+  return index(`${tableName}_sync_version_idx`).on(table.syncVersion)
+}
 
-export const categories = sqliteTable("categories", {
-  ...syncColumns,
-  name: text("name").notNull(),
-  color: text("color").notNull(),
-  icon: text("icon"),
-  parentId: text("parent_id").references((): AnySQLiteColumn => categories.id),
-})
+export const accounts = sqliteTable(
+  "accounts",
+  {
+    ...syncColumns,
+    name: text("name").notNull(),
+    kind: text("kind", { enum: ACCOUNT_KINDS }).notNull(),
+    identifier: text("identifier").notNull().unique(),
+    currency: text("currency").notNull().default("CHF"),
+  },
+  (table) => [syncVersionIndex("accounts", table)],
+)
 
-export const csvProfiles = sqliteTable("csv_profiles", {
-  ...syncColumns,
-  name: text("name").notNull(),
-  config: text("config").notNull(),
-})
+export const categories = sqliteTable(
+  "categories",
+  {
+    ...syncColumns,
+    name: text("name").notNull(),
+    color: text("color").notNull(),
+    icon: text("icon"),
+    parentId: text("parent_id").references((): AnySQLiteColumn => categories.id),
+  },
+  (table) => [syncVersionIndex("categories", table)],
+)
 
-export const imports = sqliteTable("imports", {
-  ...syncColumns,
-  fileName: text("file_name").notNull(),
-  format: text("format", { enum: IMPORT_FORMATS }).notNull(),
-  profileId: text("profile_id").references(() => csvProfiles.id),
-  importedAt: text("imported_at").notNull().$defaultFn(nowIso),
-  insertedCount: integer("inserted_count").notNull().default(0),
-  skippedCount: integer("skipped_count").notNull().default(0),
-  updatedCount: integer("updated_count").notNull().default(0),
-})
+export const csvProfiles = sqliteTable(
+  "csv_profiles",
+  {
+    ...syncColumns,
+    name: text("name").notNull(),
+    config: text("config").notNull(),
+  },
+  (table) => [syncVersionIndex("csv_profiles", table)],
+)
 
-export const fixedItems = sqliteTable("fixed_items", {
-  ...syncColumns,
-  name: text("name").notNull(),
-  expectedAmount: real("expected_amount").notNull(),
-  periodicity: text("periodicity", { enum: PERIODICITIES }).notNull(),
-  dueDay: integer("due_day"),
-  dueMonth: integer("due_month"),
-  categoryId: text("category_id").references(() => categories.id),
-  startDate: text("start_date").notNull(),
-  endDate: text("end_date"),
-})
+export const imports = sqliteTable(
+  "imports",
+  {
+    ...syncColumns,
+    fileName: text("file_name").notNull(),
+    format: text("format", { enum: IMPORT_FORMATS }).notNull(),
+    profileId: text("profile_id").references(() => csvProfiles.id),
+    importedAt: text("imported_at").notNull().$defaultFn(nowIso),
+    insertedCount: integer("inserted_count").notNull().default(0),
+    skippedCount: integer("skipped_count").notNull().default(0),
+    updatedCount: integer("updated_count").notNull().default(0),
+  },
+  (table) => [syncVersionIndex("imports", table)],
+)
+
+export const fixedItems = sqliteTable(
+  "fixed_items",
+  {
+    ...syncColumns,
+    name: text("name").notNull(),
+    expectedAmount: real("expected_amount").notNull(),
+    periodicity: text("periodicity", { enum: PERIODICITIES }).notNull(),
+    dueDay: integer("due_day"),
+    dueMonth: integer("due_month"),
+    categoryId: text("category_id").references(() => categories.id),
+    startDate: text("start_date").notNull(),
+    endDate: text("end_date"),
+  },
+  (table) => [syncVersionIndex("fixed_items", table)],
+)
 
 export const transactions = sqliteTable(
   "transactions",
@@ -85,30 +111,39 @@ export const transactions = sqliteTable(
     index("transactions_booking_date_idx").on(table.bookingDate),
     index("transactions_category_id_idx").on(table.categoryId),
     uniqueIndex("transactions_fingerprint_idx").on(table.fingerprint),
+    syncVersionIndex("transactions", table),
   ],
 )
 
-export const rules = sqliteTable("rules", {
-  ...syncColumns,
-  pattern: text("pattern").notNull(),
-  matchKind: text("match_kind", { enum: RULE_MATCH_KINDS }).notNull(),
-  field: text("field", { enum: RULE_FIELDS }).notNull(),
-  categoryId: text("category_id").references(() => categories.id),
-  fixedItemId: text("fixed_item_id").references(() => fixedItems.id),
-  markAsTransfer: integer("mark_as_transfer", { mode: "boolean" }).notNull().default(false),
-  priority: integer("priority").notNull().default(0),
-})
+export const rules = sqliteTable(
+  "rules",
+  {
+    ...syncColumns,
+    pattern: text("pattern").notNull(),
+    matchKind: text("match_kind", { enum: RULE_MATCH_KINDS }).notNull(),
+    field: text("field", { enum: RULE_FIELDS }).notNull(),
+    categoryId: text("category_id").references(() => categories.id),
+    fixedItemId: text("fixed_item_id").references(() => fixedItems.id),
+    markAsTransfer: integer("mark_as_transfer", { mode: "boolean" }).notNull().default(false),
+    priority: integer("priority").notNull().default(0),
+  },
+  (table) => [syncVersionIndex("rules", table)],
+)
 
-export const budgets = sqliteTable("budgets", {
-  ...syncColumns,
-  categoryId: text("category_id")
-    .notNull()
-    .references(() => categories.id),
-  amount: real("amount").notNull(),
-  period: text("period", { enum: PERIODICITIES }).notNull(),
-  rollover: integer("rollover", { mode: "boolean" }).notNull().default(false),
-  startDate: text("start_date").notNull(),
-})
+export const budgets = sqliteTable(
+  "budgets",
+  {
+    ...syncColumns,
+    categoryId: text("category_id")
+      .notNull()
+      .references(() => categories.id),
+    amount: real("amount").notNull(),
+    period: text("period", { enum: PERIODICITIES }).notNull(),
+    rollover: integer("rollover", { mode: "boolean" }).notNull().default(false),
+    startDate: text("start_date").notNull(),
+  },
+  (table) => [syncVersionIndex("budgets", table)],
+)
 
 export const sessions = sqliteTable("sessions", {
   id: text("id").primaryKey(),
@@ -119,6 +154,17 @@ export const sessions = sqliteTable("sessions", {
 export const settings = sqliteTable("settings", {
   key: text("key").primaryKey(),
   value: text("value").notNull(),
+})
+
+export const apiTokens = sqliteTable("api_tokens", {
+  id: text("id")
+    .primaryKey()
+    .$defaultFn(() => crypto.randomUUID()),
+  tokenHash: text("token_hash").notNull().unique(),
+  label: text("label").notNull(),
+  createdAt: text("created_at").notNull().$defaultFn(nowIso),
+  lastUsedAt: text("last_used_at"),
+  revokedAt: text("revoked_at"),
 })
 
 export type AccountRow = typeof accounts.$inferSelect
@@ -141,3 +187,5 @@ export type SessionRow = typeof sessions.$inferSelect
 export type NewSessionRow = typeof sessions.$inferInsert
 export type SettingRow = typeof settings.$inferSelect
 export type NewSettingRow = typeof settings.$inferInsert
+export type ApiTokenRow = typeof apiTokens.$inferSelect
+export type NewApiTokenRow = typeof apiTokens.$inferInsert

@@ -1,4 +1,7 @@
-import { accounts, createDb, type Db, runMigrations, transactions } from "@centime/db"
+import { accounts, type Db, runMigrations, transactions } from "@centime/db"
+import { createDb } from "@centime/db/node"
+import { Hono } from "hono"
+import { handleError } from "../errors"
 
 export async function createTestDb(): Promise<Db> {
   const db = createDb(":memory:")
@@ -6,6 +9,9 @@ export async function createTestDb(): Promise<Db> {
   return db
 }
 
+export function withErrorHandling(routes: Hono): Hono {
+  return new Hono().onError(handleError).route("/", routes)
+}
 export async function createTestAccount(db: Db): Promise<string> {
   const [account] = await db
     .insert(accounts)

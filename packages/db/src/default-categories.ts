@@ -1,4 +1,5 @@
 import type { DbExecutor } from "./client"
+import { type SeedOptions, seedTimestamps } from "./seed-options"
 import { categories, type NewCategoryRow } from "./schema"
 
 type DefaultCategory = Required<Pick<NewCategoryRow, "id" | "name" | "color">>
@@ -47,6 +48,7 @@ export const DEFAULT_CATEGORIES: DefaultCategory[] = [
   { id: DEFAULT_CATEGORY_IDS.other, name: "Autres", color: "#9a9aa3" },
 ]
 
-export async function seedDefaultCategories(db: DbExecutor): Promise<void> {
-  await db.insert(categories).values(DEFAULT_CATEGORIES).onConflictDoNothing({ target: categories.id })
+export async function seedDefaultCategories(db: DbExecutor, options: SeedOptions = {}): Promise<void> {
+  const rows = DEFAULT_CATEGORIES.map((row) => ({ ...row, ...seedTimestamps(options) }))
+  await db.insert(categories).values(rows).onConflictDoNothing({ target: categories.id })
 }

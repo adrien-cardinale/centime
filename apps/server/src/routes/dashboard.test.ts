@@ -1,7 +1,7 @@
 import { accounts, categories, type Db, transactions } from "@centime/db"
-import { beforeEach, describe, expect, it } from "vitest"
-import type { DashboardOverview } from "../services/dashboard"
-import { createTestAccount, createTestDb, insertTestTransactions, readJson } from "../test-support/database"
+import { beforeEach, describe, expect, it } from "bun:test"
+import type { DashboardOverview } from "@centime/services"
+import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
 import { createDashboardRoutes } from "./dashboard"
 
 let db: Db
@@ -10,7 +10,7 @@ let accountId: string
 const TODAY = new Date(2026, 8, 20)
 
 async function overview(date = "2026-09-15"): Promise<DashboardOverview> {
-  const response = await createDashboardRoutes(db, () => TODAY).request(`/?date=${date}`)
+  const response = await withErrorHandling(createDashboardRoutes(db, () => TODAY)).request(`/?date=${date}`)
   expect(response.status).toBe(200)
   return readJson<DashboardOverview>(response)
 }
@@ -140,7 +140,7 @@ describe("dashboard route", () => {
   })
 
   it("rejects an invalid date", async () => {
-    const response = await createDashboardRoutes(db, () => TODAY).request("/?date=septembre")
+    const response = await withErrorHandling(createDashboardRoutes(db, () => TODAY)).request("/?date=septembre")
     expect(response.status).toBe(400)
   })
 })

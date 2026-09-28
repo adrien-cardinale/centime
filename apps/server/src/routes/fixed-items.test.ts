@@ -1,9 +1,9 @@
 import { categories, type Db, fixedItems, rules, transactions } from "@centime/db"
 import { eq } from "drizzle-orm"
-import { beforeEach, describe, expect, it } from "vitest"
+import { beforeEach, describe, expect, it } from "bun:test"
 import { z } from "zod"
-import type { findFixedItem, fixedItemsOverview } from "../services/fixed-items"
-import { createTestAccount, createTestDb, insertTestTransactions, readJson } from "../test-support/database"
+import type { findFixedItem, fixedItemsOverview } from "@centime/services"
+import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
 import { createFixedItemRoutes } from "./fixed-items"
 
 let db: Db
@@ -20,7 +20,7 @@ function json(method: string, body: unknown): RequestInit {
 }
 
 function routes() {
-  return createFixedItemRoutes(db, () => TODAY)
+  return withErrorHandling(createFixedItemRoutes(db, () => TODAY))
 }
 
 const rentPayload = {

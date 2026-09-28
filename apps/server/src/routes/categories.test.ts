@@ -1,7 +1,7 @@
 import { budgets, categories, type Db, rules, transactions } from "@centime/db"
 import { eq } from "drizzle-orm"
-import { beforeEach, describe, expect, it } from "vitest"
-import { createTestAccount, createTestDb, insertTestTransactions } from "../test-support/database"
+import { beforeEach, describe, expect, it } from "bun:test"
+import { createTestAccount, createTestDb, insertTestTransactions, withErrorHandling } from "../test-support/database"
 import { createCategoryRoutes } from "./categories"
 
 let db: Db
@@ -28,7 +28,7 @@ describe("category routes", () => {
       { rawLabel: "Achat Épicerie", categoryId: food },
       { rawLabel: "Achat Marché", categoryId: food },
     ])
-    const response = await createCategoryRoutes(db).request("/")
+    const response = await withErrorHandling(createCategoryRoutes(db)).request("/")
     expect(await response.json()).toMatchObject([{ id: food, transactionCount: 2 }])
   })
 
@@ -43,7 +43,7 @@ describe("category routes", () => {
       .returning({ id: rules.id })
     await db.insert(budgets).values({ categoryId: parent, amount: 100, period: "monthly", startDate: "2026-01-01" })
 
-    const response = await createCategoryRoutes(db).request(`/${parent}`, { method: "DELETE" })
+    const response = await withErrorHandling(createCategoryRoutes(db)).request(`/${parent}`, { method: "DELETE" })
     expect(response.status).toBe(200)
 
     const storedParent = await db.query.categories.findFirst({ where: eq(categories.id, parent) })
@@ -60,7 +60,7 @@ describe("category routes", () => {
 
   it("returns 404 when deleting twice", async () => {
     const id = await insertCategory("Temporaire")
-    const routes = createCategoryRoutes(db)
+    const routes = withErrorHandling(createCategoryRoutes(db))
     await routes.request(`/${id}`, { method: "DELETE" })
     expect((await routes.request(`/${id}`, { method: "DELETE" })).status).toBe(404)
   })
@@ -68,7 +68,7 @@ describe("category routes", () => {
   it("refuses a parent cycle", async () => {
     const parent = await insertCategory("Parent")
     const child = await insertCategory("Enfant", parent)
-    const response = await createCategoryRoutes(db).request(
+    const response = await withErrorHandling(createCategoryRoutes(db)).request(
       `/${parent}`,
       json("PUT", { name: "Parent", color: "#4a84c4", parentId: child }),
     )
@@ -76,7 +76,7 @@ describe("category routes", () => {
   })
 
   it("rejects an invalid color with a readable message", async () => {
-    const response = await createCategoryRoutes(db).request("/", json("POST", { name: "Test", color: "bleu" }))
+    const response = await withErrorHandling(createCategoryRoutes(db)).request("/", json("POST", { name: "Test", color: "bleu" }))
     expect(response.status).toBe(400)
     expect(await response.json()).toEqual({ error: expect.stringContaining("hexadécimale") })
   })

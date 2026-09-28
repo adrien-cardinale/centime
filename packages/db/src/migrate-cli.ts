@@ -1,12 +1,10 @@
 import { fileURLToPath } from "node:url"
-import { createDb, runMigrations } from "./client"
-import { resolveDatabaseUrl } from "./database-url"
+import { runMigrations } from "./migrations"
+import { createDb, loadEnvFile, resolveDatabaseUrl } from "./node"
 
 const projectRoot = fileURLToPath(new URL("../../../", import.meta.url))
 
-try {
-  process.loadEnvFile(`${projectRoot}.env`)
-} catch {}
+loadEnvFile(`${projectRoot}.env`)
 
 const databaseUrl = resolveDatabaseUrl(process.env.DATABASE_URL ?? "file:./data/centime.db", projectRoot)
 await runMigrations(createDb(databaseUrl))

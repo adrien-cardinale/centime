@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest"
+import { describe, expect, it } from "bun:test"
 import { encodeCsv, encodeCsvField } from "./csv-encoder"
 import { tokenizeCsv } from "./csv-tokenizer"
 

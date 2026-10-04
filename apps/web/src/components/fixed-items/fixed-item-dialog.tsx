@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { type ReactNode, useState } from "react"
 import { type Control, useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
-import { CategorySelect } from "@/components/categories/category-select"
+import { CreatableCategorySelect } from "@/components/categories/creatable-category-select"
 import { useRuleTester } from "@/components/rules/rule-matcher-inputs"
 import { Button } from "@/components/ui/button"
 import {
@@ -163,7 +163,7 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
                 <FormItem>
                   <FormLabel>Catégorie</FormLabel>
                   <FormControl>
-                    <CategorySelect
+                    <CreatableCategorySelect
                       value={field.value ?? NO_CATEGORY}
                       onChange={(value) => field.onChange(value === NO_CATEGORY ? null : value)}
                       extraOptions={[{ value: NO_CATEGORY, label: "Aucune" }]}

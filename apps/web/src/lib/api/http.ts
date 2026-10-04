@@ -95,6 +95,7 @@ export function createHttpApi() {
         (await successOrThrow(client.api.imports.preview.$post({ form: upload }))).json(),
       commit: async (upload: ImportUpload) =>
         (await successOrThrow(client.api.imports.$post({ form: upload }))).json(),
+      remove: async (id: string) => (await successOrThrow(client.api.imports[":id"].$delete({ param: { id } }))).json(),
     },
     transactions: {
       list: async (filters: TransactionPageFilters) =>

@@ -9,7 +9,7 @@ export function UpcomingCard({ occurrences }: { occurrences: UpcomingOccurrence[
   return (
     <SummaryCard
       title="Prochaines échéances"
-      to="/fixed-items"
+      to="/budgets"
       isEmpty={occurrences.length === 0}
       emptyMessage="Aucune échéance à venir."
     >

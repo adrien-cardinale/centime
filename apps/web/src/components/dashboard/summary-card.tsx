@@ -5,7 +5,7 @@ import { Card, CardAction, CardContent, CardHeader, CardTitle } from "@/componen
 
 type SummaryCardProps = {
   title: string
-  to: "/budgets" | "/fixed-items" | "/transactions"
+  to: "/budgets" | "/transactions"
   isEmpty: boolean
   emptyMessage: string
   children: ReactNode

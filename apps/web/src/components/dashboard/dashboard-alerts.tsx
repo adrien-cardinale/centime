@@ -32,7 +32,7 @@ export function DashboardAlerts({ kpis }: { kpis: DashboardKpis }) {
     alerts.push({
       key: "overdue",
       content: (
-        <Link to="/fixed-items" className={linkClassName}>
+        <Link to="/budgets" className={linkClassName}>
           {plural(kpis.overdueOccurrences, "échéance en retard", "échéances en retard")}
         </Link>
       ),

@@ -1,9 +1,10 @@
 import type { Db } from "@centime/db"
-import { commitImport, type ImportSource, listImports, previewImport, ServiceError } from "@centime/services"
+import { commitImport, deleteImport, type ImportSource, listImports, previewImport, ServiceError } from "@centime/services"
 import { zValidator } from "@hono/zod-validator"
 import { Hono } from "hono"
 import { bodyLimit } from "hono/body-limit"
 import { z } from "zod"
+import { idParamSchema } from "./validation"
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 const UPLOAD_TOO_LARGE = "Fichier trop volumineux (10 Mo maximum)"
@@ -49,4 +50,5 @@ export function createImportRoutes(db: Db) {
     .post("/", uploadLimit, uploadValidator, async (c) =>
       c.json(await commitImport(db, await toImportSource(c.req.valid("form"))), 201),
     )
+    .delete("/:id", zValidator("param", idParamSchema), async (c) => c.json(await deleteImport(db, c.req.valid("param")), 200))
 }

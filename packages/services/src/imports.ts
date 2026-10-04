@@ -18,6 +18,7 @@ import {
 import { accounts, csvProfileFromRow, csvProfiles, type Db, type DbExecutor, imports, transactions } from "@centime/db"
 import { and, desc, eq, inArray, isNull } from "drizzle-orm"
 import { assignmentFor, type Categorizer, loadCategorizer } from "./categorize"
+import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound, ServiceError } from "./errors"
 
 export type ImportSource = {
@@ -58,7 +59,7 @@ type ParsedFile = {
   result: ParseResult
 }
 
-type ExistingTransaction = { id: string; status: TransactionStatus }
+type ExistingTransaction = { id: string; status: TransactionStatus; deletedAt: string | null }
 
 const QUERY_CHUNK_SIZE = 500
 const INSERT_CHUNK_SIZE = 100
@@ -142,16 +143,21 @@ async function findExistingTransactions(db: DbExecutor, fingerprints: string[]):
   const existing = new Map<string, ExistingTransaction>()
   for (const fingerprintChunk of chunk(fingerprints, QUERY_CHUNK_SIZE)) {
     const rows = await db
-      .select({ id: transactions.id, status: transactions.status, fingerprint: transactions.fingerprint })
+      .select({
+        id: transactions.id,
+        status: transactions.status,
+        deletedAt: transactions.deletedAt,
+        fingerprint: transactions.fingerprint,
+      })
       .from(transactions)
       .where(inArray(transactions.fingerprint, fingerprintChunk))
-    for (const row of rows) existing.set(row.fingerprint, { id: row.id, status: row.status })
+    for (const row of rows) existing.set(row.fingerprint, { id: row.id, status: row.status, deletedAt: row.deletedAt })
   }
   return existing
 }
 
 function classify(transaction: LocatedTransaction, existing: ExistingTransaction | undefined): RowState {
-  if (!existing) return "new"
+  if (!existing || existing.deletedAt !== null) return "new"
   return existing.status === "pending" && transaction.status === "booked" ? "pendingToBooked" : "duplicate"
 }
 
@@ -287,8 +293,16 @@ function toNewTransaction(row: AnalyzedRow, importId: string, categorize: Catego
 
 async function insertNewTransactions(db: DbExecutor, rows: AnalyzedRow[], importId: string): Promise<void> {
   const categorize = await loadCategorizer(db)
-  for (const rowChunk of chunk(rows, INSERT_CHUNK_SIZE)) {
+  const unseen = rows.filter((row) => row.existingId === null)
+  for (const rowChunk of chunk(unseen, INSERT_CHUNK_SIZE)) {
     await db.insert(transactions).values(rowChunk.map((row) => toNewTransaction(row, importId, categorize)))
+  }
+  for (const row of rows) {
+    if (row.existingId === null) continue
+    await db
+      .update(transactions)
+      .set({ ...toNewTransaction(row, importId, categorize), deletedAt: null })
+      .where(eq(transactions.id, row.existingId))
   }
 }
 
@@ -346,6 +360,24 @@ export async function commitImport(db: Db, source: ImportSource): Promise<Import
 
 export async function previewImport(db: DbExecutor, source: ImportSource): Promise<ImportPreview> {
   return toImportPreview(await analyzeImport(db, source))
+}
+
+export async function deleteImport(db: Db, { id }: { id: string }, clock: Clock = systemClock) {
+  const deletedAt = nowIso(clock)
+  return db.transaction(async (tx) => {
+    const [deleted] = await tx
+      .update(imports)
+      .set({ deletedAt })
+      .where(and(eq(imports.id, id), isNull(imports.deletedAt)))
+      .returning({ id: imports.id })
+    if (!deleted) throw notFound("Import introuvable")
+    const removed = await tx
+      .update(transactions)
+      .set({ deletedAt })
+      .where(and(eq(transactions.importId, id), isNull(transactions.deletedAt)))
+      .returning({ id: transactions.id })
+    return { id: deleted.id, deletedTransactions: removed.length }
+  })
 }
 
 export function listImports(db: DbExecutor) {

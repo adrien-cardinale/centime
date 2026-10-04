@@ -2,7 +2,7 @@ import type { CsvProfileInput } from "@centime/core"
 import { categories, csvProfiles, csvProfileToRow, type Db, rules, seedDefaultCsvProfiles, transactions } from "@centime/db"
 import { beforeEach, describe, expect, it } from "bun:test"
 import { ServiceError } from "./errors"
-import { analyzeImport, commitImport, summarizeAnalysis } from "./imports"
+import { analyzeImport, commitImport, deleteImport, listImports, summarizeAnalysis } from "./imports"
 import { createTestDb } from "./test-support/database"
 
 const IBAN = "CH9300762011623852957"
@@ -94,6 +94,29 @@ describe("import service", () => {
     const analysis = await analyzeImport(db, { bytes, fileName: "loyer.csv" })
     expect(analysis.accountResolution).toBe("required")
     await expect(commitImport(db, { bytes, fileName: "loyer.csv" })).rejects.toBeInstanceOf(ServiceError)
+  })
+
+  it("deletes an import with its transactions only", async () => {
+    await commitImport(db, { bytes: KONTO_CSV, fileName: "konto.csv" })
+    const camt = await commitImport(db, { bytes: CAMT_XML, fileName: "camt.xml" })
+    const result = await deleteImport(db, { id: camt.importId })
+    expect(result).toEqual({ id: camt.importId, deletedTransactions: 1 })
+    const stored = await db.select().from(transactions)
+    expect(stored.filter((transaction) => transaction.deletedAt === null)).toHaveLength(3)
+    expect((await listImports(db)).map((entry) => entry.fileName)).toEqual(["konto.csv"])
+    await expect(deleteImport(db, { id: camt.importId })).rejects.toBeInstanceOf(ServiceError)
+  })
+
+  it("imports again the transactions of a deleted import", async () => {
+    const first = await commitImport(db, { bytes: KONTO_CSV, fileName: "konto.csv" })
+    await deleteImport(db, { id: first.importId })
+    const analysis = await analyzeImport(db, { bytes: KONTO_CSV, fileName: "konto.csv" })
+    expect(summarizeAnalysis(analysis)).toMatchObject({ new: 3, duplicates: 0 })
+    const second = await commitImport(db, { bytes: KONTO_CSV, fileName: "konto.csv" })
+    expect(second).toMatchObject({ inserted: 3, skipped: 0 })
+    const stored = await db.select().from(transactions)
+    expect(stored).toHaveLength(3)
+    expect(stored.every((transaction) => transaction.deletedAt === null && transaction.importId === second.importId)).toBe(true)
   })
 
   it("categorizes new transactions with the active rules", async () => {

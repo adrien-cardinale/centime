@@ -98,7 +98,12 @@ describe("budget routes", () => {
       projected: 120,
     })
     expect(item?.history.map((period) => period.spent)).toEqual([0, 0, 0, 0, 900, 300])
+    expect(item?.breakdown).toEqual([
+      { categoryId: supermarket, categoryName: "Supermarché", categoryColor: "#4a84c4", spent: 100 },
+      { categoryId: food, categoryName: "Alimentation", categoryColor: "#4a84c4", spent: -20 },
+    ])
     expect(overview.totals.monthly).toEqual({ available: 700, spent: 80, remaining: 620 })
+    expect(overview.envelopes).toEqual({ expected: 500, actual: 80 })
     expect(overview.unbudgeted).toEqual([
       { categoryId: leisure, categoryName: "Loisirs", categoryColor: "#4a84c4", spent: 60 },
     ])

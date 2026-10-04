@@ -5,7 +5,7 @@ import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
-import { CategorySelect } from "@/components/categories/category-select"
+import { CreatableCategorySelect } from "@/components/categories/creatable-category-select"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
@@ -104,7 +104,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
             <FormItem>
               <FormLabel>Catégorie</FormLabel>
               <FormControl>
-                <CategorySelect value={field.value || undefined} onChange={field.onChange} excludeIds={excludedIds} />
+                <CreatableCategorySelect value={field.value || undefined} onChange={field.onChange} excludeIds={excludedIds} />
               </FormControl>
               <FormMessage />
             </FormItem>

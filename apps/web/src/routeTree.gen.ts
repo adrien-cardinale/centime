@@ -15,7 +15,6 @@ import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as AppAccountsRouteImport } from './routes/_app/accounts'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
-import { Route as AppFixedItemsRouteImport } from './routes/_app/fixed-items'
 import { Route as AppImportRouteImport } from './routes/_app/import'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
@@ -49,11 +48,6 @@ const AppCategoriesRoute = AppCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AppRoute,
 } as any)
-const AppFixedItemsRoute = AppFixedItemsRouteImport.update({
-  id: '/fixed-items',
-  path: '/fixed-items',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppImportRoute = AppImportRouteImport.update({
   id: '/import',
   path: '/import',
@@ -76,7 +70,6 @@ export interface FileRoutesByFullPath {
   '/accounts': typeof AppAccountsRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
-  '/fixed-items': typeof AppFixedItemsRoute
   '/import': typeof AppImportRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
@@ -86,7 +79,6 @@ export interface FileRoutesByTo {
   '/accounts': typeof AppAccountsRoute
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
-  '/fixed-items': typeof AppFixedItemsRoute
   '/import': typeof AppImportRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
@@ -99,7 +91,6 @@ export interface FileRoutesById {
   '/_app/accounts': typeof AppAccountsRoute
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
-  '/_app/fixed-items': typeof AppFixedItemsRoute
   '/_app/import': typeof AppImportRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/transactions': typeof AppTransactionsRoute
@@ -113,7 +104,6 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/budgets'
     | '/categories'
-    | '/fixed-items'
     | '/import'
     | '/settings'
     | '/transactions'
@@ -123,7 +113,6 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/budgets'
     | '/categories'
-    | '/fixed-items'
     | '/import'
     | '/settings'
     | '/transactions'
@@ -135,7 +124,6 @@ export interface FileRouteTypes {
     | '/_app/accounts'
     | '/_app/budgets'
     | '/_app/categories'
-    | '/_app/fixed-items'
     | '/_app/import'
     | '/_app/settings'
     | '/_app/transactions'
@@ -191,13 +179,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCategoriesRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/fixed-items': {
-      id: '/_app/fixed-items'
-      path: '/fixed-items'
-      fullPath: '/fixed-items'
-      preLoaderRoute: typeof AppFixedItemsRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/import': {
       id: '/_app/import'
       path: '/import'
@@ -226,7 +207,6 @@ interface AppRouteChildren {
   AppAccountsRoute: typeof AppAccountsRoute
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
-  AppFixedItemsRoute: typeof AppFixedItemsRoute
   AppImportRoute: typeof AppImportRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
@@ -237,7 +217,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppAccountsRoute: AppAccountsRoute,
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
-  AppFixedItemsRoute: AppFixedItemsRoute,
   AppImportRoute: AppImportRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,

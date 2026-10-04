@@ -1,10 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
 import { toast } from "sonner"
+import { CsvProfilesPanel } from "@/components/import/csv-profiles-panel"
 import { FileDropzone } from "@/components/import/file-dropzone"
 import { ImportHistory } from "@/components/import/import-history"
 import { ImportWorkspace } from "@/components/import/import-workspace"
 import { PageHeader } from "@/components/page-header"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { accountsQuery, csvProfilesQuery, importsQuery } from "@/lib/queries"
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024
@@ -35,9 +37,20 @@ function ImportPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Import" description="Importez un relevé CSV ou camt.053 et vérifiez l'aperçu avant de valider." />
-      <FileDropzone file={selected?.file ?? null} onFileSelected={selectFile} />
-      {selected && <ImportWorkspace key={selected.key} file={selected.file} onImported={() => setSelected(null)} />}
-      <ImportHistory />
+      <Tabs defaultValue="import">
+        <TabsList>
+          <TabsTrigger value="import">Importer</TabsTrigger>
+          <TabsTrigger value="csv-profiles">Profils CSV</TabsTrigger>
+        </TabsList>
+        <TabsContent value="import" forceMount className="space-y-6 pt-4 data-[state=inactive]:hidden">
+          <FileDropzone file={selected?.file ?? null} onFileSelected={selectFile} />
+          {selected && <ImportWorkspace key={selected.key} file={selected.file} onImported={() => setSelected(null)} />}
+          <ImportHistory />
+        </TabsContent>
+        <TabsContent value="csv-profiles" className="pt-4">
+          <CsvProfilesPanel />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }

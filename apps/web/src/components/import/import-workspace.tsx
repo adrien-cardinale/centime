@@ -65,6 +65,7 @@ export function ImportWorkspace({ file, onImported }: ImportWorkspaceProps) {
       <Card>
         <CardContent className="space-y-6">
           <ImportOptions
+            file={file}
             preview={data}
             profileId={profileId}
             accountId={accountId}

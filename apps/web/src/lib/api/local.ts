@@ -109,6 +109,7 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       list: () => call((db) => surface.imports.list(db)),
       preview: (upload) => call(async (db) => surface.imports.preview(db, await toImportSource(upload))),
       commit: (upload) => call(async (db) => surface.imports.commit(db, await toImportSource(upload))),
+      remove: (id) => call((db) => surface.imports.remove(db, { id: parseInput(idSchema, id) })),
     },
     transactions: {
       list: ({ page, pageSize, ...filters }) =>

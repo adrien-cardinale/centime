@@ -1,7 +1,7 @@
 import { describe, expect, it } from "bun:test"
 import type { CsvProfile } from "./csv-profile"
 import { csvProfileSchema } from "./csv-profile"
-import { detectCsvProfile, parseCsv } from "./csv-parser"
+import { detectCsvProfile, findCsvColumn, listCsvColumns, parseCsv } from "./csv-parser"
 import { DEFAULT_CSV_PROFILES, RAIFFEISEN_CSV_PROFILE, SWISSCARD_CSV_PROFILE } from "./default-csv-profiles"
 import { encodeLatin1, encodeUtf8 } from "./test-fixtures/encoding"
 import { RAIFFEISEN_CSV } from "./test-fixtures/raiffeisen"
@@ -110,6 +110,44 @@ describe("parseCsv with a custom profile", () => {
     const withHeader: CsvProfile = { ...profile, hasHeader: true, columns: { date: "Date", label: "Texte" } }
     const result = parseCsv(encodeUtf8("Date\tTexte\n01/02/2026\tLoyer\n"), withHeader)
     expect(result.errors).toEqual([{ line: 1, message: "Colonne introuvable : « 3 »" }])
+  })
+})
+
+describe("listCsvColumns", () => {
+  it("lists headers with a sample from the first data line", () => {
+    const bytes = encodeUtf8("Date;Texte;Montant\n01.02.2026;Loyer;-1200.50\n")
+    expect(listCsvColumns(bytes, { encoding: "utf-8", delimiter: ";", hasHeader: true })).toEqual([
+      { name: "Date", sample: "01.02.2026" },
+      { name: "Texte", sample: "Loyer" },
+      { name: "Montant", sample: "-1200.50" },
+    ])
+  })
+
+  it("skips blank and repeated headers", () => {
+    const bytes = encodeUtf8("Date;;date; Texte \n01.02.2026;x;y;\n")
+    expect(listCsvColumns(bytes, { encoding: "utf-8", delimiter: ";", hasHeader: true })).toEqual([
+      { name: "Date", sample: "01.02.2026" },
+      { name: "Texte", sample: null },
+    ])
+  })
+
+  it("lists positions when the file has no header", () => {
+    const bytes = encodeUtf8("01/02/2026\tLoyer\n")
+    expect(listCsvColumns(bytes, { encoding: "utf-8", delimiter: "\t", hasHeader: false })).toEqual([
+      { name: "1", sample: "01/02/2026" },
+      { name: "2", sample: "Loyer" },
+    ])
+  })
+
+  it("decodes headers with the given encoding", () => {
+    const columns = listCsvColumns(raiffeisenBytes, RAIFFEISEN_CSV_PROFILE)
+    expect(findCsvColumn(columns, RAIFFEISEN_CSV_PROFILE.columns.label.toUpperCase())?.name).toBe(
+      RAIFFEISEN_CSV_PROFILE.columns.label,
+    )
+  })
+
+  it("returns nothing for an empty file", () => {
+    expect(listCsvColumns(encodeUtf8(""), { encoding: "utf-8", delimiter: ";", hasHeader: true })).toEqual([])
   })
 })
 

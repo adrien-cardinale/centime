@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { List, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { CategoryBadge } from "@/components/categories/category-badge"
+import { ColorDot } from "@/components/categories/color-dot"
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardDescription, CardHeader } from "@/components/ui/card"
 import {
@@ -72,10 +73,28 @@ export function BudgetCard({ budget, onEdit }: BudgetCardProps) {
             )}
           </p>
         </div>
+        <BudgetBreakdown budget={budget} />
         <BudgetDetails status={status} />
         <BudgetHistory history={budget.history} amount={budget.amount} />
       </CardContent>
     </Card>
+  )
+}
+
+function BudgetBreakdown({ budget }: { budget: BudgetOverviewItem }) {
+  if (!budget.breakdown.some((entry) => entry.categoryId !== budget.categoryId)) return null
+  return (
+    <ul className="space-y-1 text-xs" aria-label="Répartition par catégorie">
+      {budget.breakdown.map((entry) => (
+        <li key={entry.categoryId} className="flex items-center justify-between gap-2">
+          <span className="flex min-w-0 items-center gap-1.5">
+            <ColorDot color={entry.categoryColor} />
+            <span className="truncate">{entry.categoryName}</span>
+          </span>
+          <span className="text-muted-foreground tabular-nums">{money(entry.spent)}</span>
+        </li>
+      ))}
+    </ul>
   )
 }
 

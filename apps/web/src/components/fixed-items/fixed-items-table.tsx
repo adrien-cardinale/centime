@@ -1,10 +1,11 @@
+import type { PeriodRange } from "@centime/core"
 import { Eye, Pencil } from "lucide-react"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { FixedItem, FixedItemOverview } from "@/lib/api"
-import { dueDescription, FIXED_ITEM_CURRENCY, latestPastOccurrence } from "@/lib/fixed-items"
+import type { FixedItem, FixedItemOverview, OccurrenceReport } from "@/lib/api"
+import { dueDescription, FIXED_ITEM_CURRENCY, occurrenceIn } from "@/lib/fixed-items"
 import { formatDate } from "@/lib/format"
 import { Deviation } from "./deviation"
 import { DeleteFixedItemButton } from "./delete-fixed-item-button"
@@ -14,13 +15,34 @@ import { OccurrenceStatusBadge } from "./occurrence-status-badge"
 type FixedItemsTableProps = {
   items: FixedItem[]
   overviews: Map<string, FixedItemOverview>
-  today: string
+  month: PeriodRange
+  emptyMessage: string
   onView: (id: string) => void
 }
 
-export function FixedItemsTable({ items, overviews, today, onView }: FixedItemsTableProps) {
+type MonthRow = {
+  item: FixedItem
+  occurrence: OccurrenceReport | undefined
+  next: OccurrenceReport | null
+}
+
+function byDueDate(left: MonthRow, right: MonthRow): number {
+  if (left.occurrence && right.occurrence) return left.occurrence.dueDate.localeCompare(right.occurrence.dueDate)
+  return Number(right.occurrence !== undefined) - Number(left.occurrence !== undefined)
+}
+
+function monthRows(items: FixedItem[], overviews: Map<string, FixedItemOverview>, month: PeriodRange): MonthRow[] {
+  return items
+    .map((item) => {
+      const overview = overviews.get(item.id)
+      return { item, occurrence: occurrenceIn(overview?.occurrences ?? [], month), next: overview?.nextOccurrence ?? null }
+    })
+    .sort(byDueDate)
+}
+
+export function FixedItemsTable({ items, overviews, month, emptyMessage, onView }: FixedItemsTableProps) {
   if (items.length === 0) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Aucun poste fixe pour l'instant.</p>
+    return <p className="p-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
   }
   return (
     <Table>
@@ -30,15 +52,14 @@ export function FixedItemsTable({ items, overviews, today, onView }: FixedItemsT
           <TableHead>Catégorie</TableHead>
           <TableHead>Périodicité</TableHead>
           <TableHead className="text-right">Attendu</TableHead>
-          <TableHead className="text-right">Mensualisé</TableHead>
-          <TableHead>Prochaine échéance</TableHead>
-          <TableHead>Dernière échéance</TableHead>
+          <TableHead>Échéance du mois</TableHead>
+          <TableHead className="text-right">Réel</TableHead>
           <TableHead className="pr-6 text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.map((item) => (
-          <FixedItemRow key={item.id} item={item} overview={overviews.get(item.id)} today={today} onView={onView} />
+        {monthRows(items, overviews, month).map((row) => (
+          <FixedItemRow key={row.item.id} row={row} onView={onView} />
         ))}
       </TableBody>
     </Table>
@@ -46,16 +67,12 @@ export function FixedItemsTable({ items, overviews, today, onView }: FixedItemsT
 }
 
 type FixedItemRowProps = {
-  item: FixedItem
-  overview: FixedItemOverview | undefined
-  today: string
+  row: MonthRow
   onView: (id: string) => void
 }
 
-function FixedItemRow({ item, overview, today, onView }: FixedItemRowProps) {
-  const next = overview?.nextOccurrence ?? null
-  const latest = overview ? latestPastOccurrence(overview.occurrences, today) : undefined
-
+function FixedItemRow({ row, onView }: FixedItemRowProps) {
+  const { item, occurrence, next } = row
   return (
     <TableRow className="cursor-pointer" onClick={() => onView(item.id)}>
       <TableCell className="max-w-56 truncate pl-6 font-medium" title={item.name}>
@@ -72,24 +89,23 @@ function FixedItemRow({ item, overview, today, onView }: FixedItemRowProps) {
       <TableCell className="text-right">
         <Amount amount={item.expectedAmount} currency={FIXED_ITEM_CURRENCY} />
       </TableCell>
-      <TableCell className="text-right">
-        <Amount amount={item.monthlyEquivalent} currency={FIXED_ITEM_CURRENCY} className="text-muted-foreground" />
-      </TableCell>
       <TableCell>
-        {next ? (
+        {occurrence ? (
           <div className="flex items-center gap-2">
-            <span className="tabular-nums">{formatDate(next.dueDate)}</span>
-            <OccurrenceStatusBadge status={next.status} />
+            <span className="tabular-nums">{formatDate(occurrence.dueDate)}</span>
+            <OccurrenceStatusBadge status={occurrence.status} />
           </div>
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-muted-foreground">
+            {next ? `Prochaine le ${formatDate(next.dueDate)}` : "Aucune échéance"}
+          </span>
         )}
       </TableCell>
-      <TableCell>
-        {latest ? (
-          <div className="flex items-center gap-2">
-            <OccurrenceStatusBadge status={latest.status} />
-            <Deviation report={latest} />
+      <TableCell className="text-right">
+        {occurrence && occurrence.actualAmount !== null ? (
+          <div className="flex items-center justify-end gap-2">
+            <Deviation report={occurrence} />
+            <Amount amount={occurrence.actualAmount} currency={FIXED_ITEM_CURRENCY} />
           </div>
         ) : (
           <span className="text-muted-foreground">—</span>

@@ -5,7 +5,7 @@ import { type ReactNode, useState } from "react"
 import { type Control, useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
-import { CategorySelect } from "@/components/categories/category-select"
+import { CreatableCategorySelect } from "@/components/categories/creatable-category-select"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
@@ -182,7 +182,7 @@ function TargetFields({ control }: { control: RuleControl }) {
           <FormItem>
             <FormLabel>Catégorie</FormLabel>
             <FormControl>
-              <CategorySelect
+              <CreatableCategorySelect
                 value={field.value ?? NO_CATEGORY}
                 onChange={(value) => field.onChange(value === NO_CATEGORY ? null : value)}
                 extraOptions={[{ value: NO_CATEGORY, label: "Aucune" }]}

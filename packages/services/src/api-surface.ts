@@ -11,7 +11,7 @@ import {
   listFixedItemTransactions,
   updateFixedItem,
 } from "./fixed-items"
-import { commitImport, listImports, previewImport } from "./imports"
+import { commitImport, deleteImport, listImports, previewImport } from "./imports"
 import { applyRules, createRule, deleteRule, listRules, testRule, updateRule } from "./rules"
 import { exportTransactions } from "./transaction-export"
 import { bulkUpdateTransactions, updateTransaction } from "./transaction-updates"
@@ -32,6 +32,7 @@ export const apiSurface = {
     list: listImports,
     preview: previewImport,
     commit: commitImport,
+    remove: deleteImport,
   },
   transactions: {
     list: listTransactionPage,

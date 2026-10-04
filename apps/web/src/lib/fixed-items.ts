@@ -1,4 +1,4 @@
-import { defaultOverviewRange, type DateRange, isoDateOf, type Periodicity } from "@centime/core"
+import type { Periodicity, PeriodRange } from "@centime/core"
 import type { FixedItem, OccurrenceReport } from "./api"
 import { monthLabels, periodicityLabels, quarterMonthLabels } from "./labels"
 
@@ -7,10 +7,6 @@ export const FIXED_ITEM_CURRENCY = "CHF"
 const DEVIATION_TOLERANCE_RATIO = 0.01
 
 export type Direction = "expense" | "income"
-
-export function currentOverviewRange(): DateRange {
-  return defaultOverviewRange(isoDateOf(new Date()))
-}
 
 export function directionOf(amount: number): Direction {
   return amount > 0 ? "income" : "expense"
@@ -37,6 +33,6 @@ export function isDeviationSmall(report: Pick<OccurrenceReport, "deviation" | "e
   return Math.abs(report.deviation) < Math.abs(report.expectedAmount) * DEVIATION_TOLERANCE_RATIO
 }
 
-export function latestPastOccurrence(reports: OccurrenceReport[], today: string): OccurrenceReport | undefined {
-  return reports.filter((report) => report.dueDate <= today).at(-1)
+export function occurrenceIn(reports: OccurrenceReport[], range: PeriodRange): OccurrenceReport | undefined {
+  return reports.find((report) => report.dueDate >= range.start && report.dueDate <= range.end)
 }

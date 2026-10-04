@@ -19,7 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { api, type CsvProfile } from "@/lib/api"
 import { accountKindLabels, csvDelimiterLabels, csvEncodingLabels } from "@/lib/labels"
-import { csvProfilesQuery } from "@/lib/queries"
+import { csvProfilesQuery, invalidateCsvProfileData } from "@/lib/queries"
 import { CsvProfileDialog } from "./csv-profile-dialog"
 
 export function CsvProfilesPanel() {
@@ -103,7 +103,7 @@ function DeleteProfileButton({ profile }: { profile: CsvProfile }) {
   const remove = useMutation({
     mutationFn: () => api.csvProfiles.remove(profile.id),
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: csvProfilesQuery.queryKey })
+      await invalidateCsvProfileData(queryClient)
       toast.success(`Profil « ${profile.name} » supprimé`)
     },
     onError: (error) => toast.error(error.message),

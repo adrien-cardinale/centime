@@ -1,7 +1,7 @@
 import { type CategoryInput, categoryInputSchema } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { type ReactNode, useState } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
@@ -29,11 +29,15 @@ const NO_PARENT = "none"
 
 type CategoryDialogProps = {
   category?: Category
-  trigger: ReactNode
+  trigger?: ReactNode
+  initialName?: string
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+  onSaved?: (categoryId: string) => void
 }
 
-function formValuesFor(category: Category | undefined): CategoryFormValues {
-  if (!category) return { name: "", color: DEFAULT_CATEGORY_COLOR, parentId: null }
+function formValuesFor(category: Category | undefined, initialName = ""): CategoryFormValues {
+  if (!category) return { name: initialName, color: DEFAULT_CATEGORY_COLOR, parentId: null }
   return { name: category.name, color: category.color, icon: category.icon, parentId: category.parentId }
 }
 
@@ -41,12 +45,13 @@ function saveCategory(category: Category | undefined, input: CategoryInput) {
   return category ? api.categories.update(category.id, input) : api.categories.create(input)
 }
 
-export function CategoryDialog({ category, trigger }: CategoryDialogProps) {
-  const [open, setOpen] = useState(false)
+export function CategoryDialog({ category, trigger, initialName, open, onOpenChange, onSaved }: CategoryDialogProps) {
+  const [internalOpen, setInternalOpen] = useState(false)
+  const setOpen = onOpenChange ?? setInternalOpen
   const queryClient = useQueryClient()
   const form = useForm<CategoryFormValues, unknown, CategoryInput>({
     resolver: zodResolver(categoryInputSchema),
-    defaultValues: formValuesFor(category),
+    defaultValues: formValuesFor(category, initialName),
   })
 
   const save = useMutation({
@@ -55,25 +60,32 @@ export function CategoryDialog({ category, trigger }: CategoryDialogProps) {
       await invalidateTransactionData(queryClient)
       toast.success(`Catégorie « ${saved.name} » enregistrée`)
       setOpen(false)
+      onSaved?.(saved.id)
     },
     onError: (error) => toast.error(error.message),
   })
 
   const changeOpen = (next: boolean) => {
-    if (next) form.reset(formValuesFor(category))
+    if (next) form.reset(formValuesFor(category, initialName))
     setOpen(next)
   }
 
+  // Ouverte depuis un autre formulaire, la soumission ne doit pas remonter jusqu'à lui.
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.stopPropagation()
+    void form.handleSubmit((input) => save.mutate(input))(event)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open ?? internalOpen} onOpenChange={changeOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{category ? "Modifier la catégorie" : "Nouvelle catégorie"}</DialogTitle>
           <DialogDescription>Nom, couleur et catégorie parente éventuelle.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-5">
+          <form onSubmit={submit} className="space-y-5">
             <FormField
               control={form.control}
               name="name"

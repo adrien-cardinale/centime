@@ -1,4 +1,5 @@
-import { keepPreviousData, type QueryClient, queryOptions } from "@tanstack/react-query"
+import { CSV_HEADER_SAMPLE_SIZE } from "@centime/core"
+import { keepPreviousData, type QueryClient, queryOptions, skipToken } from "@tanstack/react-query"
 import { api, type ImportUpload, type TransactionPageFilters } from "./api"
 
 export const authQuery = queryOptions({
@@ -39,6 +40,14 @@ export function importPreviewQuery(upload: ImportUpload) {
   })
 }
 
+export function csvSampleQuery(file: File | undefined) {
+  return queryOptions({
+    queryKey: ["csv-sample", file ? fileKey(file) : null],
+    queryFn: file ? async () => new Uint8Array(await file.slice(0, CSV_HEADER_SAMPLE_SIZE).arrayBuffer()) : skipToken,
+    staleTime: Number.POSITIVE_INFINITY,
+  })
+}
+
 export function transactionsQuery(filters: TransactionPageFilters) {
   return queryOptions({
     queryKey: ["transactions", filters],
@@ -66,6 +75,7 @@ export function fixedItemsOverviewQuery(from: string, to: string) {
   return queryOptions({
     queryKey: ["fixed-items", "overview", from, to],
     queryFn: () => api.fixedItems.overview(from, to),
+    placeholderData: keepPreviousData,
   })
 }
 
@@ -117,6 +127,13 @@ export async function invalidateFixedItemData(queryClient: QueryClient): Promise
   await Promise.all([
     invalidateTransactionData(queryClient),
     queryClient.invalidateQueries({ queryKey: rulesQuery.queryKey }),
+  ])
+}
+
+export async function invalidateCsvProfileData(queryClient: QueryClient): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: csvProfilesQuery.queryKey }),
+    queryClient.invalidateQueries({ queryKey: ["imports", "preview"] }),
   ])
 }
 

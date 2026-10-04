@@ -4,9 +4,11 @@ import {
   computeBudgetStatus,
   type IsoDate,
   MAX_ROLLOVER_PERIODS,
+  monthlyBudgetAmount,
   type Periodicity,
   type PeriodRange,
   type PeriodSpending,
+  type PlanLine,
   periodContaining,
   previousPeriods,
   roundCents,
@@ -42,11 +44,17 @@ type BudgetPlan = {
   history: PeriodRange[]
 }
 
-export type BudgetOverviewItem = BudgetEntry & { status: BudgetStatus; history: PeriodSpending[] }
+export type CategorySpending = { categoryId: string; categoryName: string; categoryColor: string; spent: number }
+
+export type BudgetOverviewItem = BudgetEntry & {
+  status: BudgetStatus
+  history: PeriodSpending[]
+  breakdown: CategorySpending[]
+}
 
 export type BudgetTotals = { available: number; spent: number; remaining: number }
 
-export type UnbudgetedCategory = { categoryId: string; categoryName: string; categoryColor: string; spent: number }
+export type UnbudgetedCategory = CategorySpending
 
 function activeBudget(id: string) {
   return and(eq(budgets.id, id), isNull(budgets.deletedAt))
@@ -220,12 +228,30 @@ function loadWindow(plans: BudgetPlan[], month: PeriodRange): { from: IsoDate; t
   }
 }
 
-function toOverviewItem(plan: BudgetPlan, rows: EligibleTransaction[], today: IsoDate): BudgetOverviewItem {
+function breakdownOf(members: CategoryNode[], rows: EligibleTransaction[], range: PeriodRange): CategorySpending[] {
+  const booked = rows.filter(
+    (row) => row.status === "booked" && row.bookingDate >= range.start && row.bookingDate <= range.end,
+  )
+  const netSpent = (categoryId: string) =>
+    roundCents(-booked.filter((row) => row.categoryId === categoryId).reduce((sum, row) => sum + row.amount, 0))
+  return members
+    .map((node) => ({ categoryId: node.id, categoryName: node.name, categoryColor: node.color, spent: netSpent(node.id) }))
+    .filter((entry) => entry.spent !== 0)
+    .sort((left, right) => right.spent - left.spent)
+}
+
+function toOverviewItem(
+  plan: BudgetPlan,
+  rows: EligibleTransaction[],
+  members: CategoryNode[],
+  today: IsoDate,
+): BudgetOverviewItem {
   const previous = plan.carryPeriods.map((range) => spendingIn(rows, range))
   return {
     ...plan.budget,
     status: computeBudgetStatus(plan.budget, spendingIn(rows, plan.current), previous, today),
     history: plan.history.map((range) => spendingIn(rows, range)),
+    breakdown: breakdownOf(members, rows, plan.current),
   }
 }
 
@@ -245,6 +271,15 @@ function overviewTotals(items: BudgetOverviewItem[]): Record<Periodicity, Budget
     monthly: totalsOf(items, "monthly"),
     quarterly: totalsOf(items, "quarterly"),
     yearly: totalsOf(items, "yearly"),
+  }
+}
+
+function monthEnvelopes(plans: BudgetPlan[], grouped: Map<string, EligibleTransaction[]>, month: PeriodRange): PlanLine {
+  const sum = (pick: (budget: BudgetEntry) => number) =>
+    roundCents(plans.reduce((total, { budget }) => total + pick(budget), 0))
+  return {
+    expected: sum(monthlyBudgetAmount),
+    actual: sum((budget) => spendingIn(grouped.get(budget.categoryId) ?? [], month).spent),
   }
 }
 
@@ -278,12 +313,20 @@ export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoD
   const rows = await loadEligibleTransactions(db, window.from, window.to)
   const mapping = budgetedCategoryMap(nodes, new Set(entries.map((entry) => entry.categoryId)))
   const grouped = groupByBudgetedCategory(rows, mapping)
-  const items = plans.map((plan) => toOverviewItem(plan, grouped.get(plan.budget.categoryId) ?? [], today))
+  const items = plans.map((plan) =>
+    toOverviewItem(
+      plan,
+      grouped.get(plan.budget.categoryId) ?? [],
+      nodes.filter((node) => mapping.get(node.id) === plan.budget.categoryId),
+      today,
+    ),
+  )
   return {
     date,
     today,
     budgets: items,
     totals: overviewTotals(items),
+    envelopes: monthEnvelopes(plans, grouped, month),
     unbudgeted: unbudgetedCategories(rows, nodes, mapping, month),
   }
 }

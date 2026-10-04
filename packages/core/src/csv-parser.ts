@@ -9,6 +9,10 @@ type ColumnRole = keyof CsvColumns | "amount" | "indicator"
 
 type ColumnReference = { role: ColumnRole; name: string }
 
+export type CsvFileFormat = Pick<CsvProfile, "encoding" | "delimiter" | "hasHeader">
+
+export type CsvColumnChoice = { name: string; sample: string | null }
+
 type CsvLayout = {
   indexes: Partial<Record<ColumnRole, number>>
   names: Partial<Record<ColumnRole, string>>
@@ -28,7 +32,7 @@ const COLUMN_ROLES = [
   "status",
 ] as const satisfies readonly (keyof CsvColumns)[]
 
-const HEADER_SAMPLE_SIZE = 64 * 1024
+export const CSV_HEADER_SAMPLE_SIZE = 64 * 1024
 
 function configuredColumns(profile: CsvProfile): ColumnReference[] {
   const columns: ColumnReference[] = COLUMN_ROLES.flatMap((role) => {
@@ -156,7 +160,7 @@ export function parseCsv(bytes: Uint8Array, profile: CsvProfile): ParseResult {
 }
 
 function readHeader(bytes: Uint8Array, profile: CsvProfile): string[] {
-  const sample = decodeBytes(bytes.subarray(0, HEADER_SAMPLE_SIZE), profile.encoding)
+  const sample = decodeBytes(bytes.subarray(0, CSV_HEADER_SAMPLE_SIZE), profile.encoding)
   return tokenizeCsv(sample, profile.delimiter)[0]?.fields ?? []
 }
 
@@ -165,6 +169,31 @@ function matchesProfile(bytes: Uint8Array, profile: CsvProfile): boolean {
   if (required.length === 0) return false
   const header = readHeader(bytes, profile)
   return required.every((name) => indexFromHeader(header, name) !== undefined)
+}
+
+function sampleAt(record: CsvRecord | undefined, index: number): string | null {
+  const value = record?.fields[index]?.trim() ?? ""
+  return value === "" ? null : value
+}
+
+export function findCsvColumn(columns: CsvColumnChoice[], name: string): CsvColumnChoice | undefined {
+  return columns.find((column) => sameText(column.name, name))
+}
+
+export function listCsvColumns(bytes: Uint8Array, format: CsvFileFormat): CsvColumnChoice[] {
+  const sample = decodeBytes(bytes.subarray(0, CSV_HEADER_SAMPLE_SIZE), format.encoding)
+  const [first, second] = tokenizeCsv(sample, format.delimiter)
+  if (!first) return []
+  if (!format.hasHeader) {
+    return first.fields.map((_, index) => ({ name: String(index + 1), sample: sampleAt(first, index) }))
+  }
+  const columns: CsvColumnChoice[] = []
+  first.fields.forEach((cell, index) => {
+    const name = cell.trim()
+    if (name === "" || findCsvColumn(columns, name)) return
+    columns.push({ name, sample: sampleAt(second, index) })
+  })
+  return columns
 }
 
 export function detectCsvProfile<Profile extends CsvProfile>(bytes: Uint8Array, profiles: Profile[]): Profile | null {

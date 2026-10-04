@@ -1,6 +1,6 @@
-import type { CsvProfileInput } from "@centime/core"
+import { type CsvColumnChoice, type CsvProfileInput, listCsvColumns } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { type ReactNode, useState } from "react"
 import { useForm, useWatch } from "react-hook-form"
 import { toast } from "sonner"
@@ -32,20 +32,22 @@ import {
   csvEncodingLabels,
   decimalSeparatorLabels,
 } from "@/lib/labels"
-import { csvProfilesQuery } from "@/lib/queries"
-import { type CsvProfileControl, SelectField, TextField } from "./csv-profile-fields"
+import { csvSampleQuery, invalidateCsvProfileData } from "@/lib/queries"
+import { ColumnField, type CsvProfileControl, SelectField, TextField } from "./csv-profile-fields"
 import { CsvProfileStatuses } from "./csv-profile-statuses"
 
 type CsvProfileDialogProps = {
   profile?: CsvProfile
   trigger: ReactNode
+  sourceFile?: File
+  onSaved?: (profile: CsvProfile) => void
 }
 
 function saveProfile(profile: CsvProfile | undefined, input: CsvProfileInput) {
   return profile ? api.csvProfiles.update(profile.id, input) : api.csvProfiles.create(input)
 }
 
-export function CsvProfileDialog({ profile, trigger }: CsvProfileDialogProps) {
+export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvProfileDialogProps) {
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const initialValues = profile ? csvProfileToFormValues(profile) : emptyCsvProfileFormValues
@@ -57,9 +59,10 @@ export function CsvProfileDialog({ profile, trigger }: CsvProfileDialogProps) {
   const save = useMutation({
     mutationFn: (input: CsvProfileInput) => saveProfile(profile, input),
     onSuccess: async (saved) => {
-      await queryClient.invalidateQueries({ queryKey: csvProfilesQuery.queryKey })
+      await invalidateCsvProfileData(queryClient)
       toast.success(`Profil « ${saved.name} » enregistré`)
       setOpen(false)
+      onSaved?.(saved)
     },
     onError: (error) => toast.error(error.message),
   })
@@ -79,13 +82,7 @@ export function CsvProfileDialog({ profile, trigger }: CsvProfileDialogProps) {
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-6">
-            <GeneralSection control={form.control} />
-            <Separator />
-            <ColumnsSection control={form.control} />
-            <Separator />
-            <AmountSection control={form.control} />
-            <Separator />
-            <DetectionSection control={form.control} />
+            <ProfileSections control={form.control} sourceFile={sourceFile} />
             <DialogFooter>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? "Enregistrement…" : "Enregistrer"}
@@ -95,6 +92,28 @@ export function CsvProfileDialog({ profile, trigger }: CsvProfileDialogProps) {
         </Form>
       </DialogContent>
     </Dialog>
+  )
+}
+
+function useFileColumns(control: CsvProfileControl, file: File | undefined): CsvColumnChoice[] {
+  const [encoding, delimiter, hasHeader] = useWatch({ control, name: ["encoding", "delimiter", "hasHeader"] })
+  const { data: bytes } = useQuery(csvSampleQuery(file))
+  return bytes ? listCsvColumns(bytes, { encoding, delimiter, hasHeader }) : []
+}
+
+function ProfileSections({ control, sourceFile }: { control: CsvProfileControl; sourceFile: File | undefined }) {
+  const columns = useFileColumns(control, sourceFile)
+
+  return (
+    <>
+      <GeneralSection control={control} />
+      <Separator />
+      <ColumnsSection control={control} columns={columns} />
+      <Separator />
+      <AmountSection control={control} columns={columns} />
+      <Separator />
+      <DetectionSection control={control} />
+    </>
   )
 }
 
@@ -152,38 +171,42 @@ function HasHeaderField({ control }: { control: CsvProfileControl }) {
   )
 }
 
-function ColumnsSection({ control }: { control: CsvProfileControl }) {
+type ColumnsProps = { control: CsvProfileControl; columns: CsvColumnChoice[] }
+
+function ColumnsSection({ control, columns }: ColumnsProps) {
   return (
     <Section title="Colonnes">
       <p className="text-sm text-muted-foreground">
-        Nom exact de l'en-tête, ou position à partir de 1 si le fichier n'a pas d'en-têtes.
+        {columns.length > 0
+          ? "Colonnes lues dans le fichier importé, avec l'encodage et le séparateur choisis ci-dessus."
+          : "Nom exact de l'en-tête, ou position à partir de 1 si le fichier n'a pas d'en-têtes."}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField control={control} name="columns.date" label="Date de comptabilisation *" />
-        <TextField control={control} name="columns.label" label="Libellé *" />
-        <TextField control={control} name="columns.valueDate" label="Date valeur" />
-        <TextField control={control} name="columns.merchant" label="Commerçant" />
-        <TextField control={control} name="columns.account" label="Compte (IBAN ou carte)" />
-        <TextField control={control} name="columns.currency" label="Devise" />
-        <TextField control={control} name="columns.balance" label="Solde" />
-        <TextField control={control} name="columns.category" label="Catégorie du fournisseur" />
-        <TextField control={control} name="columns.status" label="Statut" />
+        <ColumnField control={control} columns={columns} name="columns.date" label="Date de comptabilisation *" />
+        <ColumnField control={control} columns={columns} name="columns.label" label="Libellé *" />
+        <ColumnField control={control} columns={columns} name="columns.valueDate" label="Date valeur" optional />
+        <ColumnField control={control} columns={columns} name="columns.merchant" label="Commerçant" optional />
+        <ColumnField control={control} columns={columns} name="columns.account" label="Compte (IBAN ou carte)" optional />
+        <ColumnField control={control} columns={columns} name="columns.currency" label="Devise" optional />
+        <ColumnField control={control} columns={columns} name="columns.balance" label="Solde" optional />
+        <ColumnField control={control} columns={columns} name="columns.category" label="Catégorie du fournisseur" optional />
+        <ColumnField control={control} columns={columns} name="columns.status" label="Statut" optional />
       </div>
     </Section>
   )
 }
 
-function AmountSection({ control }: { control: CsvProfileControl }) {
+function AmountSection({ control, columns }: ColumnsProps) {
   const mode = useWatch({ control, name: "amount.mode" })
 
   return (
     <Section title="Montant">
       <div className="grid gap-4 sm:grid-cols-2">
         <SelectField control={control} name="amount.mode" label="Mode" options={amountModeLabels} />
-        <TextField control={control} name="amount.column" label="Colonne du montant" />
+        <ColumnField control={control} columns={columns} name="amount.column" label="Colonne du montant" />
         {mode === "debitCredit" && (
           <>
-            <TextField control={control} name="amount.indicatorColumn" label="Colonne débit/crédit" />
+            <ColumnField control={control} columns={columns} name="amount.indicatorColumn" label="Colonne débit/crédit" />
             <TextField
               control={control}
               name="amount.debitValue"

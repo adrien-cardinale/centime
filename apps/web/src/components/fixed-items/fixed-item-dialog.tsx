@@ -20,11 +20,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { api, type FixedItem } from "@/lib/api"
 import { type Direction, directionOf, signedAmount } from "@/lib/fixed-items"
 import { getMonthLabels, getQuarterMonthLabels, periodicityLabels } from "@/lib/labels"
 import { invalidateFixedItemData } from "@/lib/queries"
-import { cn } from "@/lib/utils"
 import { defaultDueMonth, emptyRule, type FixedItemFormValues, formValuesFor, NO_CATEGORY } from "./fixed-item-form"
 import { FixedItemRuleSection } from "./fixed-item-rule-section"
 
@@ -188,23 +188,20 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
 
 function DirectionToggle({ value, onChange }: { value: Direction; onChange: (value: Direction) => void }) {
   return (
-    <div role="radiogroup" aria-label="Type" className="grid grid-cols-2 gap-1 rounded-md border p-1">
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      aria-label="Type"
+      value={value}
+      onValueChange={(next) => next !== "" && onChange(next as Direction)}
+      className="w-full"
+    >
       {DIRECTIONS.map((direction) => (
-        <button
-          key={direction}
-          type="button"
-          role="radio"
-          aria-checked={value === direction}
-          onClick={() => onChange(direction)}
-          className={cn(
-            "rounded-sm px-3 py-1 text-sm transition-colors",
-            value === direction ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-muted",
-          )}
-        >
+        <ToggleGroupItem key={direction} value={direction} className="flex-1">
           {directionLabels[direction]}
-        </button>
+        </ToggleGroupItem>
       ))}
-    </div>
+    </ToggleGroup>
   )
 }
 

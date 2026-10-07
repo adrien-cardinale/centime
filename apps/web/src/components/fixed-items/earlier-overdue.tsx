@@ -1,5 +1,6 @@
 import type { PeriodRange } from "@centime/core"
 import { CircleAlert } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import type { FixedItemOverview } from "@/lib/api"
 import { plural } from "@/lib/dashboard"
 
@@ -18,13 +19,14 @@ export function EarlierOverdue({ overviews, month, onSelect }: EarlierOverduePro
   const [oldest] = dueDates
   if (oldest === undefined) return null
   return (
-    <button
-      type="button"
+    <Button
+      variant="link"
+      size="sm"
       onClick={() => onSelect(oldest)}
-      className="inline-flex items-center gap-1.5 text-sm text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+      className="h-auto gap-1.5 p-0 text-muted-foreground hover:text-foreground"
     >
       <CircleAlert className="size-3.5" aria-hidden />
       {plural(dueDates.length, "échéance en retard", "échéances en retard")} sur les mois précédents
-    </button>
+    </Button>
   )
 }

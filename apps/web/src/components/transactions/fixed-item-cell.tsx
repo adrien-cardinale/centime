@@ -1,5 +1,6 @@
 import { Repeat } from "lucide-react"
 import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUpdateTransaction } from "@/hooks/use-transaction-updates"
@@ -44,14 +45,15 @@ function LinkedIndicator({ name, onClick }: { name: string; onClick: () => void 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onClick}
           aria-label={`Poste fixe : ${name}`}
-          className="rounded-sm text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          className="size-6 text-muted-foreground hover:text-foreground"
         >
           <Repeat className="size-4" />
-        </button>
+        </Button>
       </TooltipTrigger>
       <TooltipContent>{name}</TooltipContent>
     </Tooltip>

@@ -4,6 +4,7 @@ import { MatchKindSelect, RuleFieldSelect, RuleTester, useRuleTester } from "@/c
 import { Checkbox } from "@/components/ui/checkbox"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 import type { FixedItemFormValues } from "./fixed-item-form"
 
 type FixedItemControl = Control<FixedItemFormValues, unknown, FixedItemPayload>
@@ -21,10 +22,12 @@ export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionP
   return (
     <fieldset className="space-y-4 rounded-md border p-4">
       <legend className="px-1 text-sm font-medium">Règle de rapprochement</legend>
-      <label className="flex items-center gap-2 text-sm">
-        <Checkbox checked={enabled} onCheckedChange={(checked) => onToggle(checked === true)} />
-        Rattacher automatiquement les transactions
-      </label>
+      <div className="flex items-center gap-2">
+        <Checkbox id="rule-enabled" checked={enabled} onCheckedChange={(checked) => onToggle(checked === true)} />
+        <Label htmlFor="rule-enabled" className="font-normal">
+          Rattacher automatiquement les transactions
+        </Label>
+      </div>
       {enabled && (
         <>
           <div className="grid gap-4 sm:grid-cols-2">

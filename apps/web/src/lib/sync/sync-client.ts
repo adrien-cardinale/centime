@@ -58,6 +58,8 @@ type PushCursorState = { exhausted: Set<SyncTableName>; lastIds: Map<SyncTableNa
 
 type SyncContext = { db: Db; config: SyncConfig; exclusive: Exclusive }
 
+const REQUEST_TIMEOUT_MS = 15_000
+
 const runDirectly: Exclusive = (task) => task()
 
 export function normalizeServerUrl(serverUrl: string): string {
@@ -74,7 +76,10 @@ async function errorMessageOf(response: Response): Promise<string> {
 
 async function send(config: SyncConfig, path: string, init: RequestInit): Promise<Response> {
   try {
-    return await config.fetch(`${normalizeServerUrl(config.serverUrl)}${path}`, init)
+    return await config.fetch(`${normalizeServerUrl(config.serverUrl)}${path}`, {
+      ...init,
+      signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+    })
   } catch {
     throw new SyncError(NETWORK_MESSAGE, "network")
   }

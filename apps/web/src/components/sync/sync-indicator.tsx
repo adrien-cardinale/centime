@@ -1,11 +1,18 @@
 import { format, parseISO } from "date-fns"
 import { Cloud, CloudOff, RefreshCw } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { describeSyncState } from "@/lib/sync/sync-labels"
 import { type SyncState, syncNow, useSyncStore } from "@/lib/sync/sync-store"
 import { cn } from "@/lib/utils"
+
+async function synchronizeNow(successMessage: (pulled: number, pushed: number) => string): Promise<void> {
+  const outcome = await syncNow()
+  if (outcome.ok) toast.success(successMessage(outcome.report.pulled, outcome.report.pushed))
+  else toast.error(outcome.message)
+}
 
 function isHealthy(state: SyncState): boolean {
   return state.configured && (state.status === "idle" || state.status === "syncing")
@@ -40,7 +47,7 @@ export default function SyncIndicator() {
               variant="ghost"
               size="icon"
               className="size-8 shrink-0"
-              onClick={() => void syncNow()}
+              onClick={() => void synchronizeNow((pulled, pushed) => t("settings.sync.report", { pulled, pushed }))}
               disabled={state.status === "syncing"}
               aria-label={t("settings.sync.syncNow")}
             >

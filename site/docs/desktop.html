@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Desktop app — Centime docs</title>
+<meta name="description" content="Desktop app">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html" aria-current="page">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Desktop app</h1>
+<p>The desktop app is the web UI packaged with Tauri 2. It works offline: business services run in the window against a local SQLite database (sql.js in WebAssembly).</p>
+<h2>Build it</h2>
+<p>Requirements: stable Rust, and the <a href="https://v2.tauri.app/start/prerequisites/">Tauri system dependencies</a> (WebView2 on Windows, Xcode Command Line Tools on macOS, WebKitGTK 4.1 on Linux).</p>
+<pre class="code"><code>bun run desktop:dev     # development window
+bun run desktop:build   # installer</code></pre>
+<p>The installer lands in <code>apps/desktop/src-tauri/target/release/bundle</code>.</p>
+<h2>Local database</h2>
+<p>File <code>centime.db</code> in the application data folder:</p>
+<ul><li>Linux: <code>~/.local/share/ch.centime.desktop/</code></li><li>macOS: <code>~/Library/Application Support/ch.centime.desktop/</code></li><li>Windows: <code>%APPDATA%\ch.centime.desktop\</code></li></ul>
+<p>It is saved 500 ms after each change and when the window closes, and the file is encrypted with AES-256-GCM. The master key is stored next to it (<code>master.key</code>), so disk encryption (BitLocker, FileVault…) is still advisable.</p>
+<h2>Connect synchronization</h2>
+<ol><li>On first launch, create a key or enter an existing one.</li>
+<li>Enter the server address on that screen, or later in <strong>Settings › Synchronization</strong>.</li>
+<li>The app derives its credentials from the key and runs a first sync.</li></ol>
+<nav class="pager"><a href="self-hosting.html">← Self-hosting</a><a href="encryption.html">Encryption and sync →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

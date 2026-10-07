@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Centime — private budget manager</title>
+<meta name="description" content="Personal, single-user budget app with end-to-end encrypted sync. Self-hostable, open source.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="index.html"><img src="favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="docs/index.html">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<main>
+<section class="hero"><div class="wrap">
+<p class="eyebrow">Personal budget manager</p>
+<h1>Know where your money goes.<br>Keep it to yourself.</h1>
+<p class="lead">Centime imports your bank statements, sorts them, tracks recurring items and budgets, and syncs across your devices. The server never sees anything in clear text.</p>
+<p class="cta"><a class="btn primary" href="docs/getting-started.html">Get started</a><a class="btn" href="https://github.com/adrien-cardinale/centime">View on GitHub</a></p>
+</div></section>
+<section class="wrap"><h2 class="sr">Features</h2>
+<div class="grid"><article class="card"><h3>End-to-end encrypted</h3><p>Your data is encrypted on your device. The sync server is a relay that only stores opaque blobs.</p></article><article class="card"><h3>Import your statements</h3><p>CSV with configurable provider profiles, and camt.053 XML. Duplicates are detected.</p></article><article class="card"><h3>Categories and rules</h3><p>File transactions by category with “contains” or regex rules on label, merchant or provider category.</p></article><article class="card"><h3>Fixed items</h3><p>Recurring expenses and income (monthly, quarterly, yearly), matched automatically, with upcoming and overdue views.</p></article><article class="card"><h3>Budgets</h3><p>Per-category caps, balance carry-over, projection at your current pace and history.</p></article><article class="card"><h3>Month plan</h3><p>Fixed items and budgets on one page, with what remains of the month once everything is accounted for.</p></article><article class="card"><h3>Dashboard</h3><p>Balance, spending, income and net versus last month, 12-month charts, category breakdown and points of attention.</p></article><article class="card"><h3>Web and desktop</h3><p>The same UI in the browser or as an offline Tauri app for Windows, macOS and Linux. Devices stay in sync.</p></article></div></section>
+<section class="band"><div class="wrap split">
+<div><h2>Your key, your data</h2>
+<p>On first launch Centime generates a 32-byte master key and shows it as a recovery key. Everything is derived from it on your device: the user id, the auth secret and the AES-256-GCM encryption key. There is no password and no account to hand over.</p>
+<p><a href="docs/encryption.html">How the encryption works →</a></p></div>
+<pre class="code"><code>master key (32 bytes, stays on device)
+ ├─ HKDF → user id        (public)
+ ├─ HKDF → auth secret    (server stores SHA-256)
+ └─ HKDF → AES-256-GCM key (never leaves device)</code></pre>
+</div></section>
+<section class="wrap"><h2>Self-host in a minute</h2>
+<pre class="code"><code>git clone https://github.com/adrien-cardinale/centime.git
+cd centime
+docker compose up -d
+# open http://localhost:3000</code></pre>
+<p>One container, one SQLite file. <a href="docs/self-hosting.html">Self-hosting guide →</a></p></section>
+</main>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="site.js"></script>
+</body></html>

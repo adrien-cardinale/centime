@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Getting started — Centime docs</title>
+<meta name="description" content="Getting started">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html" aria-current="page">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Getting started</h1>
+<p>Centime runs as a web app served by its own small server, or as a desktop app. Both use the same interface and the same encrypted format.</p>
+<h2>Choose how to run it</h2>
+<ul><li><strong>Docker</strong> — the quickest path for hosting it yourself: see <a href="self-hosting.html">Self-hosting</a>.</li>
+<li><strong>From source</strong> — for development: see below.</li>
+<li><strong>Desktop</strong> — offline-capable Tauri app: see <a href="desktop.html">Desktop app</a>.</li></ul>
+<h2>Run from source</h2>
+<p>You need <a href="https://bun.sh/docs/installation">Bun</a> 1.3.6 or newer.</p>
+<pre class="code"><code>git clone https://github.com/adrien-cardinale/centime.git
+cd centime
+bun install
+cp .env.example .env
+bun run dev</code></pre>
+<ul><li>API: <code>http://localhost:3000</code></li><li>UI: <code>http://localhost:5173</code> (proxies <code>/api</code> to the API)</li></ul>
+<p>The relay database is created on first start, by default in <code>data/relay.db</code>.</p>
+<h2>First launch</h2>
+<ol><li>The app asks for a key. Choose <strong>create a new one</strong> and store the displayed recovery key somewhere safe, or <strong>enter an existing one</strong> to join your data from another device.</li>
+<li>Create an account for your bank, then <a href="importing.html">import a statement</a>.</li>
+<li>Set up <a href="budgets.html">categories, rules and budgets</a>.</li></ol>
+<div class="note"><strong>Keep your recovery key.</strong> Anyone holding it can read your data, and losing it makes the data unrecoverable. The server cannot help you.</div>
+<nav class="pager"><span></span><a href="importing.html">Importing transactions →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

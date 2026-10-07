@@ -1,0 +1,1 @@
+(function(){var b=document.getElementById("theme");if(!b)return;b.addEventListener("click",function(){var d=document.documentElement,cur=d.dataset.theme||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light"),n=cur==="dark"?"light":"dark";d.dataset.theme=n;try{localStorage.setItem("theme",n)}catch(e){}})})();

@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Categories, fixed items and budgets — Centime docs</title>
+<meta name="description" content="Categories, fixed items and budgets">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html" aria-current="page">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Categories, fixed items and budgets</h1>
+<h2>Categories and rules</h2>
+<p>Categories are grouped by theme, and each transaction is filed under a category. Rules assign categories automatically: a rule matches the label, the merchant or the provider category, either with a <em>contains</em> test or a regular expression. Rules run at import time or on demand.</p>
+<h2>Fixed items</h2>
+<p>Recurring expenses and income (monthly, quarterly or yearly). Incoming transactions are matched against them automatically, and the app lists what is upcoming and what is overdue.</p>
+<h2>Budgets</h2>
+<p>Set a cap per category. Unused or overspent balance can be carried over to the next month. Centime also projects your spending at the current pace and keeps a history.</p>
+<h2>Month plan</h2>
+<p>Fixed items and budgets on a single page. The remainder of the month is: <code>fixed income − fixed expenses − envelopes</code>.</p>
+<h2>Dashboard</h2>
+<p>Bank balance, spending, income and net for the month compared with the previous one, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and the latest transactions.</p>
+<nav class="pager"><a href="importing.html">← Importing transactions</a><a href="self-hosting.html">Self-hosting →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

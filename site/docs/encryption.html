@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Encryption and sync — Centime docs</title>
+<meta name="description" content="Encryption and sync">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html" aria-current="page">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Encryption and sync</h1>
+<h2>Key model</h2>
+<ul><li><strong>Master key</strong>: 32 random bytes generated on the client and shown as a recovery key (Crockford base32 in groups of four, with a 2-byte checksum to catch typos). It never leaves the device.</li>
+<li><strong>Derived values</strong> (HKDF-SHA-256, salt <code>centime/v1</code>): a public user id, an auth secret and an AES-256-GCM key.</li>
+<li><strong>Sealed blobs</strong>: random 12-byte IV, format version byte, user id bound as additional authenticated data.</li>
+<li><strong>Authentication</strong>: <code>Authorization: Bearer &lt;userId&gt;.&lt;secret&gt;</code>. The server stores only the SHA-256 of the secret and compares in constant time. No password, no session.</li></ul>
+<h2>Synchronization</h2>
+<p>The server is a dumb, ordered, append-only log. Clients do the merging.</p>
+<ol><li><strong>Pull</strong>: read the log from the stored cursor, decrypt each entry and apply its rows.</li>
+<li><strong>Push</strong>: send local rows not yet synced, in sealed batches.</li>
+<li><strong>Conflicts</strong>: the most recent <code>updatedAt</code> wins. For duplicates created offline on two devices, the smallest id wins everywhere and the loser is aliased.</li>
+<li>An entry that fails to decrypt aborts the sync: wrong key, or tampered data.</li></ol>
+<p>Sync runs at startup, every 5 minutes, 5 seconds after each change, and on demand from the sidebar.</p>
+<h2>Threat model in short</h2>
+<p>A compromised or curious server sees ciphertext, sizes and timing, not your transactions. A stolen device or application folder exposes the key and data on it, hence the advice to use disk encryption.</p>
+<nav class="pager"><a href="desktop.html">← Desktop app</a><a href="api.html">Relay API →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

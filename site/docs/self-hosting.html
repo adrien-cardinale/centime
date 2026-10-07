@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Self-hosting — Centime docs</title>
+<meta name="description" content="Self-hosting">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html" aria-current="page">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Self-hosting</h1>
+<p>The server is a small Hono API on Bun that stores encrypted blobs in SQLite and serves the web build. It holds no business data and no business logic.</p>
+<h2>Docker Compose</h2>
+<pre class="code"><code>git clone https://github.com/adrien-cardinale/centime.git
+cd centime
+docker compose up -d</code></pre>
+<p>This builds the image, listens on port 3000 and keeps the database in the <code>centime-data</code> volume.</p>
+<h2>Without Docker</h2>
+<pre class="code"><code>bun install
+bun run build
+bun run start</code></pre>
+<p>The server has no build step: Bun runs the TypeScript directly.</p>
+<h2>Configuration</h2>
+<table><thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>PORT</code></td><td><code>3000</code></td><td>HTTP port</td></tr>
+<tr><td><code>DATABASE_PATH</code></td><td><code>./data/relay.db</code></td><td>Relay SQLite file</td></tr>
+<tr><td><code>ALLOW_SIGNUP</code></td><td><code>true</code></td><td>Whether unknown user ids can create an account. Set to <code>false</code> once you have created yours.</td></tr>
+<tr><td><code>STATIC_DIR</code></td><td>empty</td><td>Override for the web build folder</td></tr>
+</tbody></table>
+<h2>HTTPS</h2>
+<p>Web Crypto needs a secure context, so serve the browser version over HTTPS, or from <code>localhost</code>. Put a reverse proxy (Caddy, Traefik, nginx) in front of the container.</p>
+<h2>Backups</h2>
+<p>The relay database only contains encrypted data, so backing up <code>relay.db</code> is safe, but it is useless without your recovery key. Keep the key separately.</p>
+<nav class="pager"><a href="budgets.html">← Categories, fixed items and budgets</a><a href="desktop.html">Desktop app →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

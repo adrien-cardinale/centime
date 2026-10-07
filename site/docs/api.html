@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Relay API — Centime docs</title>
+<meta name="description" content="Relay API">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html" aria-current="page">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Relay API</h1>
+<p>All routes live under <code>/api</code>. Bodies are JSON; <code>data</code> is the base64 of a sealed blob (8 MiB max per entry, 9 MiB per request).</p>
+<table><thead><tr><th>Route</th><th>Description</th></tr></thead><tbody>
+<tr><td><code>GET /api/health</code></td><td>Returns <code>{ "status": "ok" }</code>.</td></tr>
+<tr><td><code>POST /api/log</code></td><td>Appends <code>{ "data" }</code> to the user's log and returns <code>{ "seq" }</code> (201). The first append from an unknown user id creates the account (403 if signups are closed). Later appends need the matching secret (401 otherwise).</td></tr>
+<tr><td><code>GET /api/log?since=&lt;seq&gt;&amp;limit=&lt;n&gt;</code></td><td>Returns <code>{ entries: [{ seq, data }], cursor, hasMore }</code>. <code>limit</code> defaults to 200, capped at 500; a page is also capped at 8 MiB. Call again with the returned <code>cursor</code> while <code>hasMore</code> is true.</td></tr>
+<tr><td><code>DELETE /api/account</code></td><td>Deletes the user and the whole log (204).</td></tr>
+</tbody></table>
+<p>The log is append-only: entries are numbered per user with a gapless sequence, stored in SQLite (WAL mode).</p>
+<h2>Development</h2>
+<table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code>bun run build</code></td><td>Type-check core, db and services, then build the web UI</td></tr>
+<tr><td><code>bun run typecheck</code></td><td>Type-check every package</td></tr>
+<tr><td><code>bun run test</code></td><td>Unit tests, package by package</td></tr>
+<tr><td><code>bun run db:generate</code></td><td>Generate a migration after a schema change</td></tr>
+</tbody></table>
+<h3>Repository layout</h3>
+<ul><li><code>packages/core</code> — domain types and pure logic</li><li><code>packages/db</code> — Drizzle schema and migrator</li><li><code>packages/services</code> — shared business services</li><li><code>apps/server</code> — Hono relay</li><li><code>apps/web</code> — React UI</li><li><code>apps/desktop</code> — Tauri shell</li></ul>
+<nav class="pager"><a href="encryption.html">← Encryption and sync</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

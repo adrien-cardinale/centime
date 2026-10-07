@@ -17,9 +17,9 @@ export type NavigationItem = {
 
 export const navigationItems: NavigationItem[] = [
   { titleKey: "nav.dashboard", to: "/", icon: LayoutDashboard },
+  { titleKey: "nav.budget", to: "/budgets", icon: PiggyBank },
   { titleKey: "nav.transactions", to: "/transactions", icon: ArrowLeftRight },
   { titleKey: "nav.import", to: "/import", icon: Upload },
-  { titleKey: "nav.budget", to: "/budgets", icon: PiggyBank },
   { titleKey: "nav.categories", to: "/categories", icon: FolderTree },
   { titleKey: "nav.accounts", to: "/accounts", icon: Wallet },
 ]

@@ -1,17 +1,15 @@
 import {
   defaultOverviewRange,
   monthPlanOf,
-  PERIODICITIES,
   type PeriodRange,
   type PlanLine,
   periodContaining,
-  roundCents,
 } from "@centime/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { PiggyBank, Plus } from "lucide-react"
 import { type ReactNode, useState } from "react"
-import { BudgetCard } from "@/components/budgets/budget-card"
+import { BudgetsTable } from "@/components/budgets/budgets-table"
 import { BudgetDialog, type BudgetDialogTarget } from "@/components/budgets/budget-dialog"
 import { LatestDataNotice } from "@/components/budgets/latest-data-notice"
 import { PlanSummary } from "@/components/budgets/plan-summary"
@@ -25,12 +23,10 @@ import { PeriodNavigator } from "@/components/period-navigator"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
-import { ColorDot } from "@/components/categories/color-dot"
-import type { BudgetOverviewItem, BudgetsOverview, BudgetTotals, FixedItem, FixedItemsOverview, Theme } from "@/lib/api"
+import type { BudgetOverviewItem, BudgetsOverview, FixedItem, FixedItemsOverview } from "@/lib/api"
 import { BUDGET_CURRENCY, isIsoDate, todayIso } from "@/lib/budgets"
 import { directionOf, occurrenceIn } from "@/lib/fixed-items"
 import { formatAmount } from "@/lib/format"
-import { budgetPeriodGroupLabels } from "@/lib/labels"
 import { budgetsOverviewQuery, budgetsQuery, categoriesQuery, fixedItemsOverviewQuery, fixedItemsQuery, themesQuery } from "@/lib/queries"
 
 type BudgetsSearch = { date?: string }
@@ -177,16 +173,13 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
       </PlanSection>
       <PlanSection title="Enveloppes variables" aside={progressText("Dépensé", plan.envelopes)}>
         {budgets.budgets.length === 0 && <EmptyEnvelopes onCreate={() => onCreateBudget()} />}
-        {PERIODICITIES.map((period) => (
-          <BudgetGroup
-            key={period}
-            title={budgetPeriodGroupLabels[period]}
-            totals={budgets.totals[period]}
-            budgets={budgets.budgets.filter((budget) => budget.period === period)}
-            themes={themes}
-            onEdit={onEditBudget}
-          />
-        ))}
+        {budgets.budgets.length > 0 && (
+          <Card className="py-0">
+            <CardContent className="px-0">
+              <BudgetsTable budgets={budgets.budgets} themes={themes} onEdit={onEditBudget} />
+            </CardContent>
+          </Card>
+        )}
       </PlanSection>
       <UnbudgetedSpending categories={budgets.unbudgeted} monthLabel={month.label} onCreate={onCreateBudget} />
       <FixedItemSheet
@@ -211,67 +204,6 @@ function PlanSection({ title, aside, children }: { title: string; aside: string;
       </div>
       {children}
     </section>
-  )
-}
-
-type BudgetGroupProps = {
-  title: string
-  totals: BudgetTotals
-  budgets: BudgetOverviewItem[]
-  themes: Theme[]
-  onEdit: (budget: BudgetOverviewItem) => void
-}
-
-type ThemeBudgets = { theme: Theme | null; budgets: BudgetOverviewItem[]; totals: BudgetTotals }
-
-function sumTotals(budgets: BudgetOverviewItem[]): BudgetTotals {
-  const sum = (pick: (budget: BudgetOverviewItem) => number) =>
-    roundCents(budgets.reduce((total, budget) => total + pick(budget), 0))
-  return {
-    available: sum((budget) => budget.status.available),
-    spent: sum((budget) => budget.status.spent),
-    remaining: sum((budget) => budget.status.remaining),
-  }
-}
-
-function groupByTheme(budgets: BudgetOverviewItem[], themes: Theme[]): ThemeBudgets[] {
-  const known = new Set(themes.map((theme) => theme.id))
-  const groups = [
-    ...themes.map((theme) => ({ theme, budgets: budgets.filter((budget) => budget.themeId === theme.id) })),
-    { theme: null, budgets: budgets.filter((budget) => budget.themeId === null || !known.has(budget.themeId)) },
-  ]
-  return groups.filter((group) => group.budgets.length > 0).map((group) => ({ ...group, totals: sumTotals(group.budgets) }))
-}
-
-function BudgetGroup({ title, totals, budgets, themes, onEdit }: BudgetGroupProps) {
-  if (budgets.length === 0) return null
-  return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-        <h3 className="text-sm font-medium text-muted-foreground">{title}</h3>
-        <p className="text-xs text-muted-foreground tabular-nums">
-          {money(totals.spent)} / {money(totals.available)}
-        </p>
-      </div>
-      {groupByTheme(budgets, themes).map((group) => (
-        <div key={group.theme?.id ?? "none"} className="space-y-2">
-          <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 border-b pb-1">
-            <h4 className="flex items-center gap-2 text-sm font-semibold">
-              {group.theme && <ColorDot color={group.theme.color} />}
-              {group.theme?.name ?? "Sans thème"}
-            </h4>
-            <p className="text-xs text-muted-foreground tabular-nums">
-              Sous-total : {money(group.totals.spent)} / {money(group.totals.available)}
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {group.budgets.map((budget) => (
-              <BudgetCard key={budget.id} budget={budget} onEdit={onEdit} />
-            ))}
-          </div>
-        </div>
-      ))}
-    </div>
   )
 }
 

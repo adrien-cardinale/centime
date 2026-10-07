@@ -2,6 +2,7 @@ import { type Db, type DbExecutor, SYNC_TABLES, type SyncRow, type SyncTableEntr
 import { SYNC_ROW_SCHEMAS } from "@centime/services"
 import { and, asc, gt, isNull, sql } from "@centime/db/orm"
 import { z } from "zod"
+import i18n from "@/i18n"
 import type { Vault } from "../crypto/envelope"
 import { applyIncomingRow, type IncomingRow, stampAcceptedRow } from "./sync-apply"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
@@ -35,10 +36,6 @@ export class SyncError extends Error {
   }
 }
 
-const UNAUTHORIZED_MESSAGE = "Accès refusé par le serveur : la clé ne correspond pas à ce compte"
-const UNREADABLE_ENTRY_MESSAGE = "Une entrée du serveur est illisible : la clé ne correspond pas ou les données ont été altérées"
-const NETWORK_MESSAGE = "Serveur injoignable : vérifie la connexion réseau et l'adresse du serveur"
-const INVALID_RESPONSE_MESSAGE = "Réponse du serveur invalide"
 
 const tableRowsSchema = z.record(z.string(), z.array(z.unknown()))
 
@@ -71,7 +68,7 @@ async function errorMessageOf(response: Response): Promise<string> {
     const body: unknown = await response.json()
     if (body && typeof body === "object" && "error" in body && typeof body.error === "string") return body.error
   } catch {}
-  return `Erreur du serveur (${response.status})`
+  return i18n.t("syncErrors.serverStatus", { status: response.status })
 }
 
 async function send(config: SyncConfig, path: string, init: RequestInit): Promise<Response> {
@@ -81,7 +78,7 @@ async function send(config: SyncConfig, path: string, init: RequestInit): Promis
       signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
     })
   } catch {
-    throw new SyncError(NETWORK_MESSAGE, "network")
+    throw new SyncError(i18n.t("syncErrors.network"), "network")
   }
 }
 
@@ -94,16 +91,16 @@ async function requestJson<Schema extends z.ZodType>(
   const { userId, secret } = config.vault.credentials
   const headers = { Authorization: `Bearer ${userId}.${secret}`, "Content-Type": "application/json" }
   const response = await send(config, path, { ...init, headers })
-  if (response.status === 401) throw new SyncError(UNAUTHORIZED_MESSAGE, "unauthorized")
+  if (response.status === 401) throw new SyncError(i18n.t("syncErrors.unauthorized"), "unauthorized")
   if (!response.ok) throw new SyncError(await errorMessageOf(response), "server")
   const parsed = schema.safeParse(await response.json().catch(() => null))
-  if (!parsed.success) throw new SyncError(INVALID_RESPONSE_MESSAGE, "server")
+  if (!parsed.success) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
   return parsed.data
 }
 
 function parseRows(entry: SyncTableEntry, rows: unknown[] | undefined): IncomingRow[] {
   const parsed = SYNC_ROW_SCHEMAS[entry.name].array().safeParse(rows ?? [])
-  if (!parsed.success) throw new SyncError(`${INVALID_RESPONSE_MESSAGE} (${entry.name})`, "server")
+  if (!parsed.success) throw new SyncError(`${i18n.t("syncErrors.invalidResponse")} (${entry.name})`, "server")
   return parsed.data
 }
 
@@ -114,7 +111,7 @@ async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): 
     const payload = payloadSchema.parse(JSON.parse(await vault.decryptText(entry.data)))
     return { seq: entry.seq, changes: payload.changes }
   } catch {
-    throw new SyncError(UNREADABLE_ENTRY_MESSAGE, "server")
+    throw new SyncError(i18n.t("syncErrors.unreadableEntry"), "server")
   }
 }
 
@@ -150,7 +147,7 @@ async function pullAll(context: SyncContext, since: number): Promise<{ cursor: n
   for (;;) {
     const page = await pullPage(context, cursor)
     pulled += page.applied
-    if (page.hasMore && page.cursor <= cursor) throw new SyncError(INVALID_RESPONSE_MESSAGE, "server")
+    if (page.hasMore && page.cursor <= cursor) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
     cursor = page.cursor
     if (!page.hasMore) return { cursor, pulled }
   }
@@ -232,7 +229,7 @@ async function runSync(context: SyncContext): Promise<SyncReport> {
 }
 
 function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : "Erreur de synchronisation inattendue"
+  return error instanceof Error ? error.message : i18n.t("syncErrors.unexpected")
 }
 
 export async function synchronize(db: Db, config: SyncConfig): Promise<SyncReport> {

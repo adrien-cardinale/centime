@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -17,12 +18,13 @@ import { api, type FixedItem } from "@/lib/api"
 import { invalidateFixedItemData } from "@/lib/queries"
 
 export function DeleteFixedItemButton({ item }: { item: FixedItem }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
     mutationFn: () => api.fixedItems.remove(item.id),
     onSuccess: async () => {
       await invalidateFixedItemData(queryClient)
-      toast.success(`Poste « ${item.name} » supprimé`)
+      toast.success(t("fixedItemsUi.delete.deleted", { name: item.name }))
     },
     onError: (error) => toast.error(error.message),
   })
@@ -30,21 +32,20 @@ export function DeleteFixedItemButton({ item }: { item: FixedItem }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Supprimer ${item.name}`} disabled={remove.isPending}>
+        <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.delete.label", { name: item.name })} disabled={remove.isPending}>
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer le poste « {item.name} » ?</AlertDialogTitle>
+          <AlertDialogTitle>{t("fixedItemsUi.delete.title", { name: item.name })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Les transactions rattachées sont conservées mais détachées du poste. Sa règle de rapprochement est
-            supprimée.
+            {t("fixedItemsUi.delete.description")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => remove.mutate()}>Supprimer</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>{t("fixedItemsUi.delete.confirm")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

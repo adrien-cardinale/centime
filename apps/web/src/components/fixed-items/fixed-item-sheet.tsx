@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { ChevronRight } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Progress } from "@/components/ui/progress"
@@ -28,6 +29,7 @@ export function FixedItemSheet({ item, overview, onOpenChange }: FixedItemSheetP
 }
 
 function FixedItemDetails({ item, overview }: { item: FixedItem; overview: FixedItemOverview | undefined }) {
+  const { t } = useTranslation()
   const occurrences = [...(overview?.occurrences ?? [])].reverse()
   return (
     <>
@@ -42,9 +44,9 @@ function FixedItemDetails({ item, overview }: { item: FixedItem; overview: Fixed
         <RuleSummary rule={item.rule} />
         {overview && <PaymentProgress summary={overview.summary} />}
         <section className="space-y-2">
-          <h3 className="text-sm font-medium">Échéances de la période</h3>
+          <h3 className="text-sm font-medium">{t("fixedItemsUi.sheet.occurrences")}</h3>
           {occurrences.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aucune échéance sur la période.</p>
+            <p className="text-sm text-muted-foreground">{t("fixedItemsUi.sheet.noOccurrences")}</p>
           ) : (
             <ul className="divide-y rounded-md border">
               {occurrences.map((report) => (
@@ -58,7 +60,7 @@ function FixedItemDetails({ item, overview }: { item: FixedItem; overview: Fixed
           search={{ fixedItemId: item.id }}
           className="inline-block text-sm font-medium underline-offset-4 hover:underline"
         >
-          Voir toutes les transactions liées ({item.linkedCount})
+          {t("fixedItemsUi.sheet.viewLinked", { count: item.linkedCount })}
         </Link>
       </div>
     </>
@@ -66,22 +68,26 @@ function FixedItemDetails({ item, overview }: { item: FixedItem; overview: Fixed
 }
 
 function RuleSummary({ rule }: { rule: FixedItem["rule"] }) {
-  if (!rule) return <p className="text-sm text-muted-foreground">Aucune règle de rapprochement.</p>
+  const { t } = useTranslation()
+  if (!rule) return <p className="text-sm text-muted-foreground">{t("fixedItemsUi.sheet.noRule")}</p>
   return (
     <p className="text-sm">
-      <span className="text-muted-foreground">Règle : {ruleFieldLabels[rule.field]} {ruleMatchKindLabels[rule.matchKind]} </span>
+      <span className="text-muted-foreground">
+        {t("fixedItemsUi.sheet.rule", { field: ruleFieldLabels[rule.field], matchKind: ruleMatchKindLabels[rule.matchKind] })}{" "}
+      </span>
       <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{rule.pattern}</code>
     </p>
   )
 }
 
 function PaymentProgress({ summary }: { summary: FixedItemOverview["summary"] }) {
+  const { t } = useTranslation()
   const settled = summary.paidCount + summary.missedCount
   if (settled === 0) return null
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-sm">
-        <span className="text-muted-foreground">Échéances honorées</span>
+        <span className="text-muted-foreground">{t("fixedItemsUi.sheet.honored")}</span>
         <span className="tabular-nums">
           {summary.paidCount} / {settled}
         </span>
@@ -117,10 +123,11 @@ function OccurrenceItem({ report }: { report: OccurrenceReport }) {
 }
 
 function MatchedTransactions({ report }: { report: OccurrenceReport }) {
+  const { t } = useTranslation()
   if (report.transactions.length === 0) {
     return (
       <p className="text-xs text-muted-foreground">
-        Aucune transaction rattachée entre le {formatDate(report.windowStart)} et le {formatDate(report.windowEnd)}.
+        {t("fixedItemsUi.sheet.noTransactions", { start: formatDate(report.windowStart), end: formatDate(report.windowEnd) })}
       </p>
     )
   }

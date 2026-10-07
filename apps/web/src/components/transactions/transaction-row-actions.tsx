@@ -1,4 +1,6 @@
+import { useRef } from "react"
 import { ArrowLeftRight, MoreHorizontal, Repeat, Wand2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -16,29 +18,41 @@ type TransactionRowActionsProps = {
 }
 
 export function TransactionRowActions({ transaction, onCreateRule, onLinkFixedItem }: TransactionRowActionsProps) {
+  const { t } = useTranslation()
   const update = useUpdateTransaction()
+  const opensOverlay = useRef(false)
   const toggleTransfer = () =>
     update.mutate({ id: transaction.id, changes: { isTransfer: !transaction.isTransfer } })
 
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label="Actions">
+        <Button variant="ghost" size="icon" aria-label={t("transactionsPage.actions")}>
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onCloseAutoFocus={(event) => event.preventDefault()}>
+      <DropdownMenuContent align="end" onCloseAutoFocus={(event) => {
+          // Quand l'action ouvre un dialogue ou une liste, c'est eux qui reprennent le focus.
+          if (opensOverlay.current) event.preventDefault()
+          opensOverlay.current = false
+        }}>
         <DropdownMenuItem onSelect={toggleTransfer} disabled={update.isPending}>
           <ArrowLeftRight />
-          {transaction.isTransfer ? "Retirer le transfert" : "Marquer comme transfert"}
+          {transaction.isTransfer ? t("transactionsPage.removeTransfer") : t("transactionsPage.markTransfer")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onLinkFixedItem(transaction)}>
+        <DropdownMenuItem onSelect={() => {
+            opensOverlay.current = true
+            onLinkFixedItem(transaction)
+          }}>
           <Repeat />
-          Lier à un poste fixe
+          {t("transactionsPage.linkFixedItem")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => onCreateRule(transaction)}>
+        <DropdownMenuItem onSelect={() => {
+            opensOverlay.current = true
+            onCreateRule(transaction)
+          }}>
           <Wand2 />
-          Créer une règle depuis cette transaction
+          {t("transactionsPage.createRule")}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,10 +1,12 @@
 import { format } from "date-fns"
 import { Download } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { api, type TransactionFilters } from "@/lib/api"
 import { downloadBlob } from "@/lib/download"
+import i18n from "@/i18n"
 
 type ExportButtonProps = {
   filters: TransactionFilters
@@ -16,6 +18,7 @@ function exportFileName(): string {
 }
 
 export function ExportButton({ filters, disabled }: ExportButtonProps) {
+  const { t } = useTranslation()
   const [exporting, setExporting] = useState(false)
 
   const exportTransactions = async () => {
@@ -23,7 +26,7 @@ export function ExportButton({ filters, disabled }: ExportButtonProps) {
     try {
       downloadBlob(await api.transactions.export(filters), exportFileName())
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Export impossible")
+      toast.error(error instanceof Error ? error.message : i18n.t("transactionsPage.export.failed"))
     } finally {
       setExporting(false)
     }
@@ -32,7 +35,7 @@ export function ExportButton({ filters, disabled }: ExportButtonProps) {
   return (
     <Button variant="outline" disabled={disabled || exporting} onClick={() => void exportTransactions()}>
       <Download />
-      {exporting ? "Export…" : "Exporter"}
+      {exporting ? t("transactionsPage.export.exporting") : t("transactionsPage.export.label")}
     </Button>
   )
 }

@@ -2,23 +2,21 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { RuleTestResult } from "@/lib/api"
 import { formatDate, formatDecimal } from "@/lib/format"
 import { cn } from "@/lib/utils"
-
-function matchSummary(count: number): string {
-  if (count === 0) return "Aucune transaction ne correspond."
-  return `${count} transaction${count > 1 ? "s correspondent" : " correspond"}.`
-}
+import { useTranslation } from "react-i18next"
 
 export function RuleTestResults({ result }: { result: RuleTestResult }) {
+  const { t } = useTranslation()
+  const summary = result.count === 0 ? t("rules.tester.matchNone") : t("rules.tester.match", { count: result.count })
   return (
     <div className="space-y-2 rounded-md border p-3">
-      <p className="text-sm font-medium">{matchSummary(result.count)}</p>
+      <p className="text-sm font-medium">{summary}</p>
       {result.samples.length > 0 && (
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Libellé</TableHead>
-              <TableHead className="text-right">Montant</TableHead>
+              <TableHead>{t("rules.tester.columns.date")}</TableHead>
+              <TableHead>{t("rules.tester.columns.label")}</TableHead>
+              <TableHead className="text-right">{t("rules.tester.columns.amount")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

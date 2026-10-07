@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { OccurrenceStatusBadge } from "@/components/fixed-items/occurrence-status-badge"
 import type { UpcomingOccurrence } from "@/lib/api"
@@ -6,12 +7,13 @@ import { formatDate } from "@/lib/format"
 import { SummaryCard } from "./summary-card"
 
 export function UpcomingCard({ occurrences }: { occurrences: UpcomingOccurrence[] }) {
+  const { t } = useTranslation()
   return (
     <SummaryCard
-      title="Prochaines échéances"
+      title={t("dashboardPage.upcoming.title")}
       to="/budgets"
       isEmpty={occurrences.length === 0}
-      emptyMessage="Aucune échéance à venir."
+      emptyMessage={t("dashboardPage.upcoming.empty")}
     >
       <ul className="divide-y">
         {occurrences.map((occurrence) => (

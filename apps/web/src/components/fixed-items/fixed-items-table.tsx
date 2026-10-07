@@ -1,5 +1,6 @@
 import type { PeriodRange } from "@centime/core"
 import { Eye, Pencil } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
@@ -41,6 +42,7 @@ function monthRows(items: FixedItem[], overviews: Map<string, FixedItemOverview>
 }
 
 export function FixedItemsTable({ items, overviews, month, emptyMessage, onView }: FixedItemsTableProps) {
+  const { t } = useTranslation()
   if (items.length === 0) {
     return <p className="p-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
   }
@@ -48,13 +50,13 @@ export function FixedItemsTable({ items, overviews, month, emptyMessage, onView 
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">Nom</TableHead>
-          <TableHead>Catégorie</TableHead>
-          <TableHead>Périodicité</TableHead>
-          <TableHead className="text-right">Attendu</TableHead>
-          <TableHead>Échéance du mois</TableHead>
-          <TableHead className="text-right">Réel</TableHead>
-          <TableHead className="pr-6 text-right">Actions</TableHead>
+          <TableHead className="pl-6">{t("fixedItemsUi.table.name")}</TableHead>
+          <TableHead>{t("fixedItemsUi.table.category")}</TableHead>
+          <TableHead>{t("fixedItemsUi.table.periodicity")}</TableHead>
+          <TableHead className="text-right">{t("fixedItemsUi.table.expected")}</TableHead>
+          <TableHead>{t("fixedItemsUi.table.monthDue")}</TableHead>
+          <TableHead className="text-right">{t("fixedItemsUi.table.actual")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("fixedItemsUi.table.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -72,6 +74,7 @@ type FixedItemRowProps = {
 }
 
 function FixedItemRow({ row, onView }: FixedItemRowProps) {
+  const { t } = useTranslation()
   const { item, occurrence, next } = row
   return (
     <TableRow className="cursor-pointer" onClick={() => onView(item.id)}>
@@ -97,7 +100,7 @@ function FixedItemRow({ row, onView }: FixedItemRowProps) {
           </div>
         ) : (
           <span className="text-muted-foreground">
-            {next ? `Prochaine le ${formatDate(next.dueDate)}` : "Aucune échéance"}
+            {next ? t("fixedItemsUi.table.next", { date: formatDate(next.dueDate) }) : t("fixedItemsUi.table.noDue")}
           </span>
         )}
       </TableCell>
@@ -113,13 +116,13 @@ function FixedItemRow({ row, onView }: FixedItemRowProps) {
       </TableCell>
       <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" aria-label={`Voir ${item.name}`} onClick={() => onView(item.id)}>
+          <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.table.view", { name: item.name })} onClick={() => onView(item.id)}>
             <Eye />
           </Button>
           <FixedItemDialog
             item={item}
             trigger={
-              <Button variant="ghost" size="icon" aria-label={`Modifier ${item.name}`}>
+              <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.table.edit", { name: item.name })}>
                 <Pencil />
               </Button>
             }

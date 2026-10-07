@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { Trash2 } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -16,18 +17,20 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import i18n from "@/i18n"
 import { api, type ImportHistoryEntry } from "@/lib/api"
 import { formatDateTime } from "@/lib/format"
 import { importFormatLabels } from "@/lib/labels"
 import { importsQuery, invalidateAfterImport } from "@/lib/queries"
 
 export function ImportHistory() {
+  const { t } = useTranslation()
   const { data: entries, isPending, error } = useQuery(importsQuery)
 
   return (
     <Card className="gap-0 pb-0">
       <CardHeader className="pb-4">
-        <CardTitle>Historique des imports</CardTitle>
+        <CardTitle>{t("importHistory.title")}</CardTitle>
       </CardHeader>
       <CardContent className="px-0">
         {isPending && <Skeleton className="mx-6 mb-6 h-5" />}
@@ -44,21 +47,22 @@ function formatLabel(entry: ImportHistoryEntry): string {
 }
 
 function ImportHistoryTable({ entries }: { entries: ImportHistoryEntry[] }) {
+  const { t } = useTranslation()
   if (entries.length === 0) {
-    return <p className="border-t p-6 text-center text-sm text-muted-foreground">Aucun import pour l'instant.</p>
+    return <p className="border-t p-6 text-center text-sm text-muted-foreground">{t("importHistory.empty")}</p>
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">Fichier</TableHead>
-          <TableHead>Format</TableHead>
-          <TableHead>Date</TableHead>
-          <TableHead className="text-right">Insérées</TableHead>
-          <TableHead className="text-right">Mises à jour</TableHead>
-          <TableHead className="text-right">Ignorées</TableHead>
-          <TableHead className="pr-6 text-right">Actions</TableHead>
+          <TableHead className="pl-6">{t("importHistory.columns.file")}</TableHead>
+          <TableHead>{t("importHistory.columns.format")}</TableHead>
+          <TableHead>{t("importHistory.columns.date")}</TableHead>
+          <TableHead className="text-right">{t("importHistory.columns.inserted")}</TableHead>
+          <TableHead className="text-right">{t("importHistory.columns.updated")}</TableHead>
+          <TableHead className="text-right">{t("importHistory.columns.skipped")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("importHistory.columns.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -82,17 +86,19 @@ function ImportHistoryTable({ entries }: { entries: ImportHistoryEntry[] }) {
   )
 }
 
-function describeDeletion(count: number): string {
-  return count > 1 ? `${count} transactions supprimées` : `${count} transaction supprimée`
-}
-
 function DeleteImportButton({ entry }: { entry: ImportHistoryEntry }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
     mutationFn: () => api.imports.remove(entry.id),
     onSuccess: async (result) => {
       await invalidateAfterImport(queryClient)
-      toast.success(`Import « ${entry.fileName} » supprimé : ${describeDeletion(result.deletedTransactions)}`)
+      toast.success(
+        t("importHistory.deleted", {
+          name: entry.fileName,
+          details: t("importHistory.deletedTransactions", { count: result.deletedTransactions }),
+        }),
+      )
     },
     onError: (error) => toast.error(error.message),
   })
@@ -100,21 +106,20 @@ function DeleteImportButton({ entry }: { entry: ImportHistoryEntry }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Supprimer l'import ${entry.fileName}`} disabled={remove.isPending}>
+        <Button variant="ghost" size="icon" aria-label={t("importHistory.deleteAria", { name: entry.fileName })} disabled={remove.isPending}>
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer l'import « {entry.fileName} » ?</AlertDialogTitle>
+          <AlertDialogTitle>{t("importHistory.deleteTitle", { name: entry.fileName })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Toutes les transactions ajoutées ou mises à jour par cet import seront supprimées, et l'import disparaîtra de
-            l'historique. Vous pourrez réimporter le fichier ensuite.
+            {t("importHistory.deleteDescription")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => remove.mutate()}>Supprimer</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>{t("importHistory.delete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

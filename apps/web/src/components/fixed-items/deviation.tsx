@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import type { OccurrenceReport } from "@/lib/api"
 import { isDeviationSmall } from "@/lib/fixed-items"
 import { formatDecimal } from "@/lib/format"
@@ -13,10 +14,11 @@ function signedDecimal(amount: number): string {
 }
 
 export function Deviation({ report, className }: DeviationProps) {
+  const { t } = useTranslation()
   if (report.deviation === null) return <span className={cn("text-muted-foreground", className)}>—</span>
   return (
     <span
-      title="Écart entre le montant réel et le montant attendu"
+      title={t("fixedItemsUi.deviation.title")}
       className={cn(
         "tabular-nums whitespace-nowrap",
         isDeviationSmall(report) ? "text-emerald-700 dark:text-emerald-400" : "text-amber-700 dark:text-amber-400",

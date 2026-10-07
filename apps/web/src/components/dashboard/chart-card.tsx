@@ -1,5 +1,6 @@
 import { ChartColumn, Table2 } from "lucide-react"
 import { type ReactNode, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -12,6 +13,7 @@ type ChartCardProps = {
 }
 
 export function ChartCard({ title, description, chart, table, className }: ChartCardProps) {
+  const { t } = useTranslation()
   const [showTable, setShowTable] = useState(false)
   return (
     <Card className={className}>
@@ -26,7 +28,7 @@ export function ChartCard({ title, description, chart, table, className }: Chart
             onClick={() => setShowTable((current) => !current)}
           >
             {showTable ? <ChartColumn /> : <Table2 />}
-            {showTable ? "Graphique" : "Tableau"}
+            {showTable ? t("dashboardPage.chartView") : t("dashboardPage.tableView")}
           </Button>
         </CardAction>
       </CardHeader>

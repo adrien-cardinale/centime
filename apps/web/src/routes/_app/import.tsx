@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { CsvProfilesPanel } from "@/components/import/csv-profiles-panel"
 import { FileDropzone } from "@/components/import/file-dropzone"
@@ -7,6 +8,7 @@ import { ImportHistory } from "@/components/import/import-history"
 import { ImportWorkspace } from "@/components/import/import-workspace"
 import { PageHeader } from "@/components/page-header"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import i18n from "@/i18n"
 import { accountsQuery, csvProfilesQuery, importsQuery } from "@/lib/queries"
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024
@@ -24,11 +26,12 @@ export const Route = createFileRoute("/_app/import")({
 type SelectedFile = { file: File; key: number }
 
 function ImportPage() {
+  const { t } = useTranslation()
   const [selected, setSelected] = useState<SelectedFile | null>(null)
 
   const selectFile = (file: File) => {
     if (file.size > MAX_FILE_BYTES) {
-      toast.error("Fichier trop volumineux (10 Mo maximum)")
+      toast.error(i18n.t("importPage.fileTooLarge"))
       return
     }
     setSelected({ file, key: Date.now() })
@@ -36,11 +39,11 @@ function ImportPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Import" description="Importez un relevé CSV ou camt.053 et vérifiez l'aperçu avant de valider." />
+      <PageHeader title={t("importPage.title")} description={t("importPage.description")} />
       <Tabs defaultValue="import">
         <TabsList>
-          <TabsTrigger value="import">Importer</TabsTrigger>
-          <TabsTrigger value="csv-profiles">Profils CSV</TabsTrigger>
+          <TabsTrigger value="import">{t("importPage.tabImport")}</TabsTrigger>
+          <TabsTrigger value="csv-profiles">{t("importPage.tabProfiles")}</TabsTrigger>
         </TabsList>
         <TabsContent value="import" forceMount className="space-y-6 pt-4 data-[state=inactive]:hidden">
           <FileDropzone file={selected?.file ?? null} onFileSelected={selectFile} />

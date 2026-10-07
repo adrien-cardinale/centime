@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState, type ReactNode } from "react"
+import i18n from "@/i18n"
 import { KeyRequiredError } from "@/lib/crypto/onboarding"
 import { Onboarding } from "./onboarding"
 import { StartupFailure, StartupLoading } from "./startup-screen"
@@ -12,7 +13,7 @@ type AppBootProps = {
 
 function failureMessage(error: unknown): string {
   if (error instanceof Error) return error.message
-  return typeof error === "string" ? error : "Erreur inattendue"
+  return typeof error === "string" ? error : i18n.t("errors.unexpected")
 }
 
 export function AppBoot({ boot, children }: AppBootProps) {

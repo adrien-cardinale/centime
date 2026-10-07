@@ -19,6 +19,7 @@ import { ruleFieldLabels, ruleMatchKindLabels } from "@/lib/labels"
 import { rulesQuery } from "@/lib/queries"
 import { RuleDialog } from "./rule-dialog"
 import { RuleTarget } from "./rule-target"
+import { useTranslation } from "react-i18next"
 
 type RuleListProps = {
   rules: Rule[]
@@ -28,9 +29,10 @@ type RuleListProps = {
 }
 
 export function RuleList({ rules, categoriesById, categoryId }: RuleListProps) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-1">
-      {rules.length === 0 && <p className="py-1 text-sm text-muted-foreground">Aucune règle pour cette catégorie.</p>}
+      {rules.length === 0 && <p className="py-1 text-sm text-muted-foreground">{t("rules.empty")}</p>}
       {rules.map((rule) => (
         <RuleItem key={rule.id} rule={rule} categoriesById={categoriesById} showTarget={!categoryId} />
       ))}
@@ -40,7 +42,7 @@ export function RuleList({ rules, categoriesById, categoryId }: RuleListProps) {
         trigger={
           <Button variant="ghost" size="sm" className="-ml-2">
             <Plus />
-            Ajouter une règle
+            {t("rules.add")}
           </Button>
         }
       />
@@ -57,6 +59,7 @@ function RuleItem({
   categoriesById: Map<string, Category>
   showTarget: boolean
 }) {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md py-1 text-sm">
       <span className="max-w-72 truncate font-mono text-xs" title={rule.pattern}>
@@ -64,13 +67,13 @@ function RuleItem({
       </span>
       <Badge variant="outline">{ruleMatchKindLabels[rule.matchKind]}</Badge>
       <span className="text-muted-foreground">{ruleFieldLabels[rule.field]}</span>
-      <span className="text-muted-foreground tabular-nums">· priorité {rule.priority}</span>
+      <span className="text-muted-foreground tabular-nums">{t("rules.priorityValue", { priority: rule.priority })}</span>
       {showTarget && <RuleTarget rule={rule} categoriesById={categoriesById} />}
       <div className="ml-auto flex gap-1">
         <RuleDialog
           rule={rule}
           trigger={
-            <Button variant="ghost" size="icon" aria-label={`Modifier la règle ${rule.pattern}`}>
+            <Button variant="ghost" size="icon" aria-label={t("rules.edit", { pattern: rule.pattern })}>
               <Pencil />
             </Button>
           }
@@ -82,12 +85,13 @@ function RuleItem({
 }
 
 function DeleteRuleButton({ rule }: { rule: Rule }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
     mutationFn: () => api.rules.remove(rule.id),
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: rulesQuery.queryKey })
-      toast.success("Règle supprimée")
+      toast.success(t("rules.deleted"))
     },
     onError: (error) => toast.error(error.message),
   })
@@ -95,20 +99,20 @@ function DeleteRuleButton({ rule }: { rule: Rule }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Supprimer la règle ${rule.pattern}`}>
+        <Button variant="ghost" size="icon" aria-label={t("rules.delete", { pattern: rule.pattern })}>
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer la règle « {rule.pattern} » ?</AlertDialogTitle>
+          <AlertDialogTitle>{t("rules.deleteTitle", { pattern: rule.pattern })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Elle ne s'appliquera plus aux prochains imports. Les transactions déjà catégorisées sont conservées.
+            {t("rules.deleteDescription")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => remove.mutate()}>Supprimer</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>{t("rules.confirmDelete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

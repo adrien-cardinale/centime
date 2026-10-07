@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { Upload } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { BalanceChart } from "@/components/dashboard/balance-chart"
 import { BudgetsCard } from "@/components/dashboard/budgets-card"
 import { CategoryBreakdownChart } from "@/components/dashboard/category-breakdown-chart"
@@ -32,6 +33,7 @@ export const Route = createFileRoute("/_app/")({
 })
 
 function DashboardPage() {
+  const { t } = useTranslation()
   const { date = todayIso() } = Route.useSearch()
   const navigate = Route.useNavigate()
   const { data, error } = useQuery(dashboardQuery(date))
@@ -39,7 +41,7 @@ function DashboardPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Tableau de bord" actions={<PeriodNavigator date={date} onChange={changeDate} />} />
+      <PageHeader title={t("nav.dashboard")} actions={<PeriodNavigator date={date} onChange={changeDate} />} />
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {data ? <DashboardContent overview={data} /> : !error && <DashboardSkeleton />}
     </div>
@@ -69,18 +71,19 @@ function DashboardContent({ overview }: { overview: DashboardOverview }) {
 }
 
 function EmptyDashboard() {
+  const { t } = useTranslation()
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
         <Upload className="size-8 text-muted-foreground" />
         <div className="space-y-1">
-          <p className="font-medium">Commence par importer un relevé</p>
+          <p className="font-medium">{t("dashboardPage.emptyTitle")}</p>
           <p className="text-sm text-muted-foreground">
-            Le tableau de bord se remplit dès que des transactions sont disponibles.
+            {t("dashboardPage.emptyDescription")}
           </p>
         </div>
         <Button asChild>
-          <Link to="/import">Importer un relevé</Link>
+          <Link to="/import">{t("dashboardPage.importStatement")}</Link>
         </Button>
       </CardContent>
     </Card>

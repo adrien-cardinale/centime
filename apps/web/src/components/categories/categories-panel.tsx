@@ -20,14 +20,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ApplyRulesButton } from "@/components/rules/apply-rules-button"
 import { RuleList } from "@/components/rules/category-rules"
 import { api, type Category, type Rule, type Theme } from "@/lib/api"
+import i18n from "@/i18n"
 import { type CategoryGroup, groupCategoriesByTheme } from "@/lib/category-groups"
 import { categoriesQuery, invalidateTransactionData, rulesQuery, themesQuery } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 import { CategoryDialog } from "./category-dialog"
 import { ColorDot } from "./color-dot"
 import { ThemeDialog } from "./theme-dialog"
+import { useTranslation } from "react-i18next"
 
 export function CategoriesPanel() {
+  const { t } = useTranslation()
   const { data: categories, isPending, error } = useQuery(categoriesQuery)
   const { data: themes } = useQuery(themesQuery)
   const { data: rules = [] } = useQuery(rulesQuery)
@@ -36,8 +39,7 @@ export function CategoriesPanel() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Les transactions se classent dans des catégories, que vous pouvez regrouper sous des thèmes. Les règles
-          classent automatiquement les transactions à l'import ; la priorité la plus haute l'emporte.
+          {t("categories.intro")}
         </p>
         <div className="flex flex-wrap gap-2">
           <ApplyRulesButton />
@@ -45,7 +47,7 @@ export function CategoriesPanel() {
             trigger={
               <Button variant="outline">
                 <Plus />
-                Nouveau thème
+                {t("categories.newTheme")}
               </Button>
             }
           />
@@ -53,7 +55,7 @@ export function CategoriesPanel() {
             trigger={
               <Button>
                 <Plus />
-                Nouvelle catégorie
+                {t("categories.newCategory")}
               </Button>
             }
           />
@@ -81,16 +83,15 @@ function groupRulesByCategory(rules: Rule[]): Map<string, Rule[]> {
 }
 
 function OtherRules({ rules, categories }: { rules: Rule[]; categories: Category[] }) {
+  const { t } = useTranslation()
   const otherRules = rules.filter((rule) => !rule.categoryId)
   if (otherRules.length === 0) return null
   const categoriesById = new Map(categories.map((category) => [category.id, category]))
   return (
     <Card className="py-0">
       <CardContent className="space-y-2 p-6">
-        <h3 className="font-semibold">Autres règles</h3>
-        <p className="text-sm text-muted-foreground">
-          Règles sans catégorie : transferts ou rattachement à un poste fixe.
-        </p>
+        <h3 className="font-semibold">{t("categories.otherRules.title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("categories.otherRules.description")}</p>
         <RuleList rules={otherRules} categoriesById={categoriesById} />
       </CardContent>
     </Card>
@@ -106,21 +107,22 @@ function CategoriesTable({
   themes: Theme[]
   rules: Rule[]
 }) {
+  const { t } = useTranslation()
   const groups = groupCategoriesByTheme(categories, themes)
   const rulesByCategory = groupRulesByCategory(rules)
   const categoriesById = new Map(categories.map((category) => [category.id, category]))
   const emptyThemes = themes.filter((theme) => !groups.some((group) => group.theme?.id === theme.id))
   if (groups.length === 0 && emptyThemes.length === 0) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Aucune catégorie.</p>
+    return <p className="p-6 text-center text-sm text-muted-foreground">{t("categories.empty")}</p>
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">Nom</TableHead>
-          <TableHead className="text-right">Transactions</TableHead>
-          <TableHead className="pr-6 text-right">Actions</TableHead>
+          <TableHead className="pl-6">{t("categories.columns.name")}</TableHead>
+          <TableHead className="text-right">{t("categories.columns.transactions")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("categories.columns.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -144,13 +146,14 @@ type CategoryGroupRowsProps = {
 }
 
 function CategoryGroupRows({ group, rulesByCategory, categoriesById }: CategoryGroupRowsProps) {
+  const { t } = useTranslation()
   return (
     <>
       <TableRow className="bg-muted/40 hover:bg-muted/40">
         <TableCell className="pl-6 font-semibold">
           <span className="flex items-center gap-2">
             {group.theme && <ColorDot color={group.theme.color} className="size-3" />}
-            {group.theme?.name ?? "Sans thème"}
+            {group.theme?.name ?? t("categories.noTheme")}
           </span>
         </TableCell>
         <TableCell className="text-right text-muted-foreground tabular-nums">
@@ -162,7 +165,7 @@ function CategoryGroupRows({ group, rulesByCategory, categoriesById }: CategoryG
               <ThemeDialog
                 theme={group.theme}
                 trigger={
-                  <Button variant="ghost" size="icon" aria-label={`Modifier le thème ${group.theme.name}`}>
+                  <Button variant="ghost" size="icon" aria-label={t("categories.editTheme", { name: group.theme.name })}>
                     <Pencil />
                   </Button>
                 }
@@ -193,6 +196,7 @@ function CategoryRows({
   rules: Rule[]
   categoriesById: Map<string, Category>
 }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   return (
     <>
@@ -208,7 +212,7 @@ function CategoryRows({
                 <ColorDot color={category.color} className="size-3" />
                 {category.name}
                 <span className="text-xs font-normal text-muted-foreground">
-                  {rules.length === 0 ? "" : `${rules.length} règle${rules.length > 1 ? "s" : ""}`}
+                  {rules.length === 0 ? "" : t("categories.ruleCount", { count: rules.length })}
                 </span>
             </button>
           </TableCell>
@@ -218,7 +222,7 @@ function CategoryRows({
               <CategoryDialog
                 category={category}
                 trigger={
-                  <Button variant="ghost" size="icon" aria-label={`Modifier ${category.name}`}>
+                  <Button variant="ghost" size="icon" aria-label={t("categories.edit", { name: category.name })}>
                     <Pencil />
                   </Button>
                 }
@@ -239,12 +243,13 @@ function CategoryRows({
 }
 
 function DeleteThemeButton({ theme }: { theme: Theme }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
     mutationFn: () => api.themes.remove(theme.id),
     onSuccess: async () => {
       await invalidateTransactionData(queryClient)
-      toast.success(`Thème « ${theme.name} » supprimé`)
+      toast.success(t("categories.themeDeleted", { name: theme.name }))
     },
     onError: (error) => toast.error(error.message),
   })
@@ -252,20 +257,20 @@ function DeleteThemeButton({ theme }: { theme: Theme }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Supprimer le thème ${theme.name}`}>
+        <Button variant="ghost" size="icon" aria-label={t("categories.deleteTheme", { name: theme.name })}>
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer le thème « {theme.name} » ?</AlertDialogTitle>
+          <AlertDialogTitle>{t("categories.deleteThemeTitle", { name: theme.name })}</AlertDialogTitle>
           <AlertDialogDescription>
-            Ses {theme.categoryCount} catégories et leurs transactions sont conservées, mais n'auront plus de thème.
+            {t("categories.deleteThemeDescription", { count: theme.categoryCount })}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => remove.mutate()}>Supprimer</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>{t("categories.confirmDelete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -273,12 +278,12 @@ function DeleteThemeButton({ theme }: { theme: Theme }) {
 }
 
 function detachWarning(count: number): string {
-  if (count === 0) return "Aucune transaction n'utilise cette catégorie."
-  if (count === 1) return "1 transaction sera détachée et redeviendra non catégorisée."
-  return `${count} transactions seront détachées et redeviendront non catégorisées.`
+  if (count === 0) return i18n.t("categories.detachNone")
+  return i18n.t("categories.detachWarning", { count })
 }
 
 function DeleteCategoryButton({ category }: { category: Category }) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
     mutationFn: () => api.categories.remove(category.id),
@@ -287,7 +292,7 @@ function DeleteCategoryButton({ category }: { category: Category }) {
         invalidateTransactionData(queryClient),
         queryClient.invalidateQueries({ queryKey: rulesQuery.queryKey }),
       ])
-      toast.success(`Catégorie « ${category.name} » supprimée`)
+      toast.success(t("categories.categoryDeleted", { name: category.name }))
     },
     onError: (error) => toast.error(error.message),
   })
@@ -295,20 +300,20 @@ function DeleteCategoryButton({ category }: { category: Category }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={`Supprimer ${category.name}`}>
+        <Button variant="ghost" size="icon" aria-label={t("categories.delete", { name: category.name })}>
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Supprimer la catégorie « {category.name} » ?</AlertDialogTitle>
+          <AlertDialogTitle>{t("categories.deleteCategoryTitle", { name: category.name })}</AlertDialogTitle>
           <AlertDialogDescription>
-            {detachWarning(category.transactionCount)} Les règles qui la référencent seront aussi détachées.
+            {detachWarning(category.transactionCount)} {t("categories.deleteCategoryRules")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => remove.mutate()}>Supprimer</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => remove.mutate()}>{t("categories.confirmDelete")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

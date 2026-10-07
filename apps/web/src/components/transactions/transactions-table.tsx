@@ -1,5 +1,6 @@
 import { suggestRulePattern } from "@centime/core"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { RuleDialog, type RuleFormValues } from "@/components/rules/rule-dialog"
 import { Badge } from "@/components/ui/badge"
@@ -34,6 +35,7 @@ function headerCheckState(items: TransactionItem[], selectedIds: ReadonlySet<str
 }
 
 export function TransactionsTable({ items, selectedIds, onSelectionChange }: TransactionsTableProps) {
+  const { t } = useTranslation()
   const [ruleSource, setRuleSource] = useState<TransactionItem | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
 
@@ -50,51 +52,57 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-10 pl-6">
+            <TableHead className="w-10 pl-4 sm:pl-6">
               <Checkbox
-                aria-label="Tout sélectionner"
+                aria-label={t("transactionsPage.table.selectAll")}
                 checked={headerCheckState(items, selectedIds)}
                 onCheckedChange={(checked) => toggleAll(checked === true)}
               />
             </TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Compte</TableHead>
-            <TableHead>Libellé</TableHead>
-            <TableHead>Commerçant</TableHead>
-            <TableHead>Catégorie</TableHead>
+            <TableHead>{t("transactionsPage.columns.date")}</TableHead>
+            <TableHead className="hidden md:table-cell">{t("transactionsPage.columns.account")}</TableHead>
+            <TableHead>{t("transactionsPage.columns.label")}</TableHead>
+            <TableHead className="hidden lg:table-cell">{t("transactionsPage.columns.merchant")}</TableHead>
+            <TableHead>{t("transactionsPage.columns.category")}</TableHead>
             <TableHead className="w-8 px-0">
-              <span className="sr-only">Poste fixe</span>
+              <span className="sr-only">{t("transactionsPage.columns.fixedItem")}</span>
             </TableHead>
-            <TableHead className="text-right">Montant</TableHead>
-            <TableHead>Statut</TableHead>
-            <TableHead className="w-12 pr-6" />
+            <TableHead className="text-right">{t("transactionsPage.columns.amount")}</TableHead>
+            <TableHead className="hidden md:table-cell">{t("transactionsPage.columns.status")}</TableHead>
+            <TableHead className="w-12 pr-4 sm:pr-6" />
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
             <TableRow key={item.id} data-state={selectedIds.has(item.id) ? "selected" : undefined}>
-              <TableCell className="pl-6">
+              <TableCell className="pl-4 sm:pl-6">
                 <Checkbox
-                  aria-label="Sélectionner la transaction"
+                  aria-label={t("transactionsPage.table.selectOne")}
                   checked={selectedIds.has(item.id)}
                   onCheckedChange={(checked) => toggleOne(item.id, checked === true)}
                 />
               </TableCell>
               <TableCell className="tabular-nums">{formatDate(item.bookingDate)}</TableCell>
-              <TableCell className="max-w-40 truncate" title={item.accountName}>
+              <TableCell className="hidden max-w-40 truncate md:table-cell" title={item.accountName}>
                 {item.accountName}
               </TableCell>
               <TableCell className="max-w-96" title={item.rawLabel}>
                 <div className="flex items-center gap-2">
                   <span className="truncate">{item.rawLabel}</span>
+                  {item.status === "pending" && (
+                    <Badge variant="outline" className="md:hidden">
+                      {transactionStatusLabels[item.status]}
+                    </Badge>
+                  )}
                   {item.isTransfer && (
                     <Badge variant="outline" className="text-muted-foreground">
-                      Transfert
+                      {t("transactionsPage.table.transfer")}
                     </Badge>
                   )}
                 </div>
+                <p className="truncate text-xs text-muted-foreground md:hidden">{item.accountName}</p>
               </TableCell>
-              <TableCell>{item.merchant ?? "—"}</TableCell>
+              <TableCell className="hidden lg:table-cell">{item.merchant ?? "—"}</TableCell>
               <TableCell>
                 <CategoryCell transaction={item} onCreateRule={setRuleSource} />
               </TableCell>
@@ -108,12 +116,12 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
               <TableCell className="text-right">
                 <Amount amount={item.amount} currency={item.currency} />
               </TableCell>
-              <TableCell>
+              <TableCell className="hidden md:table-cell">
                 <Badge variant={item.status === "pending" ? "outline" : "secondary"}>
                   {transactionStatusLabels[item.status]}
                 </Badge>
               </TableCell>
-              <TableCell className="pr-6">
+              <TableCell className="pr-4 sm:pr-6">
                 <TransactionRowActions
                   transaction={item}
                   onCreateRule={setRuleSource}

@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input"
 import { api, type Rule } from "@/lib/api"
 import { invalidateTransactionData, rulesQuery } from "@/lib/queries"
 import { MatchKindSelect, RuleFieldSelect, RuleTester, useRuleTester } from "./rule-matcher-inputs"
+import { useTranslation } from "react-i18next"
 
 export type RuleFormValues = z.input<typeof rulePayloadSchema>
 type RuleControl = Control<RuleFormValues, unknown, RulePayload>
@@ -66,6 +67,7 @@ function saveRule(rule: Rule | undefined, input: RulePayload) {
 }
 
 export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, open, onOpenChange }: RuleDialogProps) {
+  const { t } = useTranslation()
   const [internalOpen, setInternalOpen] = useState(false)
   const isOpen = open ?? internalOpen
   const queryClient = useQueryClient()
@@ -89,8 +91,8 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
         invalidateTransactionData(queryClient),
       ])
       toast.success(
-        rule ? "Règle modifiée" : "Règle créée",
-        applied ? { description: `${applied.categorized} transaction(s) catégorisée(s)` } : undefined,
+        rule ? t("rules.dialog.updated") : t("rules.dialog.created"),
+        applied ? { description: t("rules.dialog.categorized", { count: applied.categorized }) } : undefined,
       )
       changeOpen(false)
     },
@@ -111,9 +113,9 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{rule ? "Modifier la règle" : "Nouvelle règle"}</DialogTitle>
+          <DialogTitle>{rule ? t("rules.dialog.editTitle") : t("rules.dialog.newTitle")}</DialogTitle>
           <DialogDescription>
-            La règle de plus haute priorité qui correspond à une transaction est appliquée.
+            {t("rules.dialog.description")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -123,7 +125,7 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
             <RuleTester tester={tester} getMatcher={() => form.getValues()} />
             <DialogFooter>
               <Button type="submit" disabled={save.isPending}>
-                {save.isPending ? "Enregistrement…" : "Enregistrer"}
+                {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>
             </DialogFooter>
           </form>
@@ -134,6 +136,7 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
 }
 
 function MatcherFields({ control }: { control: RuleControl }) {
+  const { t } = useTranslation()
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField
@@ -141,11 +144,11 @@ function MatcherFields({ control }: { control: RuleControl }) {
         name="pattern"
         render={({ field }) => (
           <FormItem className="sm:col-span-2">
-            <FormLabel>Motif</FormLabel>
+            <FormLabel>{t("rules.dialog.pattern")}</FormLabel>
             <FormControl>
               <Input placeholder="Migros" className="font-mono" {...field} />
             </FormControl>
-            <FormDescription>« contient » ignore la casse et les accents.</FormDescription>
+            <FormDescription>{t("rules.dialog.patternHint")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -155,7 +158,7 @@ function MatcherFields({ control }: { control: RuleControl }) {
         name="matchKind"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Type</FormLabel>
+            <FormLabel>{t("rules.dialog.type")}</FormLabel>
             <FormControl>
               <MatchKindSelect value={field.value} onChange={field.onChange} />
             </FormControl>
@@ -168,7 +171,7 @@ function MatcherFields({ control }: { control: RuleControl }) {
         name="field"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Champ</FormLabel>
+            <FormLabel>{t("rules.dialog.field")}</FormLabel>
             <FormControl>
               <RuleFieldSelect value={field.value} onChange={field.onChange} />
             </FormControl>
@@ -181,6 +184,7 @@ function MatcherFields({ control }: { control: RuleControl }) {
 }
 
 function TargetFields({ control }: { control: RuleControl }) {
+  const { t } = useTranslation()
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       <FormField
@@ -188,12 +192,12 @@ function TargetFields({ control }: { control: RuleControl }) {
         name="categoryId"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Catégorie</FormLabel>
+            <FormLabel>{t("rules.dialog.category")}</FormLabel>
             <FormControl>
               <CreatableCategorySelect
                 value={field.value ?? NO_CATEGORY}
                 onChange={(value) => field.onChange(value === NO_CATEGORY ? null : value)}
-                extraOptions={[{ value: NO_CATEGORY, label: "Aucune" }]}
+                extraOptions={[{ value: NO_CATEGORY, label: t("rules.dialog.noCategory") }]}
               />
             </FormControl>
             <FormMessage />
@@ -205,7 +209,7 @@ function TargetFields({ control }: { control: RuleControl }) {
         name="priority"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Priorité</FormLabel>
+            <FormLabel>{t("rules.dialog.priority")}</FormLabel>
             <FormControl>
               <Input
                 type="number"
@@ -217,7 +221,7 @@ function TargetFields({ control }: { control: RuleControl }) {
                 onChange={(event) => field.onChange(event.target.value === "" ? 0 : Number(event.target.value))}
               />
             </FormControl>
-            <FormDescription>La plus haute l'emporte.</FormDescription>
+            <FormDescription>{t("rules.dialog.priorityHint")}</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -230,7 +234,7 @@ function TargetFields({ control }: { control: RuleControl }) {
             <FormControl>
               <Checkbox checked={field.value} onCheckedChange={(checked) => field.onChange(checked === true)} />
             </FormControl>
-            <FormLabel>Marquer comme transfert</FormLabel>
+            <FormLabel>{t("rules.dialog.markAsTransfer")}</FormLabel>
           </FormItem>
         )}
       />

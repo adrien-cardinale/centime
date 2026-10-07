@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/page-header"
 import { BulkActionsBar } from "@/components/transactions/bulk-actions-bar"
 import { ExportButton } from "@/components/transactions/export-button"
@@ -90,6 +91,7 @@ function usePageState(searchKey: string) {
 }
 
 function TransactionsPage() {
+  const { t } = useTranslation()
   const urlFilters = Route.useSearch()
   const navigate = Route.useNavigate()
   const searchKey = searchKeyOf(urlFilters)
@@ -120,7 +122,7 @@ function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Transactions" description="Toutes les opérations importées, du plus récent au plus ancien." />
+      <PageHeader title={t("nav.transactions")} description={t("transactionsPage.description")} />
       <TransactionFilters
         values={filters}
         onChange={changeFilters}
@@ -166,15 +168,17 @@ function TransactionsResult({ data, filtered, onPageChange, selectedIds, onSelec
 }
 
 function NoMatch() {
-  return <p className="p-6 text-center text-sm text-muted-foreground">Aucune transaction ne correspond à ces filtres.</p>
+  const { t } = useTranslation()
+  return <p className="p-6 text-center text-sm text-muted-foreground">{t("transactionsPage.noMatch")}</p>
 }
 
 function EmptyState() {
+  const { t } = useTranslation()
   return (
     <div className="flex flex-col items-center gap-3 p-10 text-center">
-      <p className="text-sm text-muted-foreground">Aucune transaction pour l'instant.</p>
+      <p className="text-sm text-muted-foreground">{t("transactionsPage.empty")}</p>
       <Button asChild>
-        <Link to="/import">Importer un relevé</Link>
+        <Link to="/import">{t("transactionsPage.importStatement")}</Link>
       </Button>
     </div>
   )

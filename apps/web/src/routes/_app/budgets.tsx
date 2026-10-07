@@ -9,6 +9,7 @@ import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { PiggyBank, Plus } from "lucide-react"
 import { type ReactNode, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { BudgetsTable } from "@/components/budgets/budgets-table"
 import { BudgetDialog, type BudgetDialogTarget } from "@/components/budgets/budget-dialog"
 import { LatestDataNotice } from "@/components/budgets/latest-data-notice"
@@ -26,6 +27,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import type { BudgetOverviewItem, BudgetsOverview, FixedItem, FixedItemsOverview } from "@/lib/api"
 import { BUDGET_CURRENCY, isIsoDate, todayIso } from "@/lib/budgets"
 import { directionOf, occurrenceIn } from "@/lib/fixed-items"
+import i18n from "@/i18n"
 import { formatAmount } from "@/lib/format"
 import { budgetsOverviewQuery, budgetsQuery, categoriesQuery, fixedItemsOverviewQuery, fixedItemsQuery, themesQuery } from "@/lib/queries"
 
@@ -59,6 +61,7 @@ function money(amount: number): string {
 }
 
 function BudgetsPage() {
+  const { t } = useTranslation()
   const { date = todayIso() } = Route.useSearch()
   const navigate = Route.useNavigate()
   const range = defaultOverviewRange(date)
@@ -75,21 +78,21 @@ function BudgetsPage() {
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Budget"
-        description="Le plan du mois : revenus et charges fixes, puis enveloppes de dépenses variables par catégorie."
+        title={t("budgetsPage.title")}
+        description={t("budgetsPage.description")}
         actions={
           <div className="flex flex-wrap gap-2">
             <FixedItemDialog
               trigger={
                 <Button variant="outline">
                   <Plus />
-                  Nouveau poste fixe
+                  {t("budgetsPage.newFixedItem")}
                 </Button>
               }
             />
             <Button onClick={() => openDialog({})}>
               <Plus />
-              Nouveau budget
+              {t("budgetsPage.newBudget")}
             </Button>
           </div>
         }
@@ -132,6 +135,7 @@ type PlanContentProps = {
 }
 
 function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, onEditBudget, onCreateBudget }: PlanContentProps) {
+  const { t } = useTranslation()
   const [viewedId, setViewedId] = useState<string | null>(null)
   const { data: themes = [] } = useQuery(themesQuery)
   const overviews = new Map(occurrences.items.map((entry) => [entry.fixedItemId, entry]))
@@ -148,7 +152,7 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
         <EarlierOverdue overviews={occurrences.items} month={month} onSelect={onSelectDate} />
       </div>
       <UnbudgetedSpending categories={budgets.unbudgeted} monthLabel={month.label} onCreate={onCreateBudget} />
-      <PlanSection title="Enveloppes variables" aside={progressText("Dépensé", plan.envelopes)}>
+      <PlanSection title={t("budgetsPage.variableEnvelopes")} aside={progressText("budgetsPage.progressSpent", plan.envelopes)}>
         {budgets.budgets.length === 0 && <EmptyEnvelopes onCreate={() => onCreateBudget()} />}
         {budgets.budgets.length > 0 && (
           <Card className="py-0">
@@ -158,27 +162,27 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
           </Card>
         )}
       </PlanSection>
-      <PlanSection title="Charges fixes" aside={progressText("Payé", plan.fixedExpenses)}>
+      <PlanSection title={t("budgetsPage.fixedExpenses")} aside={progressText("budgetsPage.progressPaid", plan.fixedExpenses)}>
         <Card className="py-0">
           <CardContent className="px-0">
             <FixedItemsTable
               items={expenses}
               overviews={overviews}
               month={month}
-              emptyMessage="Aucune charge fixe pour l'instant."
+              emptyMessage={t("budgetsPage.emptyFixedExpenses")}
               onView={setViewedId}
             />
           </CardContent>
         </Card>
       </PlanSection>
-      <PlanSection title="Revenus fixes" aside={progressText("Reçu", plan.income)}>
+      <PlanSection title={t("budgetsPage.fixedIncome")} aside={progressText("budgetsPage.progressReceived", plan.income)}>
         <Card className="py-0">
           <CardContent className="px-0">
             <FixedItemsTable
               items={incomes}
               overviews={overviews}
               month={month}
-              emptyMessage="Aucun revenu fixe pour l'instant."
+              emptyMessage={t("budgetsPage.emptyFixedIncome")}
               onView={setViewedId}
             />
           </CardContent>
@@ -193,8 +197,8 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
   )
 }
 
-function progressText(verb: string, line: PlanLine): string {
-  return `${verb} ${money(line.actual)} sur ${money(line.expected)}`
+function progressText(key: string, line: PlanLine): string {
+  return i18n.t(key, { actual: money(line.actual), expected: money(line.expected) })
 }
 
 function PlanSection({ title, aside, children }: { title: string; aside: string; children: ReactNode }) {
@@ -210,19 +214,20 @@ function PlanSection({ title, aside, children }: { title: string; aside: string;
 }
 
 function EmptyEnvelopes({ onCreate }: { onCreate: () => void }) {
+  const { t } = useTranslation()
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-12 text-center">
         <PiggyBank className="size-8 text-muted-foreground" />
         <div className="space-y-1">
-          <p className="font-medium">Aucun budget pour l'instant</p>
+          <p className="font-medium">{t("budgetsPage.emptyBudgetsTitle")}</p>
           <p className="text-sm text-muted-foreground">
-            Fixez un plafond de dépenses pour une catégorie et suivez sa consommation période par période.
+            {t("budgetsPage.emptyBudgetsDescription")}
           </p>
         </div>
         <Button onClick={onCreate}>
           <Plus />
-          Créer un budget
+          {t("budgetsPage.createBudget")}
         </Button>
       </CardContent>
     </Card>

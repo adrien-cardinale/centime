@@ -23,6 +23,7 @@ import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
 import { invalidateTransactionData, themesQuery } from "@/lib/queries"
 import { ColorDot } from "./color-dot"
 import { ColorPicker } from "./color-picker"
+import { useTranslation } from "react-i18next"
 
 type CategoryFormValues = z.input<typeof categoryInputSchema>
 
@@ -47,6 +48,7 @@ function saveCategory(category: Category | undefined, input: CategoryInput) {
 }
 
 export function CategoryDialog({ category, trigger, initialName, open, onOpenChange, onSaved }: CategoryDialogProps) {
+  const { t } = useTranslation()
   const [internalOpen, setInternalOpen] = useState(false)
   const setOpen = onOpenChange ?? setInternalOpen
   const queryClient = useQueryClient()
@@ -60,7 +62,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
     mutationFn: (input: CategoryInput) => saveCategory(category, input),
     onSuccess: async (saved) => {
       await invalidateTransactionData(queryClient)
-      toast.success(`Catégorie « ${saved.name} » enregistrée`)
+      toast.success(t("categories.dialog.saved", { name: saved.name }))
       setOpen(false)
       onSaved?.(saved.id)
     },
@@ -83,8 +85,8 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{category ? "Modifier la catégorie" : "Nouvelle catégorie"}</DialogTitle>
-          <DialogDescription>Nom, couleur et thème éventuel.</DialogDescription>
+          <DialogTitle>{category ? t("categories.dialog.editTitle") : t("categories.dialog.newTitle")}</DialogTitle>
+          <DialogDescription>{t("categories.dialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={submit} className="space-y-5">
@@ -93,9 +95,9 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
+                  <FormLabel>{t("categories.form.name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Alimentation" {...field} />
+                    <Input placeholder={t("categories.dialog.namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -106,7 +108,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
               name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Couleur</FormLabel>
+                  <FormLabel>{t("categories.form.color")}</FormLabel>
                   <ColorPicker value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -117,7 +119,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
               name="themeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Thème</FormLabel>
+                  <FormLabel>{t("categories.dialog.theme")}</FormLabel>
                   <Select
                     value={field.value ?? NO_THEME}
                     onValueChange={(value) => field.onChange(value === NO_THEME ? null : value)}
@@ -128,7 +130,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value={NO_THEME}>Aucun thème</SelectItem>
+                      <SelectItem value={NO_THEME}>{t("categories.dialog.noTheme")}</SelectItem>
                       {themes.map((theme) => (
                         <SelectItem key={theme.id} value={theme.id}>
                           <ColorDot color={theme.color} />
@@ -143,7 +145,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
             />
             <DialogFooter>
               <Button type="submit" disabled={save.isPending}>
-                {save.isPending ? "Enregistrement…" : "Enregistrer"}
+                {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>
             </DialogFooter>
           </form>

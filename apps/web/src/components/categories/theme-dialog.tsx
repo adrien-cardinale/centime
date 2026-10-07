@@ -21,6 +21,7 @@ import { api, type Theme } from "@/lib/api"
 import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
 import { invalidateTransactionData } from "@/lib/queries"
 import { ColorPicker } from "./color-picker"
+import { useTranslation } from "react-i18next"
 
 type ThemeFormValues = z.input<typeof themeInputSchema>
 
@@ -39,6 +40,7 @@ function saveTheme(theme: Theme | undefined, input: ThemeInput) {
 }
 
 export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const form = useForm<ThemeFormValues, unknown, ThemeInput>({
@@ -50,7 +52,7 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
     mutationFn: (input: ThemeInput) => saveTheme(theme, input),
     onSuccess: async (saved) => {
       await invalidateTransactionData(queryClient)
-      toast.success(`Thème « ${saved.name} » enregistré`)
+      toast.success(t("categories.themeDialog.saved", { name: saved.name }))
       setOpen(false)
     },
     onError: (error) => toast.error(error.message),
@@ -66,9 +68,9 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>{theme ? "Modifier le thème" : "Nouveau thème"}</DialogTitle>
+          <DialogTitle>{theme ? t("categories.themeDialog.editTitle") : t("categories.newTheme")}</DialogTitle>
           <DialogDescription>
-            Un thème regroupe des catégories. Les transactions se classent dans les catégories, jamais directement dans un thème.
+            {t("categories.themeDialog.description")}
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -78,9 +80,9 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
+                  <FormLabel>{t("categories.form.name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Logement" {...field} />
+                    <Input placeholder={t("categories.themeDialog.namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -91,7 +93,7 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
               name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Couleur</FormLabel>
+                  <FormLabel>{t("categories.form.color")}</FormLabel>
                   <ColorPicker value={field.value} onChange={field.onChange} />
                   <FormMessage />
                 </FormItem>
@@ -99,7 +101,7 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
             />
             <DialogFooter>
               <Button type="submit" disabled={save.isPending}>
-                {save.isPending ? "Enregistrement…" : "Enregistrer"}
+                {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>
             </DialogFooter>
           </form>

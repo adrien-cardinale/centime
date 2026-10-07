@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
+import i18n from "@/i18n"
 import { api, type TransactionChanges } from "@/lib/api"
 import { invalidateTransactionData } from "@/lib/queries"
 
@@ -21,7 +22,7 @@ export function useBulkUpdateTransactions(onDone?: () => void) {
     mutationFn: ({ ids, changes }: BulkUpdate) => api.transactions.bulkUpdate(ids, changes),
     onSuccess: async ({ updated }) => {
       await invalidateTransactionData(queryClient)
-      toast.success(`${updated} transaction${updated > 1 ? "s" : ""} mise${updated > 1 ? "s" : ""} à jour`)
+      toast.success(i18n.t("transactionsPage.bulk.updated", { count: updated }))
       onDone?.()
     },
     onError: (error) => toast.error(error.message),

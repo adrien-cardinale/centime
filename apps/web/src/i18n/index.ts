@@ -29,7 +29,7 @@ function readStoredLanguage(): Language | null {
 function detectLanguage(): Language {
   const stored = readStoredLanguage()
   if (stored) return stored
-  const browser = typeof navigator === "undefined" ? undefined : navigator.language.slice(0, 2)
+  const browser = typeof navigator === "undefined" ? undefined : navigator.language?.slice(0, 2)
   return isLanguage(browser) ? browser : DEFAULT_LANGUAGE
 }
 

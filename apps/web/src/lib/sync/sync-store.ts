@@ -1,6 +1,7 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http"
 import { useSyncExternalStore } from "react"
+import i18n from "@/i18n"
 import { getVault } from "@/lib/crypto/current-vault"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
 import { countPendingChanges, markAllChangesPending } from "@/lib/local-db/local-data"
@@ -79,13 +80,13 @@ function statusAfter(error: unknown): SyncStatus {
 }
 
 function messageOf(error: unknown): string {
-  return error instanceof Error ? error.message : "Erreur de synchronisation inattendue"
+  return error instanceof Error ? error.message : i18n.t("syncErrors.unexpected")
 }
 
 async function runSynchronization(): Promise<SyncOutcome> {
   const database = getLocalDatabase()
   const { serverUrl } = await database.run(readSyncSettings)
-  if (serverUrl === null) return { ok: false, message: "Synchronisation non configurée" }
+  if (serverUrl === null) return { ok: false, message: i18n.t("syncState.notConfigured") }
   setState({ status: "syncing" })
   try {
     const report = await synchronize(database.db, {

@@ -1,5 +1,6 @@
 import { Check, Copy, KeyRound, Plus } from "lucide-react"
 import { useEffect, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
@@ -26,10 +27,11 @@ function normalizeUrl(value: string): string | null {
 }
 
 function ServerField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
+  const { t } = useTranslation()
   if (!isTauri()) return null
   return (
     <div className="space-y-2">
-      <Label htmlFor="server-url">Serveur de synchronisation (facultatif)</Label>
+      <Label htmlFor="server-url">{t("boot.serverLabel")}</Label>
       <Input
         id="server-url"
         value={value}
@@ -37,7 +39,7 @@ function ServerField({ value, onChange }: { value: string; onChange: (value: str
         placeholder="https://centime.example.ch"
         autoComplete="url"
       />
-      <p className="text-sm text-muted-foreground">Laissez vide pour n'utiliser que cet appareil. Modifiable plus tard.</p>
+      <p className="text-sm text-muted-foreground">{t("boot.serverHint")}</p>
     </div>
   )
 }
@@ -45,6 +47,7 @@ function ServerField({ value, onChange }: { value: string; onChange: (value: str
 type StepProps = { onDone: () => void; onBack: () => void }
 
 function CreateKeyStep({ onDone, onBack }: StepProps) {
+  const { t } = useTranslation()
   const [key] = useState(generateMasterKey)
   const [phrase, setPhrase] = useState("")
   const [saved, setSaved] = useState(false)
@@ -57,20 +60,20 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
 
   const copy = async () => {
     await navigator.clipboard.writeText(phrase).then(
-      () => toast.success("Clé copiée"),
-      () => toast.error("Copie impossible, notez la clé à la main"),
+      () => toast.success(t("boot.keyCopied")),
+      () => toast.error(t("boot.copyFailed")),
     )
   }
 
   const submit = async () => {
     const url = normalizeUrl(serverUrl)
-    if (serverUrl.trim() !== "" && url === null) return void toast.error("Adresse du serveur invalide")
+    if (serverUrl.trim() !== "" && url === null) return void toast.error(t("boot.invalidServer"))
     setPending(true)
     try {
       await completeOnboarding(key, url)
       onDone()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Enregistrement de la clé impossible")
+      toast.error(error instanceof Error ? error.message : t("boot.saveFailed"))
       setPending(false)
     }
   }
@@ -80,31 +83,30 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
       <CardContent className="space-y-4">
         <Alert>
           <KeyRound />
-          <AlertTitle>Votre clé est la seule façon de retrouver vos données</AlertTitle>
+          <AlertTitle>{t("boot.warningTitle")}</AlertTitle>
           <AlertDescription>
-            Elle chiffre vos données avant leur envoi : le serveur ne peut pas les lire et personne ne peut vous la
-            redonner. Conservez-la dans un gestionnaire de mots de passe ou sur papier.
+            {t("boot.warningDescription")}
           </AlertDescription>
         </Alert>
         <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
           <p className="flex-1 font-mono text-sm leading-relaxed break-all select-all">{phrase}</p>
-          <Button variant="outline" size="icon" onClick={() => void copy()} aria-label="Copier la clé">
+          <Button variant="outline" size="icon" onClick={() => void copy()} aria-label={t("boot.copyKey")}>
             <Copy />
           </Button>
         </div>
         <ServerField value={serverUrl} onChange={setServerUrlValue} />
         <div className="flex items-center gap-2">
           <Checkbox id="saved" checked={saved} onCheckedChange={(value) => setSaved(value === true)} />
-          <Label htmlFor="saved">J'ai sauvegardé ma clé</Label>
+          <Label htmlFor="saved">{t("boot.savedConfirm")}</Label>
         </div>
       </CardContent>
       <CardFooter className="gap-2">
         <Button variant="outline" onClick={onBack} disabled={pending}>
-          Retour
+          {t("boot.back")}
         </Button>
         <Button onClick={() => void submit()} disabled={!saved || phrase === "" || pending}>
           <Check />
-          Continuer
+          {t("boot.continue")}
         </Button>
       </CardFooter>
     </>
@@ -112,19 +114,20 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
 }
 
 function RestoreKeyStep({ onDone, onBack }: StepProps) {
+  const { t } = useTranslation()
   const [phrase, setPhrase] = useState("")
   const [serverUrl, setServerUrlValue] = useState("")
   const [pending, setPending] = useState(false)
 
   const submit = async () => {
     const url = normalizeUrl(serverUrl)
-    if (serverUrl.trim() !== "" && url === null) return void toast.error("Adresse du serveur invalide")
+    if (serverUrl.trim() !== "" && url === null) return void toast.error(t("boot.invalidServer"))
     setPending(true)
     try {
       await completeOnboarding(await parseMasterKey(phrase), url)
       onDone()
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Clé invalide")
+      toast.error(error instanceof Error ? error.message : t("boot.invalidKey"))
       setPending(false)
     }
   }
@@ -133,7 +136,7 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
     <>
       <CardContent className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="phrase">Votre clé</Label>
+          <Label htmlFor="phrase">{t("boot.yourKey")}</Label>
           <Textarea
             id="phrase"
             value={phrase}
@@ -149,11 +152,11 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
       </CardContent>
       <CardFooter className="gap-2">
         <Button variant="outline" onClick={onBack} disabled={pending}>
-          Retour
+          {t("boot.back")}
         </Button>
         <Button onClick={() => void submit()} disabled={phrase.trim() === "" || pending}>
           <Check />
-          Restaurer
+          {t("boot.restore")}
         </Button>
       </CardFooter>
     </>
@@ -161,6 +164,7 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
 }
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation()
   const [mode, setMode] = useState<Mode>("choose")
   const back = () => setMode("choose")
 
@@ -170,18 +174,18 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         <CardHeader>
           <CardTitle className="text-xl">centime</CardTitle>
           <CardDescription>
-            Pas de compte : une clé secrète, générée ici, chiffre vos données sur votre appareil.
+            {t("boot.intro")}
           </CardDescription>
         </CardHeader>
         {mode === "choose" && (
           <CardContent className="flex flex-col gap-2">
             <Button onClick={() => setMode("create")}>
               <Plus />
-              Créer une nouvelle clé
+              {t("boot.createKey")}
             </Button>
             <Button variant="outline" onClick={() => setMode("restore")}>
               <KeyRound />
-              J'ai déjà une clé
+              {t("boot.haveKey")}
             </Button>
           </CardContent>
         )}

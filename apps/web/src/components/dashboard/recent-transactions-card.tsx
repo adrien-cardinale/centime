@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import type { TransactionItem } from "@/lib/api"
@@ -5,12 +6,13 @@ import { formatDate } from "@/lib/format"
 import { SummaryCard } from "./summary-card"
 
 export function RecentTransactionsCard({ transactions }: { transactions: TransactionItem[] }) {
+  const { t } = useTranslation()
   return (
     <SummaryCard
-      title="Dernières transactions"
+      title={t("dashboardPage.recent.title")}
       to="/transactions"
       isEmpty={transactions.length === 0}
-      emptyMessage="Aucune transaction."
+      emptyMessage={t("dashboardPage.recent.empty")}
     >
       <ul className="divide-y">
         {transactions.map((transaction) => (
@@ -27,7 +29,7 @@ export function RecentTransactionsCard({ transactions }: { transactions: Transac
               {transaction.categoryName && transaction.categoryColor ? (
                 <CategoryBadge name={transaction.categoryName} color={transaction.categoryColor} />
               ) : (
-                <span className="text-xs text-muted-foreground">Non catégorisée</span>
+                <span className="text-xs text-muted-foreground">{t("dashboardPage.recent.uncategorized")}</span>
               )}
             </span>
           </li>

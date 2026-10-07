@@ -1,4 +1,5 @@
 import { Link, useNavigate } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import { Bar, BarChart, Cell, LabelList, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -9,13 +10,12 @@ import { CATEGORY_LABEL_MAX_LENGTH, CHART_HEIGHT_CLASS, money, truncateLabel, wh
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
-const TITLE = "Dépenses par catégorie"
 const CATEGORY_AXIS_WIDTH = 116
 const VALUE_LABEL_WIDTH = 76
 
-const chartConfig = {
-  amount: { label: "Dépenses", color: "var(--chart-neutral)" },
-} satisfies ChartConfig
+function chartConfigOf(label: string) {
+  return { amount: { label, color: "var(--chart-neutral)" } } satisfies ChartConfig
+}
 
 type MonthRange = { start: string; end: string; label: string }
 
@@ -37,8 +37,9 @@ function barFill(entry: CategoryBreakdownEntry): string {
 type CategoryBreakdownChartProps = { entries: CategoryBreakdownEntry[]; month: MonthRange }
 
 export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChartProps) {
+  const { t } = useTranslation()
   const navigate = useNavigate()
-  const description = `${month.label}, transactions comptabilisées hors transferts.`
+  const description = t("dashboardPage.categories.description", { month: month.label })
   if (entries.length === 0) return <EmptyBreakdown description={description} />
   const data = entries.map((entry) => ({ ...entry, fill: barFill(entry) }))
   const openTransactions = (index: number) => {
@@ -48,10 +49,10 @@ export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChar
   }
   return (
     <ChartCard
-      title={TITLE}
+      title={t("dashboardPage.categories.title")}
       description={description}
       chart={
-        <ChartContainer config={chartConfig} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+        <ChartContainer config={chartConfigOf(t("dashboardPage.table.expenses"))} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
           <BarChart data={data} layout="vertical" margin={{ top: 0, right: VALUE_LABEL_WIDTH, bottom: 0, left: 0 }}>
             <XAxis type="number" dataKey="amount" hide />
             <YAxis
@@ -108,15 +109,16 @@ function CategoryTick({ x, y, payload }: CategoryTickProps) {
 }
 
 function EmptyBreakdown({ description }: { description: string }) {
+  const { t } = useTranslation()
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{TITLE}</CardTitle>
+        <CardTitle>{t("dashboardPage.categories.title")}</CardTitle>
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="flex h-[240px] items-center justify-center text-sm text-muted-foreground">
-          Aucune dépense ce mois-ci.
+          {t("dashboardPage.categories.empty")}
         </p>
       </CardContent>
     </Card>
@@ -124,12 +126,13 @@ function EmptyBreakdown({ description }: { description: string }) {
 }
 
 function BreakdownTable({ entries, month }: CategoryBreakdownChartProps) {
+  const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Catégorie</TableHead>
-          <TableHead className="text-right">Dépenses</TableHead>
+          <TableHead>{t("dashboardPage.table.category")}</TableHead>
+          <TableHead className="text-right">{t("dashboardPage.table.expenses")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

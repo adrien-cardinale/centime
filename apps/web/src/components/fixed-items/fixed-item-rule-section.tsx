@@ -1,4 +1,5 @@
 import type { FixedItemPayload } from "@centime/core"
+import { useTranslation } from "react-i18next"
 import { type Control, useWatch } from "react-hook-form"
 import { MatchKindSelect, RuleFieldSelect, RuleTester, useRuleTester } from "@/components/rules/rule-matcher-inputs"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -16,16 +17,17 @@ type RuleSectionProps = {
 }
 
 export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionProps) {
+  const { t } = useTranslation()
   const rule = useWatch({ control, name: "rule" })
   const enabled = rule !== null && rule !== undefined
 
   return (
     <fieldset className="space-y-4 rounded-md border p-4">
-      <legend className="px-1 text-sm font-medium">Règle de rapprochement</legend>
+      <legend className="px-1 text-sm font-medium">{t("fixedItemsUi.rule.legend")}</legend>
       <div className="flex items-center gap-2">
         <Checkbox id="rule-enabled" checked={enabled} onCheckedChange={(checked) => onToggle(checked === true)} />
         <Label htmlFor="rule-enabled" className="font-normal">
-          Rattacher automatiquement les transactions
+          {t("fixedItemsUi.rule.autoLink")}
         </Label>
       </div>
       {enabled && (
@@ -36,11 +38,11 @@ export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionP
               name="rule.pattern"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2">
-                  <FormLabel>Motif</FormLabel>
+                  <FormLabel>{t("fixedItemsUi.rule.pattern")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Régie" className="font-mono" {...field} />
+                    <Input placeholder={t("fixedItemsUi.rule.patternPlaceholder")} className="font-mono" {...field} />
                   </FormControl>
-                  <FormDescription>« contient » ignore la casse et les accents.</FormDescription>
+                  <FormDescription>{t("fixedItemsUi.rule.patternHint")}</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
@@ -50,7 +52,7 @@ export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionP
               name="rule.matchKind"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>{t("fixedItemsUi.rule.type")}</FormLabel>
                   <FormControl>
                     <MatchKindSelect value={field.value ?? "contains"} onChange={field.onChange} />
                   </FormControl>
@@ -63,7 +65,7 @@ export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionP
               name="rule.field"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Champ</FormLabel>
+                  <FormLabel>{t("fixedItemsUi.rule.field")}</FormLabel>
                   <FormControl>
                     <RuleFieldSelect value={field.value ?? "raw_label"} onChange={field.onChange} />
                   </FormControl>

@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowRight, ArrowUp } from "lucide-react"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatPercent, relativeChange } from "@/lib/dashboard"
 
@@ -26,24 +27,26 @@ export function StatTile({ label, value, marker, footer }: StatTileProps) {
 }
 
 export function MonthDelta({ current, previous }: { current: number; previous: number }) {
+  const { t } = useTranslation()
   const change = relativeChange(current, previous)
-  if (change === null) return <span>Pas de comparaison avec le mois précédent</span>
+  if (change === null) return <span>{t("dashboardPage.delta.none")}</span>
   const Icon = change > 0 ? ArrowUp : change < 0 ? ArrowDown : ArrowRight
-  const direction = change > 0 ? "hausse" : change < 0 ? "baisse" : "stable"
+  const direction = change > 0 ? t("dashboardPage.delta.up") : change < 0 ? t("dashboardPage.delta.down") : t("dashboardPage.delta.stable")
   return (
     <span className="inline-flex items-center gap-1 tabular-nums">
       <Icon className="size-3" aria-hidden />
       <span className="sr-only">{direction}</span>
-      {formatPercent(change)} vs mois précédent
+      {t("dashboardPage.delta.vsPrevious", { percent: formatPercent(change) })}
     </span>
   )
 }
 
 export function NegativeMarker() {
+  const { t } = useTranslation()
   return (
-    <span className="inline-flex items-center" title="Solde négatif">
+    <span className="inline-flex items-center" title={t("dashboardPage.delta.negativeBalance")}>
       <span className="size-2 rounded-full bg-destructive/70" aria-hidden />
-      <span className="sr-only">Négatif</span>
+      <span className="sr-only">{t("dashboardPage.delta.negative")}</span>
     </span>
   )
 }

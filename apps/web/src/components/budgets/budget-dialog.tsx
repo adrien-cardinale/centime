@@ -2,6 +2,7 @@ import { type BudgetPayload, budgetPayloadSchema, PERIODICITIES, type Periodicit
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
@@ -46,12 +47,13 @@ function saveBudget(budget: EditableBudget | undefined, input: BudgetPayload) {
 }
 
 export function BudgetDialog({ open, onOpenChange, target }: BudgetDialogProps) {
+  const { t } = useTranslation()
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{target.budget ? "Modifier le budget" : "Nouveau budget"}</DialogTitle>
-          <DialogDescription>Un plafond pour les dépenses variables d'une catégorie.</DialogDescription>
+          <DialogTitle>{target.budget ? t("budgets.dialog.editTitle") : t("budgets.dialog.newTitle")}</DialogTitle>
+          <DialogDescription>{t("budgets.dialog.description")}</DialogDescription>
         </DialogHeader>
         <BudgetForm target={target} onSaved={() => onOpenChange(false)} />
       </DialogContent>
@@ -65,6 +67,7 @@ function useExcludedCategoryIds(budget: EditableBudget | undefined): string[] {
 }
 
 function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: () => void }) {
+  const { t } = useTranslation()
   const [amountText, setAmountText] = useState(target.budget ? String(target.budget.amount) : "")
   const excludedIds = useExcludedCategoryIds(target.budget)
   const queryClient = useQueryClient()
@@ -77,7 +80,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
     mutationFn: (input: BudgetPayload) => saveBudget(target.budget, input),
     onSuccess: async (saved) => {
       await invalidateBudgetData(queryClient)
-      toast.success(`Budget « ${saved.categoryName} » enregistré`)
+      toast.success(t("budgets.dialog.saved", { name: saved.categoryName }))
       onSaved()
     },
     onError: (error) => toast.error(error.message),
@@ -102,7 +105,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
           name="categoryId"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Catégorie</FormLabel>
+              <FormLabel>{t("budgets.dialog.category")}</FormLabel>
               <FormControl>
                 <CreatableCategorySelect value={field.value || undefined} onChange={field.onChange} excludeIds={excludedIds} />
               </FormControl>
@@ -116,7 +119,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
             name="amount"
             render={() => (
               <FormItem>
-                <FormLabel>Montant</FormLabel>
+                <FormLabel>{t("budgets.dialog.amount")}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -137,7 +140,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
             name="period"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Périodicité</FormLabel>
+                <FormLabel>{t("budgets.dialog.periodicity")}</FormLabel>
                 <Select value={field.value} onValueChange={(value) => isPeriodicity(value) && changePeriod(value)}>
                   <FormControl>
                     <SelectTrigger className="w-full">
@@ -162,7 +165,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
           name="startDate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Date de début</FormLabel>
+              <FormLabel>{t("budgets.dialog.startDate")}</FormLabel>
               <FormControl>
                 <Input type="date" {...field} />
               </FormControl>
@@ -176,9 +179,9 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
           render={({ field }) => (
             <FormItem className="flex items-start justify-between gap-4 rounded-md border p-3">
               <div className="space-y-1">
-                <FormLabel>Reporter le reliquat</FormLabel>
+                <FormLabel>{t("budgets.dialog.rollover")}</FormLabel>
                 <FormDescription>
-                  Le solde des périodes précédentes, positif ou négatif, s'ajoute au plafond de la période en cours.
+                  {t("budgets.dialog.rolloverHint")}
                 </FormDescription>
               </div>
               <FormControl>
@@ -189,7 +192,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
         />
         <DialogFooter>
           <Button type="submit" disabled={save.isPending}>
-            {save.isPending ? "Enregistrement…" : "Enregistrer"}
+            {save.isPending ? t("budgets.dialog.saving") : t("budgets.dialog.save")}
           </Button>
         </DialogFooter>
       </form>

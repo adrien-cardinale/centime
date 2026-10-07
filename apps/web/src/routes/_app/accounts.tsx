@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import type { Account } from "@/lib/api"
 import { accountKindLabels } from "@/lib/labels"
 import { accountsQuery } from "@/lib/queries"
+import { useTranslation } from "react-i18next"
 
 export const Route = createFileRoute("/_app/accounts")({
   loader: ({ context }) => context.queryClient.prefetchQuery(accountsQuery),
@@ -16,13 +17,14 @@ export const Route = createFileRoute("/_app/accounts")({
 })
 
 function AccountsPage() {
+  const { t } = useTranslation()
   const { data: accounts, isPending, error } = useQuery(accountsQuery)
 
   return (
     <div className="space-y-6">
       <PageHeader
-        title="Comptes"
-        description="Comptes bancaires et cartes suivis dans centime."
+        title={t("accountsPage.title")}
+        description={t("accountsPage.description")}
         actions={<CreateAccountDialog />}
       />
       <Card className="py-0">
@@ -37,18 +39,19 @@ function AccountsPage() {
 }
 
 function AccountsTable({ accounts }: { accounts: Account[] }) {
+  const { t } = useTranslation()
   if (accounts.length === 0) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Aucun compte pour l'instant.</p>
+    return <p className="p-6 text-center text-sm text-muted-foreground">{t("accountsPage.empty")}</p>
   }
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">Nom</TableHead>
-          <TableHead>Type</TableHead>
-          <TableHead>Identifiant</TableHead>
-          <TableHead className="pr-6 text-right">Devise</TableHead>
+          <TableHead className="pl-6">{t("accountsPage.columns.name")}</TableHead>
+          <TableHead>{t("accountsPage.columns.type")}</TableHead>
+          <TableHead>{t("accountsPage.columns.identifier")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("accountsPage.columns.currency")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

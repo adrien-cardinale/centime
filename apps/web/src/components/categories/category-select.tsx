@@ -13,6 +13,7 @@ import { groupCategoriesByTheme } from "@/lib/category-groups"
 import { categoriesQuery, themesQuery } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 import { ColorDot } from "./color-dot"
+import { useTranslation } from "react-i18next"
 
 export type CategorySelectOption = { value: string; label: string }
 
@@ -37,6 +38,7 @@ export function CategorySelect({
   id,
   disabled,
 }: CategorySelectProps) {
+  const { t } = useTranslation()
   const { data: categories = [] } = useQuery(categoriesQuery)
   const { data: themes = [] } = useQuery(themesQuery)
   const choices = categories.filter((category) => !excludeIds.includes(category.id))
@@ -44,7 +46,7 @@ export function CategorySelect({
   return (
     <Select value={value ?? ""} onValueChange={onChange} disabled={disabled}>
       <SelectTrigger id={id} className={cn("w-full", className)}>
-        <SelectValue placeholder={placeholder ?? "Choisir une catégorie"} />
+        <SelectValue placeholder={placeholder ?? t("categories.select.placeholder")} />
       </SelectTrigger>
       <SelectContent>
         {extraOptions.map((option) => (

@@ -2,6 +2,7 @@ import { Check } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { CATEGORY_COLOR_PALETTE } from "@/lib/category-colors"
 import { cn } from "@/lib/utils"
+import { useTranslation } from "react-i18next"
 
 type ColorPickerProps = {
   value: string
@@ -10,6 +11,7 @@ type ColorPickerProps = {
 }
 
 export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
+  const { t } = useTranslation()
   const selected = value.toLowerCase()
 
   return (
@@ -19,7 +21,7 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
           <button
             key={color}
             type="button"
-            aria-label={`Couleur ${color}`}
+            aria-label={t("categories.colorPicker.color", { color })}
             aria-pressed={selected === color}
             onClick={() => onChange(color)}
             className={cn(

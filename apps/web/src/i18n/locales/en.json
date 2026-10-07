@@ -165,5 +165,653 @@
   "fixedItems": {
     "dueFirst": "on the 1st",
     "dueDay": "on the {{day}}"
+  },
+  "page": {
+    "notFound": {
+      "title": "Page not found",
+      "description": "This address doesn't match any centime page.",
+      "back": "Back to dashboard"
+    },
+    "error": {
+      "title": "Error",
+      "loadFailed": "Unable to load the page"
+    }
+  },
+  "errors": {
+    "unexpected": "Unexpected error",
+    "retry": "Try again"
+  },
+  "boot": {
+    "opening": "Opening the local database…",
+    "openFailed": "Unable to open the local database",
+    "serverLabel": "Sync server (optional)",
+    "serverHint": "Leave empty to use this device only. You can change it later.",
+    "keyCopied": "Key copied",
+    "copyFailed": "Copy failed, write the key down by hand",
+    "invalidServer": "Invalid server address",
+    "saveFailed": "Unable to save the key",
+    "invalidKey": "Invalid key",
+    "warningTitle": "Your key is the only way to recover your data",
+    "warningDescription": "It encrypts your data before it is sent: the server cannot read it and nobody can give the key back to you. Keep it in a password manager or on paper.",
+    "copyKey": "Copy key",
+    "savedConfirm": "I have saved my key",
+    "back": "Back",
+    "continue": "Continue",
+    "restore": "Restore",
+    "yourKey": "Your key",
+    "intro": "No account: a secret key, generated here, encrypts your data on your device.",
+    "createKey": "Create a new key",
+    "haveKey": "I already have a key"
+  },
+  "periodNavigator": {
+    "previous": "Previous month",
+    "next": "Next month",
+    "today": "Today"
+  },
+  "dashboardPage": {
+    "emptyTitle": "Start by importing a statement",
+    "emptyDescription": "The dashboard fills up as soon as transactions are available.",
+    "importStatement": "Import a statement",
+    "chartView": "Chart",
+    "tableView": "Table",
+    "seeAll": "See all",
+    "balance": {
+      "title": "Bank balance",
+      "description": "End of month, sum of bank accounts.",
+      "series": "Balance",
+      "empty": "No balance available, import a bank statement."
+    },
+    "table": {
+      "month": "Month",
+      "income": "Income",
+      "expenses": "Expenses",
+      "category": "Category"
+    },
+    "budgets": {
+      "title": "Budgets this month",
+      "empty": "No budget defined."
+    },
+    "categories": {
+      "title": "Expenses by category",
+      "description": "{{month}}, booked transactions excluding transfers.",
+      "empty": "No expenses this month."
+    },
+    "incomeExpenses": {
+      "title": "Income and expenses, last 12 months",
+      "description": "Booked transactions, excluding transfers."
+    },
+    "kpi": {
+      "noBalance": "No balance available",
+      "lastKnownBalance": "Last known balance of bank accounts",
+      "expenses": "Expenses this month",
+      "income": "Income this month",
+      "net": "Net this month"
+    },
+    "recent": {
+      "title": "Latest transactions",
+      "empty": "No transactions.",
+      "uncategorized": "Uncategorized"
+    },
+    "upcoming": {
+      "title": "Upcoming due dates",
+      "empty": "No upcoming due dates."
+    },
+    "delta": {
+      "none": "No comparison with the previous month",
+      "up": "up",
+      "down": "down",
+      "stable": "unchanged",
+      "vsPrevious": "{{percent}} vs previous month",
+      "negativeBalance": "Negative balance",
+      "negative": "Negative"
+    }
+  },
+  "transactionsPage": {
+    "description": "All imported transactions, from newest to oldest.",
+    "noMatch": "No transactions match these filters.",
+    "empty": "No transactions yet.",
+    "importStatement": "Import a statement",
+    "none": "None",
+    "linkFixedItem": "Link to a fixed item",
+    "markTransfer": "Mark as transfer",
+    "removeTransfer": "Remove transfer",
+    "createRule": "Create a rule from this transaction",
+    "actions": "Actions",
+    "fixedItemLabel": "Fixed item: {{name}}",
+    "bulk": {
+      "selected_one": "{{count}} selected",
+      "selected_other": "{{count}} selected",
+      "assignCategory": "Assign a category",
+      "clear": "Clear selection",
+      "updated_one": "{{count}} transaction updated",
+      "updated_other": "{{count}} transactions updated"
+    },
+    "category": {
+      "changed": "Category changed",
+      "alwaysClassify": "Always classify this way",
+      "change": "Change category",
+      "search": "Search for a category…",
+      "notFound": "No category found.",
+      "create": "Create \"{{name}}\"",
+      "new": "New category…"
+    },
+    "export": {
+      "label": "Export",
+      "exporting": "Exporting…",
+      "failed": "Export failed"
+    },
+    "pagination": {
+      "pageOf": "Page {{page}} of {{pageCount}}",
+      "previous": "Previous",
+      "next": "Next",
+      "first": "First page",
+      "last": "Last page"
+    },
+    "filters": {
+      "all": "All",
+      "hideTransfers": "Hide transfers",
+      "onlyTransfers": "Transfers only",
+      "from": "From",
+      "to": "To",
+      "search": "Search",
+      "searchPlaceholder": "Label or merchant",
+      "uncategorized": "Uncategorized",
+      "theme": "Theme: {{name}}",
+      "transfers": "Transfers",
+      "allFixedItems": "All",
+      "withoutFixedItem": "No fixed item"
+    },
+    "columns": {
+      "date": "Date",
+      "account": "Account",
+      "label": "Label",
+      "merchant": "Merchant",
+      "category": "Category",
+      "fixedItem": "Fixed item",
+      "amount": "Amount",
+      "status": "Status"
+    },
+    "table": {
+      "selectAll": "Select all",
+      "selectOne": "Select transaction",
+      "transfer": "Transfer"
+    }
+  },
+  "syncErrors": {
+    "unauthorized": "Access denied by the server: the key does not match this account",
+    "unreadableEntry": "A server entry is unreadable: the key does not match or the data has been tampered with",
+    "network": "Server unreachable: check your network connection and the server address",
+    "invalidResponse": "Invalid server response",
+    "serverStatus": "Server error ({{status}})",
+    "unexpected": "Unexpected synchronization error"
+  },
+  "importPage": {
+    "title": "Import",
+    "description": "Import a CSV or camt.053 statement and check the preview before confirming.",
+    "tabImport": "Import",
+    "tabProfiles": "CSV profiles",
+    "fileTooLarge": "File too large (10 MB maximum)"
+  },
+  "importWorkspace": {
+    "dropzone": {
+      "prompt": "Drop a statement here or click to choose one",
+      "hint": "CSV or camt.053 (XML), 10 MB maximum"
+    },
+    "options": {
+      "detectedFormat": "Detected format",
+      "profile": "CSV profile",
+      "profilePlaceholder": "Choose a profile",
+      "profileUnrecognized": "Profile not recognized: choose one or create a new one.",
+      "newProfile": "New profile",
+      "edit": "Edit {{name}}",
+      "destinationAccount": "Destination account",
+      "accountMissing": "This file does not specify the account: please choose it."
+    },
+    "summary": {
+      "total": "Total",
+      "new": "New",
+      "duplicates": "Duplicates",
+      "updated": "Updated",
+      "errors": "Errors"
+    },
+    "preview": {
+      "empty": "No readable transactions in this file.",
+      "date": "Date",
+      "label": "Description",
+      "merchant": "Merchant",
+      "amount": "Amount",
+      "account": "Account",
+      "state": "Status",
+      "limited": "Preview limited to the first {{shown}} rows out of {{total}}."
+    },
+    "rowErrors": {
+      "title_one": "{{count}} row skipped",
+      "title_other": "{{count}} rows skipped",
+      "line": "Line {{line}}: {{message}}"
+    },
+    "outcome": {
+      "inserted_one": "{{count}} transaction imported",
+      "inserted_other": "{{count}} transactions imported",
+      "updated_one": "{{count}} update",
+      "updated_other": "{{count}} updates",
+      "skipped_one": "{{count}} duplicate skipped",
+      "skipped_other": "{{count}} duplicates skipped",
+      "accountsCreated_one": "{{count}} account created",
+      "accountsCreated_other": "{{count}} accounts created"
+    },
+    "importing": "Importing…",
+    "import": "Import",
+    "previewTitle": "Preview",
+    "readError": "Unable to read the file"
+  },
+  "csvProfiles": {
+    "panel": {
+      "intro": "Each profile describes the CSV format of a bank or card issuer.",
+      "new": "New profile",
+      "empty": "No CSV profiles.",
+      "columns": {
+        "name": "Name",
+        "type": "Type",
+        "encoding": "Encoding",
+        "delimiter": "Delimiter",
+        "dateFormat": "Date format",
+        "actions": "Actions"
+      },
+      "edit": "Edit {{name}}",
+      "deleteAria": "Delete {{name}}",
+      "deleteTitle": "Delete profile \"{{name}}\"?",
+      "deleteDescription": "It will no longer be offered when importing. Transactions already imported are kept.",
+      "delete": "Delete",
+      "deleted": "Profile \"{{name}}\" deleted"
+    },
+    "dialog": {
+      "saved": "Profile \"{{name}}\" saved",
+      "editTitle": "Edit CSV profile",
+      "newTitle": "New CSV profile",
+      "description": "Describe the structure of your provider's CSV exports.",
+      "saving": "Saving…",
+      "save": "Save"
+    },
+    "sections": {
+      "general": "General",
+      "columns": "Columns",
+      "amount": "Amount",
+      "detection": "Automatic detection",
+      "statuses": "Statuses"
+    },
+    "general": {
+      "name": "Name",
+      "namePlaceholder": "My bank",
+      "accountKind": "Account type",
+      "encoding": "Encoding",
+      "delimiter": "Delimiter",
+      "dateFormat": "Date format",
+      "dateFormatHelp": "date-fns syntax, for example yyyy-MM-dd.",
+      "decimalSeparator": "Decimal separator",
+      "defaultCurrency": "Default currency",
+      "hasHeader": "First row = headers"
+    },
+    "columns": {
+      "fromFile": "Columns read from the imported file, using the encoding and delimiter chosen above.",
+      "manual": "Exact header name, or position starting at 1 if the file has no headers.",
+      "date": "Booking date *",
+      "label": "Description *",
+      "valueDate": "Value date",
+      "merchant": "Merchant",
+      "account": "Account (IBAN or card)",
+      "currency": "Currency",
+      "balance": "Balance",
+      "category": "Provider category",
+      "status": "Status"
+    },
+    "amount": {
+      "mode": "Mode",
+      "column": "Amount column",
+      "indicatorColumn": "Debit/credit column",
+      "debitValue": "Value indicating a debit",
+      "debitPlaceholder": "Debit"
+    },
+    "detection": {
+      "requiredHeaders": "Required headers",
+      "requiredHeadersHelp": "One header per line. The profile is selected if all of them are present."
+    },
+    "statuses": {
+      "empty": "Without a mapping, all transactions are booked.",
+      "value": "Value in the file",
+      "status": "Status",
+      "remove": "Remove",
+      "add": "Add a status"
+    },
+    "fields": {
+      "none": "None",
+      "chooseColumn": "Choose a column",
+      "missingFromFile": "{{name}} (not in the file)"
+    }
+  },
+  "importHistory": {
+    "title": "Import history",
+    "empty": "No imports yet.",
+    "columns": {
+      "file": "File",
+      "format": "Format",
+      "date": "Date",
+      "inserted": "Inserted",
+      "updated": "Updated",
+      "skipped": "Skipped",
+      "actions": "Actions"
+    },
+    "deletedTransactions_one": "{{count}} transaction deleted",
+    "deletedTransactions_other": "{{count}} transactions deleted",
+    "deleted": "Import \"{{name}}\" deleted: {{details}}",
+    "deleteAria": "Delete import {{name}}",
+    "deleteTitle": "Delete import \"{{name}}\"?",
+    "deleteDescription": "All transactions added or updated by this import will be deleted, and the import will disappear from the history. You can re-import the file afterwards.",
+    "delete": "Delete"
+  },
+  "importMisc": {
+    "accountSelect": {
+      "placeholder": "Choose an account",
+      "all": "All accounts"
+    }
+  },
+  "categoriesPage": {
+    "title": "Categories",
+    "description": "Organize your transactions and automate how they are sorted."
+  },
+  "categories": {
+    "intro": "Transactions are sorted into categories, which you can group under themes. Rules automatically categorize transactions on import; the highest priority wins.",
+    "newTheme": "New theme",
+    "newCategory": "New category",
+    "otherRules": {
+      "title": "Other rules",
+      "description": "Rules without a category: transfers or links to a fixed item."
+    },
+    "empty": "No categories.",
+    "columns": {
+      "name": "Name",
+      "transactions": "Transactions",
+      "actions": "Actions"
+    },
+    "noTheme": "No theme",
+    "ruleCount_one": "{{count}} rule",
+    "ruleCount_other": "{{count}} rules",
+    "editTheme": "Edit theme {{name}}",
+    "edit": "Edit {{name}}",
+    "deleteTheme": "Delete theme {{name}}",
+    "delete": "Delete {{name}}",
+    "confirmDelete": "Delete",
+    "themeDeleted": "Theme \"{{name}}\" deleted",
+    "deleteThemeTitle": "Delete theme \"{{name}}\"?",
+    "deleteThemeDescription_one": "Its {{count}} category and its transactions are kept, but will no longer have a theme.",
+    "deleteThemeDescription_other": "Its {{count}} categories and their transactions are kept, but will no longer have a theme.",
+    "categoryDeleted": "Category \"{{name}}\" deleted",
+    "deleteCategoryTitle": "Delete category \"{{name}}\"?",
+    "deleteCategoryRules": "Rules that reference it will also be detached.",
+    "detachNone": "No transactions use this category.",
+    "detachWarning_one": "{{count}} transaction will be detached and become uncategorized again.",
+    "detachWarning_other": "{{count}} transactions will be detached and become uncategorized again.",
+    "form": {
+      "name": "Name",
+      "color": "Color",
+      "save": "Save",
+      "saving": "Saving…"
+    },
+    "dialog": {
+      "saved": "Category \"{{name}}\" saved",
+      "editTitle": "Edit category",
+      "newTitle": "New category",
+      "description": "Name, color and optional theme.",
+      "namePlaceholder": "Groceries",
+      "theme": "Theme",
+      "noTheme": "No theme"
+    },
+    "themeDialog": {
+      "saved": "Theme \"{{name}}\" saved",
+      "editTitle": "Edit theme",
+      "description": "A theme groups categories. Transactions are sorted into categories, never directly into a theme.",
+      "namePlaceholder": "Housing"
+    },
+    "select": {
+      "placeholder": "Choose a category"
+    },
+    "colorPicker": {
+      "color": "Color {{color}}"
+    }
+  },
+  "rules": {
+    "empty": "No rules for this category.",
+    "add": "Add a rule",
+    "priorityValue": "· priority {{priority}}",
+    "edit": "Edit rule {{pattern}}",
+    "delete": "Delete rule {{pattern}}",
+    "confirmDelete": "Delete",
+    "deleted": "Rule deleted",
+    "deleteTitle": "Delete rule \"{{pattern}}\"?",
+    "deleteDescription": "It will no longer apply to future imports. Transactions already categorized are kept.",
+    "transfer": "Transfer",
+    "apply": {
+      "button": "Reapply rules",
+      "title": "Reapply rules?",
+      "description": "On \"all transactions\", a matching rule replaces the current category. A transaction with no matching rule keeps its category.",
+      "scope": "Scope",
+      "scopes": {
+        "uncategorized": "Uncategorized transactions",
+        "all": "All transactions"
+      },
+      "confirm": "Reapply",
+      "done": "Rules reapplied",
+      "summary": "{{examined}} examined, {{categorized}} categorized, {{markedAsTransfer}} marked as transfer, {{linkedToFixedItem}} linked to a fixed item"
+    },
+    "dialog": {
+      "created": "Rule created",
+      "updated": "Rule updated",
+      "categorized_one": "{{count}} transaction categorized",
+      "categorized_other": "{{count}} transactions categorized",
+      "editTitle": "Edit rule",
+      "newTitle": "New rule",
+      "description": "The highest-priority rule that matches a transaction is applied.",
+      "pattern": "Pattern",
+      "patternHint": "\"contains\" ignores case and accents.",
+      "type": "Type",
+      "field": "Field",
+      "category": "Category",
+      "noCategory": "None",
+      "priority": "Priority",
+      "priorityHint": "The highest wins.",
+      "markAsTransfer": "Mark as transfer"
+    },
+    "tester": {
+      "invalidPattern": "Invalid pattern",
+      "run": "Test",
+      "running": "Testing…",
+      "matchNone": "No transactions match.",
+      "match_one": "{{count}} transaction matches.",
+      "match_other": "{{count}} transactions match.",
+      "columns": {
+        "date": "Date",
+        "label": "Label",
+        "amount": "Amount"
+      }
+    }
+  },
+  "accountsPage": {
+    "title": "Accounts",
+    "description": "Bank accounts and cards tracked in centime.",
+    "empty": "No accounts yet.",
+    "columns": {
+      "name": "Name",
+      "type": "Type",
+      "identifier": "Identifier",
+      "currency": "Currency"
+    }
+  },
+  "accounts": {
+    "dialog": {
+      "new": "New account",
+      "description": "Add a bank account or a card.",
+      "created": "Account \"{{name}}\" created",
+      "name": "Name",
+      "namePlaceholder": "Checking account",
+      "type": "Type",
+      "identifier": "IBAN or masked card number",
+      "currency": "Currency",
+      "create": "Create",
+      "creating": "Creating…",
+      "errors": {
+        "nameRequired": "Name is required",
+        "identifierRequired": "Identifier is required",
+        "currencyFormat": "Three-letter ISO code"
+      }
+    }
+  },
+  "budgetsPage": {
+    "title": "Budget",
+    "description": "The month's plan: fixed income and expenses, then variable spending envelopes by category.",
+    "newFixedItem": "New fixed item",
+    "newBudget": "New budget",
+    "variableEnvelopes": "Variable envelopes",
+    "fixedExpenses": "Fixed expenses",
+    "fixedIncome": "Fixed income",
+    "progressSpent": "Spent {{actual}} of {{expected}}",
+    "progressPaid": "Paid {{actual}} of {{expected}}",
+    "progressReceived": "Received {{actual}} of {{expected}}",
+    "emptyFixedExpenses": "No fixed expenses yet.",
+    "emptyFixedIncome": "No fixed income yet.",
+    "emptyBudgetsTitle": "No budgets yet",
+    "emptyBudgetsDescription": "Set a spending limit for a category and track how much of it you use, period by period.",
+    "createBudget": "Create a budget"
+  },
+  "budgets": {
+    "dialog": {
+      "editTitle": "Edit budget",
+      "newTitle": "New budget",
+      "description": "A limit for a category's variable spending.",
+      "saved": "Budget \"{{name}}\" saved",
+      "category": "Category",
+      "amount": "Amount",
+      "periodicity": "Periodicity",
+      "startDate": "Start date",
+      "rollover": "Roll over the balance",
+      "rolloverHint": "The balance from previous periods, positive or negative, is added to the current period's limit.",
+      "saving": "Saving…",
+      "save": "Save"
+    },
+    "table": {
+      "category": "Category",
+      "period": "Period",
+      "budget": "Budget",
+      "spent": "Spent",
+      "progress": "Progress",
+      "remaining": "Remaining",
+      "actions": "Actions",
+      "noTheme": "No theme",
+      "carry": "Carried over: {{amount}}",
+      "pending": "Pending: {{amount}}",
+      "projected": "At current pace: {{amount}}",
+      "viewTransactions": "View transactions for {{name}}",
+      "edit": "Edit {{name}}",
+      "delete": "Delete {{name}}"
+    },
+    "delete": {
+      "deleted": "Budget \"{{name}}\" deleted",
+      "title": "Delete budget \"{{name}}\"?",
+      "description": "The category's transactions are kept. Only the limit and its tracking are removed.",
+      "confirm": "Delete"
+    },
+    "latestData": {
+      "message": "No transactions in {{month}}: the most recent one is from {{date}}.",
+      "view": "View {{month}}"
+    },
+    "planSummary": {
+      "income": "Fixed income",
+      "fixedExpenses": "Fixed expenses",
+      "envelopes": "Envelopes",
+      "remaining": "Remaining",
+      "received": "Received: {{amount}}",
+      "paid": "Paid: {{amount}}",
+      "spent": "Spent: {{amount}}",
+      "remainingHint": "Fixed income − fixed expenses − envelopes"
+    },
+    "unbudgeted": {
+      "title": "Unbudgeted spending",
+      "description": "Categories not covered by a budget, spending in {{month}}.",
+      "create": "Create a budget"
+    }
+  },
+  "fixedItemsUi": {
+    "delete": {
+      "deleted": "Item \"{{name}}\" deleted",
+      "label": "Delete {{name}}",
+      "title": "Delete item \"{{name}}\"?",
+      "description": "Linked transactions are kept but detached from the item. Its matching rule is deleted.",
+      "confirm": "Delete"
+    },
+    "deviation": {
+      "title": "Difference between the actual and expected amounts"
+    },
+    "earlierOverdue_one": "{{count}} overdue payment in previous months",
+    "earlierOverdue_other": "{{count}} overdue payments in previous months",
+    "command": {
+      "search": "Search for a fixed item…",
+      "empty": "No fixed item found.",
+      "none": "None"
+    },
+    "rule": {
+      "legend": "Matching rule",
+      "autoLink": "Automatically link transactions",
+      "pattern": "Pattern",
+      "patternPlaceholder": "Landlord",
+      "patternHint": "\"contains\" ignores case and accents.",
+      "type": "Type",
+      "field": "Field"
+    },
+    "direction": {
+      "expense": "Expense",
+      "income": "Income"
+    },
+    "dialog": {
+      "saved": "Item \"{{name}}\" saved",
+      "linked_one": "{{count}} transaction linked",
+      "linked_other": "{{count}} transactions linked",
+      "editTitle": "Edit fixed item",
+      "newTitle": "New fixed item",
+      "description": "A recurring expense or income, with its expected amount and due date.",
+      "name": "Name",
+      "namePlaceholder": "Rent",
+      "type": "Type",
+      "expectedAmount": "Expected amount",
+      "category": "Category",
+      "noCategory": "None",
+      "saving": "Saving…",
+      "save": "Save",
+      "periodicity": "Periodicity",
+      "dueDay": "Due day",
+      "startDate": "Start date",
+      "endDate": "End date (optional)",
+      "dueMonth": "Due month",
+      "chooseMonth": "Choose a month"
+    },
+    "sheet": {
+      "occurrences": "Payments in this period",
+      "noOccurrences": "No payments in this period.",
+      "viewLinked": "View all linked transactions ({{count}})",
+      "noRule": "No matching rule.",
+      "rule": "Rule: {{field}} {{matchKind}}",
+      "honored": "Payments honored",
+      "noTransactions": "No transactions linked between {{start}} and {{end}}."
+    },
+    "table": {
+      "name": "Name",
+      "category": "Category",
+      "periodicity": "Periodicity",
+      "expected": "Expected",
+      "monthDue": "Due this month",
+      "actual": "Actual",
+      "actions": "Actions",
+      "next": "Next on {{date}}",
+      "noDue": "No upcoming payment",
+      "view": "View {{name}}",
+      "edit": "Edit {{name}}"
+    }
   }
 }

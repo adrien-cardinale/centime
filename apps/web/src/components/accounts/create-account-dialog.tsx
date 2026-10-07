@@ -19,18 +19,21 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import i18n from "@/i18n"
 import { api } from "@/lib/api"
 import { accountKindLabels } from "@/lib/labels"
 import { accountsQuery } from "@/lib/queries"
+import { useTranslation } from "react-i18next"
 
+// Messages résolus à la validation (pas au chargement du module) pour suivre la langue courante.
 const accountFormSchema = z.object({
-  name: z.string().trim().min(1, "Le nom est obligatoire"),
+  name: z.string().trim().min(1, { error: () => i18n.t("accounts.dialog.errors.nameRequired") }),
   kind: z.enum(ACCOUNT_KINDS),
-  identifier: z.string().trim().min(1, "L'identifiant est obligatoire"),
+  identifier: z.string().trim().min(1, { error: () => i18n.t("accounts.dialog.errors.identifierRequired") }),
   currency: z
     .string()
     .trim()
-    .regex(/^[A-Za-z]{3}$/, "Code ISO à trois lettres"),
+    .regex(/^[A-Za-z]{3}$/, { error: () => i18n.t("accounts.dialog.errors.currencyFormat") }),
 })
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
@@ -38,6 +41,7 @@ type AccountFormValues = z.infer<typeof accountFormSchema>
 const defaultValues: AccountFormValues = { name: "", kind: "bank", identifier: "", currency: "CHF" }
 
 export function CreateAccountDialog() {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
   const form = useForm<AccountFormValues>({ resolver: zodResolver(accountFormSchema), defaultValues })
@@ -46,7 +50,7 @@ export function CreateAccountDialog() {
     mutationFn: api.accounts.create,
     onSuccess: async (account) => {
       await queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey })
-      toast.success(`Compte « ${account.name} » créé`)
+      toast.success(t("accounts.dialog.created", { name: account.name }))
       form.reset(defaultValues)
       setOpen(false)
     },
@@ -62,13 +66,13 @@ export function CreateAccountDialog() {
       <DialogTrigger asChild>
         <Button>
           <Plus />
-          Nouveau compte
+          {t("accounts.dialog.new")}
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Nouveau compte</DialogTitle>
-          <DialogDescription>Ajoutez un compte bancaire ou une carte.</DialogDescription>
+          <DialogTitle>{t("accounts.dialog.new")}</DialogTitle>
+          <DialogDescription>{t("accounts.dialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={submit} className="space-y-4">
@@ -77,9 +81,9 @@ export function CreateAccountDialog() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nom</FormLabel>
+                  <FormLabel>{t("accounts.dialog.name")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="Compte courant" {...field} />
+                    <Input placeholder={t("accounts.dialog.namePlaceholder")} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -90,7 +94,7 @@ export function CreateAccountDialog() {
               name="kind"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Type</FormLabel>
+                  <FormLabel>{t("accounts.dialog.type")}</FormLabel>
                   <Select value={field.value} onValueChange={field.onChange}>
                     <FormControl>
                       <SelectTrigger className="w-full">
@@ -114,7 +118,7 @@ export function CreateAccountDialog() {
               name="identifier"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>IBAN ou numéro de carte masqué</FormLabel>
+                  <FormLabel>{t("accounts.dialog.identifier")}</FormLabel>
                   <FormControl>
                     <Input placeholder="CH93 0076 2011 6238 5295 7" {...field} />
                   </FormControl>
@@ -127,7 +131,7 @@ export function CreateAccountDialog() {
               name="currency"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Devise</FormLabel>
+                  <FormLabel>{t("accounts.dialog.currency")}</FormLabel>
                   <FormControl>
                     <Input maxLength={3} className="uppercase" {...field} />
                   </FormControl>
@@ -137,7 +141,7 @@ export function CreateAccountDialog() {
             />
             <DialogFooter>
               <Button type="submit" disabled={createAccount.isPending}>
-                {createAccount.isPending ? "Création…" : "Créer"}
+                {createAccount.isPending ? t("accounts.dialog.creating") : t("accounts.dialog.create")}
               </Button>
             </DialogFooter>
           </form>

@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query"
 import { Search } from "lucide-react"
 import type { ReactNode } from "react"
+import { useTranslation } from "react-i18next"
 import { AccountSelect } from "@/components/accounts/account-select"
 import { CategorySelect } from "@/components/categories/category-select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { type TransferFilter, UNCATEGORIZED_FILTER, WITHOUT_FIXED_ITEM_FILTER } from "@/lib/api"
+import i18n from "@/i18n"
 import { fixedItemsQuery, themesQuery } from "@/lib/queries"
 
 export type TransactionFilterValues = {
@@ -29,10 +31,12 @@ type TransactionFiltersProps = {
 const ALL = "all"
 const THEME_PREFIX = "theme:"
 
-const transferOptions: Record<TransferFilter | typeof ALL, string> = {
-  all: "Toutes",
-  hide: "Masquer les transferts",
-  only: "Transferts uniquement",
+function transferOptions(): Record<TransferFilter | typeof ALL, string> {
+  return {
+    all: i18n.t("transactionsPage.filters.all"),
+    hide: i18n.t("transactionsPage.filters.hideTransfers"),
+    only: i18n.t("transactionsPage.filters.onlyTransfers"),
+  }
 }
 
 function toTransferFilter(value: string): TransferFilter | undefined {
@@ -40,6 +44,7 @@ function toTransferFilter(value: string): TransferFilter | undefined {
 }
 
 export function TransactionFilters({ values, onChange, actions }: TransactionFiltersProps) {
+  const { t } = useTranslation()
   const { data: themes = [] } = useQuery(themesQuery)
   const update = (patch: Partial<TransactionFilterValues>) => onChange({ ...values, ...patch })
   const categoryValue = values.themeId ? `${THEME_PREFIX}${values.themeId}` : (values.categoryId ?? ALL)
@@ -51,25 +56,25 @@ export function TransactionFilters({ values, onChange, actions }: TransactionFil
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       <div className="space-y-2">
-        <Label htmlFor="filter-account">Compte</Label>
+        <Label htmlFor="filter-account">{t("transactionsPage.columns.account")}</Label>
         <AccountSelect id="filter-account" allowAll value={values.accountId} onChange={(accountId) => update({ accountId })} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-from">Du</Label>
+        <Label htmlFor="filter-from">{t("transactionsPage.filters.from")}</Label>
         <Input id="filter-from" type="date" value={values.from} onChange={(event) => update({ from: event.target.value })} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-to">Au</Label>
+        <Label htmlFor="filter-to">{t("transactionsPage.filters.to")}</Label>
         <Input id="filter-to" type="date" value={values.to} onChange={(event) => update({ to: event.target.value })} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-search">Recherche</Label>
+        <Label htmlFor="filter-search">{t("transactionsPage.filters.search")}</Label>
         <div className="relative">
           <Search className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             id="filter-search"
             type="search"
-            placeholder="Libellé ou commerçant"
+            placeholder={t("transactionsPage.filters.searchPlaceholder")}
             className="pl-8"
             value={values.search}
             onChange={(event) => update({ search: event.target.value })}
@@ -77,30 +82,30 @@ export function TransactionFilters({ values, onChange, actions }: TransactionFil
         </div>
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-category">Catégorie</Label>
+        <Label htmlFor="filter-category">{t("transactionsPage.columns.category")}</Label>
         <CategorySelect
           id="filter-category"
           value={categoryValue}
           onChange={changeCategory}
           extraOptions={[
-            { value: ALL, label: "Toutes" },
-            { value: UNCATEGORIZED_FILTER, label: "Non catégorisées" },
-            ...themes.map((theme) => ({ value: `${THEME_PREFIX}${theme.id}`, label: `Thème : ${theme.name}` })),
+            { value: ALL, label: t("transactionsPage.filters.all") },
+            { value: UNCATEGORIZED_FILTER, label: t("transactionsPage.filters.uncategorized") },
+            ...themes.map((theme) => ({ value: `${THEME_PREFIX}${theme.id}`, label: t("transactionsPage.filters.theme", { name: theme.name }) })),
           ]}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-fixed-item">Poste fixe</Label>
+        <Label htmlFor="filter-fixed-item">{t("transactionsPage.columns.fixedItem")}</Label>
         <FixedItemFilter value={values.fixedItemId} onChange={(fixedItemId) => update({ fixedItemId })} />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-transfer">Transferts</Label>
+        <Label htmlFor="filter-transfer">{t("transactionsPage.filters.transfers")}</Label>
         <Select value={values.transfer ?? ALL} onValueChange={(value) => update({ transfer: toTransferFilter(value) })}>
           <SelectTrigger id="filter-transfer" className="w-full">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            {Object.entries(transferOptions).map(([value, label]) => (
+            {Object.entries(transferOptions()).map(([value, label]) => (
               <SelectItem key={value} value={value}>
                 {label}
               </SelectItem>
@@ -114,6 +119,7 @@ export function TransactionFilters({ values, onChange, actions }: TransactionFil
 }
 
 function FixedItemFilter({ value, onChange }: { value: string | undefined; onChange: (value: string | undefined) => void }) {
+  const { t } = useTranslation()
   const { data: items = [] } = useQuery(fixedItemsQuery)
   return (
     <Select value={value ?? ALL} onValueChange={(next) => onChange(next === ALL ? undefined : next)}>
@@ -121,8 +127,8 @@ function FixedItemFilter({ value, onChange }: { value: string | undefined; onCha
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={ALL}>Tous</SelectItem>
-        <SelectItem value={WITHOUT_FIXED_ITEM_FILTER}>Sans poste</SelectItem>
+        <SelectItem value={ALL}>{t("transactionsPage.filters.allFixedItems")}</SelectItem>
+        <SelectItem value={WITHOUT_FIXED_ITEM_FILTER}>{t("transactionsPage.filters.withoutFixedItem")}</SelectItem>
         {items.length > 0 && <SelectSeparator />}
         {items.map((item) => (
           <SelectItem key={item.id} value={item.id}>

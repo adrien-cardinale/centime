@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { api } from "@/lib/api"
 import { ruleFieldLabels, ruleMatchKindLabels } from "@/lib/labels"
 import { RuleTestResults } from "./rule-test-results"
+import { useTranslation } from "react-i18next"
 
 type OptionSelectProps<Value extends string> = {
   value: Value
@@ -53,6 +54,7 @@ export function RuleFieldSelect({ value, onChange, id }: OptionSelectProps<RuleF
 }
 
 export function useRuleTester() {
+  const { t } = useTranslation()
   const test = useMutation({
     mutationFn: api.rules.test,
     onError: (error) => toast.error(error.message),
@@ -61,7 +63,7 @@ export function useRuleTester() {
   function run(candidate: unknown) {
     const parsed = ruleMatcherSchema.safeParse(candidate)
     if (!parsed.success) {
-      toast.error(parsed.error.issues[0]?.message ?? "Motif invalide")
+      toast.error(parsed.error.issues[0]?.message ?? t("rules.tester.invalidPattern"))
       return
     }
     test.mutate(parsed.data)
@@ -76,11 +78,12 @@ type RuleTesterProps = {
 }
 
 export function RuleTester({ tester, getMatcher }: RuleTesterProps) {
+  const { t } = useTranslation()
   return (
     <div className="space-y-3">
       <Button type="button" variant="outline" onClick={() => tester.run(getMatcher())} disabled={tester.isPending}>
         <FlaskConical />
-        {tester.isPending ? "Test en cours…" : "Tester"}
+        {tester.isPending ? t("rules.tester.running") : t("rules.tester.run")}
       </Button>
       {tester.result && <RuleTestResults result={tester.result} />}
     </div>

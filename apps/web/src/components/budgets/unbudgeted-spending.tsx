@@ -1,4 +1,5 @@
 import { Plus } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -13,12 +14,13 @@ type UnbudgetedSpendingProps = {
 }
 
 export function UnbudgetedSpending({ categories, monthLabel, onCreate }: UnbudgetedSpendingProps) {
+  const { t } = useTranslation()
   if (categories.length === 0) return null
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Dépenses sans budget</CardTitle>
-        <CardDescription>Catégories non couvertes par un budget, dépenses de {monthLabel.toLowerCase()}.</CardDescription>
+        <CardTitle>{t("budgets.unbudgeted.title")}</CardTitle>
+        <CardDescription>{t("budgets.unbudgeted.description", { month: monthLabel.toLowerCase() })}</CardDescription>
       </CardHeader>
       <CardContent>
         <ul className="divide-y">
@@ -29,7 +31,7 @@ export function UnbudgetedSpending({ categories, monthLabel, onCreate }: Unbudge
                 <span className="text-sm tabular-nums">{formatAmount(category.spent, BUDGET_CURRENCY)}</span>
                 <Button variant="outline" size="sm" onClick={() => onCreate(category.categoryId)}>
                   <Plus />
-                  Créer un budget
+                  {t("budgets.unbudgeted.create")}
                 </Button>
               </div>
             </li>

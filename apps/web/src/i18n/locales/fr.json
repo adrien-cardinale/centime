@@ -165,5 +165,653 @@
   "fixedItems": {
     "dueFirst": "le 1er",
     "dueDay": "le {{day}}"
+  },
+  "page": {
+    "notFound": {
+      "title": "Page introuvable",
+      "description": "Cette adresse ne correspond à aucune page de centime.",
+      "back": "Retour au tableau de bord"
+    },
+    "error": {
+      "title": "Erreur",
+      "loadFailed": "Impossible de charger la page"
+    }
+  },
+  "errors": {
+    "unexpected": "Erreur inattendue",
+    "retry": "Réessayer"
+  },
+  "boot": {
+    "opening": "Ouverture de la base locale…",
+    "openFailed": "Impossible d'ouvrir la base locale",
+    "serverLabel": "Serveur de synchronisation (facultatif)",
+    "serverHint": "Laissez vide pour n'utiliser que cet appareil. Modifiable plus tard.",
+    "keyCopied": "Clé copiée",
+    "copyFailed": "Copie impossible, notez la clé à la main",
+    "invalidServer": "Adresse du serveur invalide",
+    "saveFailed": "Enregistrement de la clé impossible",
+    "invalidKey": "Clé invalide",
+    "warningTitle": "Votre clé est la seule façon de retrouver vos données",
+    "warningDescription": "Elle chiffre vos données avant leur envoi : le serveur ne peut pas les lire et personne ne peut vous la redonner. Conservez-la dans un gestionnaire de mots de passe ou sur papier.",
+    "copyKey": "Copier la clé",
+    "savedConfirm": "J'ai sauvegardé ma clé",
+    "back": "Retour",
+    "continue": "Continuer",
+    "restore": "Restaurer",
+    "yourKey": "Votre clé",
+    "intro": "Pas de compte : une clé secrète, générée ici, chiffre vos données sur votre appareil.",
+    "createKey": "Créer une nouvelle clé",
+    "haveKey": "J'ai déjà une clé"
+  },
+  "periodNavigator": {
+    "previous": "Mois précédent",
+    "next": "Mois suivant",
+    "today": "Aujourd'hui"
+  },
+  "dashboardPage": {
+    "emptyTitle": "Commence par importer un relevé",
+    "emptyDescription": "Le tableau de bord se remplit dès que des transactions sont disponibles.",
+    "importStatement": "Importer un relevé",
+    "chartView": "Graphique",
+    "tableView": "Tableau",
+    "seeAll": "Tout voir",
+    "balance": {
+      "title": "Solde bancaire",
+      "description": "Fin de mois, somme des comptes bancaires.",
+      "series": "Solde",
+      "empty": "Aucun solde disponible, importe un relevé bancaire."
+    },
+    "table": {
+      "month": "Mois",
+      "income": "Revenus",
+      "expenses": "Dépenses",
+      "category": "Catégorie"
+    },
+    "budgets": {
+      "title": "Budgets du mois",
+      "empty": "Aucun budget défini."
+    },
+    "categories": {
+      "title": "Dépenses par catégorie",
+      "description": "{{month}}, transactions comptabilisées hors transferts.",
+      "empty": "Aucune dépense ce mois-ci."
+    },
+    "incomeExpenses": {
+      "title": "Revenus et dépenses, 12 derniers mois",
+      "description": "Transactions comptabilisées, hors transferts."
+    },
+    "kpi": {
+      "noBalance": "Aucun solde disponible",
+      "lastKnownBalance": "Dernier solde connu des comptes bancaires",
+      "expenses": "Dépenses du mois",
+      "income": "Revenus du mois",
+      "net": "Net du mois"
+    },
+    "recent": {
+      "title": "Dernières transactions",
+      "empty": "Aucune transaction.",
+      "uncategorized": "Non catégorisée"
+    },
+    "upcoming": {
+      "title": "Prochaines échéances",
+      "empty": "Aucune échéance à venir."
+    },
+    "delta": {
+      "none": "Pas de comparaison avec le mois précédent",
+      "up": "hausse",
+      "down": "baisse",
+      "stable": "stable",
+      "vsPrevious": "{{percent}} vs mois précédent",
+      "negativeBalance": "Solde négatif",
+      "negative": "Négatif"
+    }
+  },
+  "transactionsPage": {
+    "description": "Toutes les opérations importées, du plus récent au plus ancien.",
+    "noMatch": "Aucune transaction ne correspond à ces filtres.",
+    "empty": "Aucune transaction pour l'instant.",
+    "importStatement": "Importer un relevé",
+    "none": "Aucune",
+    "linkFixedItem": "Lier à un poste fixe",
+    "markTransfer": "Marquer comme transfert",
+    "removeTransfer": "Retirer le transfert",
+    "createRule": "Créer une règle depuis cette transaction",
+    "actions": "Actions",
+    "fixedItemLabel": "Poste fixe : {{name}}",
+    "bulk": {
+      "selected_one": "{{count}} sélectionnée",
+      "selected_other": "{{count}} sélectionnées",
+      "assignCategory": "Attribuer une catégorie",
+      "clear": "Annuler la sélection",
+      "updated_one": "{{count}} transaction mise à jour",
+      "updated_other": "{{count}} transactions mises à jour"
+    },
+    "category": {
+      "changed": "Catégorie modifiée",
+      "alwaysClassify": "Toujours classer ainsi",
+      "change": "Changer la catégorie",
+      "search": "Rechercher une catégorie…",
+      "notFound": "Aucune catégorie trouvée.",
+      "create": "Créer « {{name}} »",
+      "new": "Nouvelle catégorie…"
+    },
+    "export": {
+      "label": "Exporter",
+      "exporting": "Export…",
+      "failed": "Export impossible"
+    },
+    "pagination": {
+      "pageOf": "Page {{page}} sur {{pageCount}}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "first": "Première page",
+      "last": "Dernière page"
+    },
+    "filters": {
+      "all": "Toutes",
+      "hideTransfers": "Masquer les transferts",
+      "onlyTransfers": "Transferts uniquement",
+      "from": "Du",
+      "to": "Au",
+      "search": "Recherche",
+      "searchPlaceholder": "Libellé ou commerçant",
+      "uncategorized": "Non catégorisées",
+      "theme": "Thème : {{name}}",
+      "transfers": "Transferts",
+      "allFixedItems": "Tous",
+      "withoutFixedItem": "Sans poste"
+    },
+    "columns": {
+      "date": "Date",
+      "account": "Compte",
+      "label": "Libellé",
+      "merchant": "Commerçant",
+      "category": "Catégorie",
+      "fixedItem": "Poste fixe",
+      "amount": "Montant",
+      "status": "Statut"
+    },
+    "table": {
+      "selectAll": "Tout sélectionner",
+      "selectOne": "Sélectionner la transaction",
+      "transfer": "Transfert"
+    }
+  },
+  "syncErrors": {
+    "unauthorized": "Accès refusé par le serveur : la clé ne correspond pas à ce compte",
+    "unreadableEntry": "Une entrée du serveur est illisible : la clé ne correspond pas ou les données ont été altérées",
+    "network": "Serveur injoignable : vérifie la connexion réseau et l'adresse du serveur",
+    "invalidResponse": "Réponse du serveur invalide",
+    "serverStatus": "Erreur du serveur ({{status}})",
+    "unexpected": "Erreur de synchronisation inattendue"
+  },
+  "importPage": {
+    "title": "Import",
+    "description": "Importez un relevé CSV ou camt.053 et vérifiez l'aperçu avant de valider.",
+    "tabImport": "Importer",
+    "tabProfiles": "Profils CSV",
+    "fileTooLarge": "Fichier trop volumineux (10 Mo maximum)"
+  },
+  "importWorkspace": {
+    "dropzone": {
+      "prompt": "Déposez un relevé ici ou cliquez pour le choisir",
+      "hint": "CSV ou camt.053 (XML), 10 Mo maximum"
+    },
+    "options": {
+      "detectedFormat": "Format détecté",
+      "profile": "Profil CSV",
+      "profilePlaceholder": "Choisir un profil",
+      "profileUnrecognized": "Profil non reconnu : choisissez-le ou créez-en un.",
+      "newProfile": "Nouveau profil",
+      "edit": "Modifier {{name}}",
+      "destinationAccount": "Compte de destination",
+      "accountMissing": "Ce fichier n'indique pas le compte : choisissez-le."
+    },
+    "summary": {
+      "total": "Total",
+      "new": "Nouvelles",
+      "duplicates": "Doublons",
+      "updated": "Mises à jour",
+      "errors": "Erreurs"
+    },
+    "preview": {
+      "empty": "Aucune transaction lisible dans ce fichier.",
+      "date": "Date",
+      "label": "Libellé",
+      "merchant": "Commerçant",
+      "amount": "Montant",
+      "account": "Compte",
+      "state": "État",
+      "limited": "Aperçu limité aux {{shown}} premières lignes sur {{total}}."
+    },
+    "rowErrors": {
+      "title_one": "{{count}} ligne ignorée",
+      "title_other": "{{count}} lignes ignorées",
+      "line": "Ligne {{line}} : {{message}}"
+    },
+    "outcome": {
+      "inserted_one": "{{count}} transaction importée",
+      "inserted_other": "{{count}} transactions importées",
+      "updated_one": "{{count}} mise à jour",
+      "updated_other": "{{count}} mises à jour",
+      "skipped_one": "{{count}} doublon ignoré",
+      "skipped_other": "{{count}} doublons ignorés",
+      "accountsCreated_one": "{{count}} compte créé",
+      "accountsCreated_other": "{{count}} comptes créés"
+    },
+    "importing": "Import…",
+    "import": "Importer",
+    "previewTitle": "Aperçu",
+    "readError": "Lecture du fichier impossible"
+  },
+  "csvProfiles": {
+    "panel": {
+      "intro": "Chaque profil décrit le format CSV d'une banque ou d'un émetteur de carte.",
+      "new": "Nouveau profil",
+      "empty": "Aucun profil CSV.",
+      "columns": {
+        "name": "Nom",
+        "type": "Type",
+        "encoding": "Encodage",
+        "delimiter": "Séparateur",
+        "dateFormat": "Format de date",
+        "actions": "Actions"
+      },
+      "edit": "Modifier {{name}}",
+      "deleteAria": "Supprimer {{name}}",
+      "deleteTitle": "Supprimer le profil « {{name}} » ?",
+      "deleteDescription": "Il ne sera plus proposé à l'import. Les transactions déjà importées sont conservées.",
+      "delete": "Supprimer",
+      "deleted": "Profil « {{name}} » supprimé"
+    },
+    "dialog": {
+      "saved": "Profil « {{name}} » enregistré",
+      "editTitle": "Modifier le profil CSV",
+      "newTitle": "Nouveau profil CSV",
+      "description": "Décrivez la structure des exports CSV de votre fournisseur.",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer"
+    },
+    "sections": {
+      "general": "Général",
+      "columns": "Colonnes",
+      "amount": "Montant",
+      "detection": "Détection automatique",
+      "statuses": "Statuts"
+    },
+    "general": {
+      "name": "Nom",
+      "namePlaceholder": "Ma banque",
+      "accountKind": "Type de compte",
+      "encoding": "Encodage",
+      "delimiter": "Séparateur",
+      "dateFormat": "Format de date",
+      "dateFormatHelp": "Syntaxe date-fns, par exemple yyyy-MM-dd.",
+      "decimalSeparator": "Séparateur décimal",
+      "defaultCurrency": "Devise par défaut",
+      "hasHeader": "Première ligne = en-têtes"
+    },
+    "columns": {
+      "fromFile": "Colonnes lues dans le fichier importé, avec l'encodage et le séparateur choisis ci-dessus.",
+      "manual": "Nom exact de l'en-tête, ou position à partir de 1 si le fichier n'a pas d'en-têtes.",
+      "date": "Date de comptabilisation *",
+      "label": "Libellé *",
+      "valueDate": "Date valeur",
+      "merchant": "Commerçant",
+      "account": "Compte (IBAN ou carte)",
+      "currency": "Devise",
+      "balance": "Solde",
+      "category": "Catégorie du fournisseur",
+      "status": "Statut"
+    },
+    "amount": {
+      "mode": "Mode",
+      "column": "Colonne du montant",
+      "indicatorColumn": "Colonne débit/crédit",
+      "debitValue": "Valeur signalant un débit",
+      "debitPlaceholder": "Débit"
+    },
+    "detection": {
+      "requiredHeaders": "En-têtes requis",
+      "requiredHeadersHelp": "Un en-tête par ligne. Le profil est choisi si tous sont présents."
+    },
+    "statuses": {
+      "empty": "Sans correspondance, toutes les transactions sont comptabilisées.",
+      "value": "Valeur dans le fichier",
+      "status": "Statut",
+      "remove": "Retirer",
+      "add": "Ajouter un statut"
+    },
+    "fields": {
+      "none": "Aucune",
+      "chooseColumn": "Choisir une colonne",
+      "missingFromFile": "{{name}} (absente du fichier)"
+    }
+  },
+  "importHistory": {
+    "title": "Historique des imports",
+    "empty": "Aucun import pour l'instant.",
+    "columns": {
+      "file": "Fichier",
+      "format": "Format",
+      "date": "Date",
+      "inserted": "Insérées",
+      "updated": "Mises à jour",
+      "skipped": "Ignorées",
+      "actions": "Actions"
+    },
+    "deletedTransactions_one": "{{count}} transaction supprimée",
+    "deletedTransactions_other": "{{count}} transactions supprimées",
+    "deleted": "Import « {{name}} » supprimé : {{details}}",
+    "deleteAria": "Supprimer l'import {{name}}",
+    "deleteTitle": "Supprimer l'import « {{name}} » ?",
+    "deleteDescription": "Toutes les transactions ajoutées ou mises à jour par cet import seront supprimées, et l'import disparaîtra de l'historique. Vous pourrez réimporter le fichier ensuite.",
+    "delete": "Supprimer"
+  },
+  "importMisc": {
+    "accountSelect": {
+      "placeholder": "Choisir un compte",
+      "all": "Tous les comptes"
+    }
+  },
+  "categoriesPage": {
+    "title": "Catégories",
+    "description": "Organisez vos transactions et automatisez leur classement."
+  },
+  "categories": {
+    "intro": "Les transactions se classent dans des catégories, que vous pouvez regrouper sous des thèmes. Les règles classent automatiquement les transactions à l'import ; la priorité la plus haute l'emporte.",
+    "newTheme": "Nouveau thème",
+    "newCategory": "Nouvelle catégorie",
+    "otherRules": {
+      "title": "Autres règles",
+      "description": "Règles sans catégorie : transferts ou rattachement à un poste fixe."
+    },
+    "empty": "Aucune catégorie.",
+    "columns": {
+      "name": "Nom",
+      "transactions": "Transactions",
+      "actions": "Actions"
+    },
+    "noTheme": "Sans thème",
+    "ruleCount_one": "{{count}} règle",
+    "ruleCount_other": "{{count}} règles",
+    "editTheme": "Modifier le thème {{name}}",
+    "edit": "Modifier {{name}}",
+    "deleteTheme": "Supprimer le thème {{name}}",
+    "delete": "Supprimer {{name}}",
+    "confirmDelete": "Supprimer",
+    "themeDeleted": "Thème « {{name}} » supprimé",
+    "deleteThemeTitle": "Supprimer le thème « {{name}} » ?",
+    "deleteThemeDescription_one": "Sa {{count}} catégorie et ses transactions sont conservées, mais n'auront plus de thème.",
+    "deleteThemeDescription_other": "Ses {{count}} catégories et leurs transactions sont conservées, mais n'auront plus de thème.",
+    "categoryDeleted": "Catégorie « {{name}} » supprimée",
+    "deleteCategoryTitle": "Supprimer la catégorie « {{name}} » ?",
+    "deleteCategoryRules": "Les règles qui la référencent seront aussi détachées.",
+    "detachNone": "Aucune transaction n'utilise cette catégorie.",
+    "detachWarning_one": "{{count}} transaction sera détachée et redeviendra non catégorisée.",
+    "detachWarning_other": "{{count}} transactions seront détachées et redeviendront non catégorisées.",
+    "form": {
+      "name": "Nom",
+      "color": "Couleur",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…"
+    },
+    "dialog": {
+      "saved": "Catégorie « {{name}} » enregistrée",
+      "editTitle": "Modifier la catégorie",
+      "newTitle": "Nouvelle catégorie",
+      "description": "Nom, couleur et thème éventuel.",
+      "namePlaceholder": "Alimentation",
+      "theme": "Thème",
+      "noTheme": "Aucun thème"
+    },
+    "themeDialog": {
+      "saved": "Thème « {{name}} » enregistré",
+      "editTitle": "Modifier le thème",
+      "description": "Un thème regroupe des catégories. Les transactions se classent dans les catégories, jamais directement dans un thème.",
+      "namePlaceholder": "Logement"
+    },
+    "select": {
+      "placeholder": "Choisir une catégorie"
+    },
+    "colorPicker": {
+      "color": "Couleur {{color}}"
+    }
+  },
+  "rules": {
+    "empty": "Aucune règle pour cette catégorie.",
+    "add": "Ajouter une règle",
+    "priorityValue": "· priorité {{priority}}",
+    "edit": "Modifier la règle {{pattern}}",
+    "delete": "Supprimer la règle {{pattern}}",
+    "confirmDelete": "Supprimer",
+    "deleted": "Règle supprimée",
+    "deleteTitle": "Supprimer la règle « {{pattern}} » ?",
+    "deleteDescription": "Elle ne s'appliquera plus aux prochains imports. Les transactions déjà catégorisées sont conservées.",
+    "transfer": "Transfert",
+    "apply": {
+      "button": "Réappliquer les règles",
+      "title": "Réappliquer les règles ?",
+      "description": "Sur « toutes les transactions », une règle correspondante remplace la catégorie actuelle. Une transaction sans règle correspondante garde sa catégorie.",
+      "scope": "Portée",
+      "scopes": {
+        "uncategorized": "Transactions non catégorisées",
+        "all": "Toutes les transactions"
+      },
+      "confirm": "Réappliquer",
+      "done": "Règles réappliquées",
+      "summary": "{{examined}} examinée(s), {{categorized}} catégorisée(s), {{markedAsTransfer}} marquée(s) comme transfert, {{linkedToFixedItem}} rattachée(s) à un poste fixe"
+    },
+    "dialog": {
+      "created": "Règle créée",
+      "updated": "Règle modifiée",
+      "categorized_one": "{{count}} transaction catégorisée",
+      "categorized_other": "{{count}} transactions catégorisées",
+      "editTitle": "Modifier la règle",
+      "newTitle": "Nouvelle règle",
+      "description": "La règle de plus haute priorité qui correspond à une transaction est appliquée.",
+      "pattern": "Motif",
+      "patternHint": "« contient » ignore la casse et les accents.",
+      "type": "Type",
+      "field": "Champ",
+      "category": "Catégorie",
+      "noCategory": "Aucune",
+      "priority": "Priorité",
+      "priorityHint": "La plus haute l'emporte.",
+      "markAsTransfer": "Marquer comme transfert"
+    },
+    "tester": {
+      "invalidPattern": "Motif invalide",
+      "run": "Tester",
+      "running": "Test en cours…",
+      "matchNone": "Aucune transaction ne correspond.",
+      "match_one": "{{count}} transaction correspond.",
+      "match_other": "{{count}} transactions correspondent.",
+      "columns": {
+        "date": "Date",
+        "label": "Libellé",
+        "amount": "Montant"
+      }
+    }
+  },
+  "accountsPage": {
+    "title": "Comptes",
+    "description": "Comptes bancaires et cartes suivis dans centime.",
+    "empty": "Aucun compte pour l'instant.",
+    "columns": {
+      "name": "Nom",
+      "type": "Type",
+      "identifier": "Identifiant",
+      "currency": "Devise"
+    }
+  },
+  "accounts": {
+    "dialog": {
+      "new": "Nouveau compte",
+      "description": "Ajoutez un compte bancaire ou une carte.",
+      "created": "Compte « {{name}} » créé",
+      "name": "Nom",
+      "namePlaceholder": "Compte courant",
+      "type": "Type",
+      "identifier": "IBAN ou numéro de carte masqué",
+      "currency": "Devise",
+      "create": "Créer",
+      "creating": "Création…",
+      "errors": {
+        "nameRequired": "Le nom est obligatoire",
+        "identifierRequired": "L'identifiant est obligatoire",
+        "currencyFormat": "Code ISO à trois lettres"
+      }
+    }
+  },
+  "budgetsPage": {
+    "title": "Budget",
+    "description": "Le plan du mois : revenus et charges fixes, puis enveloppes de dépenses variables par catégorie.",
+    "newFixedItem": "Nouveau poste fixe",
+    "newBudget": "Nouveau budget",
+    "variableEnvelopes": "Enveloppes variables",
+    "fixedExpenses": "Charges fixes",
+    "fixedIncome": "Revenus fixes",
+    "progressSpent": "Dépensé {{actual}} sur {{expected}}",
+    "progressPaid": "Payé {{actual}} sur {{expected}}",
+    "progressReceived": "Reçu {{actual}} sur {{expected}}",
+    "emptyFixedExpenses": "Aucune charge fixe pour l'instant.",
+    "emptyFixedIncome": "Aucun revenu fixe pour l'instant.",
+    "emptyBudgetsTitle": "Aucun budget pour l'instant",
+    "emptyBudgetsDescription": "Fixez un plafond de dépenses pour une catégorie et suivez sa consommation période par période.",
+    "createBudget": "Créer un budget"
+  },
+  "budgets": {
+    "dialog": {
+      "editTitle": "Modifier le budget",
+      "newTitle": "Nouveau budget",
+      "description": "Un plafond pour les dépenses variables d'une catégorie.",
+      "saved": "Budget « {{name}} » enregistré",
+      "category": "Catégorie",
+      "amount": "Montant",
+      "periodicity": "Périodicité",
+      "startDate": "Date de début",
+      "rollover": "Reporter le reliquat",
+      "rolloverHint": "Le solde des périodes précédentes, positif ou négatif, s'ajoute au plafond de la période en cours.",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer"
+    },
+    "table": {
+      "category": "Catégorie",
+      "period": "Période",
+      "budget": "Budget",
+      "spent": "Dépensé",
+      "progress": "Avancement",
+      "remaining": "Reste",
+      "actions": "Actions",
+      "noTheme": "Sans thème",
+      "carry": "Report : {{amount}}",
+      "pending": "En suspens : {{amount}}",
+      "projected": "Au rythme actuel : {{amount}}",
+      "viewTransactions": "Voir les transactions de {{name}}",
+      "edit": "Modifier {{name}}",
+      "delete": "Supprimer {{name}}"
+    },
+    "delete": {
+      "deleted": "Budget « {{name}} » supprimé",
+      "title": "Supprimer le budget « {{name}} » ?",
+      "description": "Les transactions de la catégorie sont conservées. Seul le plafond et son suivi disparaissent.",
+      "confirm": "Supprimer"
+    },
+    "latestData": {
+      "message": "Aucune transaction en {{month}} : la plus récente date du {{date}}.",
+      "view": "Voir {{month}}"
+    },
+    "planSummary": {
+      "income": "Revenus fixes",
+      "fixedExpenses": "Charges fixes",
+      "envelopes": "Enveloppes",
+      "remaining": "Reste",
+      "received": "Reçu : {{amount}}",
+      "paid": "Payé : {{amount}}",
+      "spent": "Dépensé : {{amount}}",
+      "remainingHint": "Revenus fixes − charges fixes − enveloppes"
+    },
+    "unbudgeted": {
+      "title": "Dépenses sans budget",
+      "description": "Catégories non couvertes par un budget, dépenses de {{month}}.",
+      "create": "Créer un budget"
+    }
+  },
+  "fixedItemsUi": {
+    "delete": {
+      "deleted": "Poste « {{name}} » supprimé",
+      "label": "Supprimer {{name}}",
+      "title": "Supprimer le poste « {{name}} » ?",
+      "description": "Les transactions rattachées sont conservées mais détachées du poste. Sa règle de rapprochement est supprimée.",
+      "confirm": "Supprimer"
+    },
+    "deviation": {
+      "title": "Écart entre le montant réel et le montant attendu"
+    },
+    "earlierOverdue_one": "{{count}} échéance en retard sur les mois précédents",
+    "earlierOverdue_other": "{{count}} échéances en retard sur les mois précédents",
+    "command": {
+      "search": "Rechercher un poste fixe…",
+      "empty": "Aucun poste fixe trouvé.",
+      "none": "Aucun"
+    },
+    "rule": {
+      "legend": "Règle de rapprochement",
+      "autoLink": "Rattacher automatiquement les transactions",
+      "pattern": "Motif",
+      "patternPlaceholder": "Régie",
+      "patternHint": "« contient » ignore la casse et les accents.",
+      "type": "Type",
+      "field": "Champ"
+    },
+    "direction": {
+      "expense": "Dépense",
+      "income": "Revenu"
+    },
+    "dialog": {
+      "saved": "Poste « {{name}} » enregistré",
+      "linked_one": "{{count}} transaction rattachée",
+      "linked_other": "{{count}} transactions rattachées",
+      "editTitle": "Modifier le poste fixe",
+      "newTitle": "Nouveau poste fixe",
+      "description": "Une dépense ou un revenu récurrent, avec son montant attendu et son échéance.",
+      "name": "Nom",
+      "namePlaceholder": "Loyer",
+      "type": "Type",
+      "expectedAmount": "Montant attendu",
+      "category": "Catégorie",
+      "noCategory": "Aucune",
+      "saving": "Enregistrement…",
+      "save": "Enregistrer",
+      "periodicity": "Périodicité",
+      "dueDay": "Jour d'échéance",
+      "startDate": "Date de début",
+      "endDate": "Date de fin (facultative)",
+      "dueMonth": "Mois d'échéance",
+      "chooseMonth": "Choisir un mois"
+    },
+    "sheet": {
+      "occurrences": "Échéances de la période",
+      "noOccurrences": "Aucune échéance sur la période.",
+      "viewLinked": "Voir toutes les transactions liées ({{count}})",
+      "noRule": "Aucune règle de rapprochement.",
+      "rule": "Règle : {{field}} {{matchKind}}",
+      "honored": "Échéances honorées",
+      "noTransactions": "Aucune transaction rattachée entre le {{start}} et le {{end}}."
+    },
+    "table": {
+      "name": "Nom",
+      "category": "Catégorie",
+      "periodicity": "Périodicité",
+      "expected": "Attendu",
+      "monthDue": "Échéance du mois",
+      "actual": "Réel",
+      "actions": "Actions",
+      "next": "Prochaine le {{date}}",
+      "noDue": "Aucune échéance",
+      "view": "Voir {{name}}",
+      "edit": "Modifier {{name}}"
+    }
   }
 }

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import {
   type ChartConfig,
@@ -13,19 +14,22 @@ import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth } from "@/lib/dash
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
-const chartConfig = {
-  income: { label: "Revenus", color: "var(--chart-income)" },
-  expenses: { label: "Dépenses", color: "var(--chart-expenses)" },
-} satisfies ChartConfig
+function chartConfigOf(labels: { income: string; expenses: string }) {
+  return {
+    income: { label: labels.income, color: "var(--chart-income)" },
+    expenses: { label: labels.expenses, color: "var(--chart-expenses)" },
+  } satisfies ChartConfig
+}
 
 export function IncomeExpensesChart({ series }: { series: MonthlyPoint[] }) {
+  const { t } = useTranslation()
   const labels = new Map(series.map((point) => [point.month, point.label]))
   return (
     <ChartCard
-      title="Revenus et dépenses, 12 derniers mois"
-      description="Transactions comptabilisées, hors transferts."
+      title={t("dashboardPage.incomeExpenses.title")}
+      description={t("dashboardPage.incomeExpenses.description")}
       chart={
-        <ChartContainer config={chartConfig} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+        <ChartContainer config={chartConfigOf({ income: t("dashboardPage.table.income"), expenses: t("dashboardPage.table.expenses") })} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
           <BarChart data={series} barGap={2} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
             <XAxis dataKey="month" tickFormatter={shortMonth} axisLine={false} tickLine={false} tickMargin={8} minTickGap={4} />
@@ -51,13 +55,14 @@ export function IncomeExpensesChart({ series }: { series: MonthlyPoint[] }) {
 }
 
 function MonthlyTable({ series }: { series: MonthlyPoint[] }) {
+  const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Mois</TableHead>
-          <TableHead className="text-right">Revenus</TableHead>
-          <TableHead className="text-right">Dépenses</TableHead>
+          <TableHead>{t("dashboardPage.table.month")}</TableHead>
+          <TableHead className="text-right">{t("dashboardPage.table.income")}</TableHead>
+          <TableHead className="text-right">{t("dashboardPage.table.expenses")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

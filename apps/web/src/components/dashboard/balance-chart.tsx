@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -7,22 +8,20 @@ import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth } from "@/lib/dash
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
-const TITLE = "Solde bancaire"
-const DESCRIPTION = "Fin de mois, somme des comptes bancaires."
-
-const chartConfig = {
-  balance: { label: "Solde", color: "var(--chart-neutral)" },
-} satisfies ChartConfig
+function chartConfigOf(label: string) {
+  return { balance: { label, color: "var(--chart-neutral)" } } satisfies ChartConfig
+}
 
 export function BalanceChart({ series }: { series: BalancePoint[] }) {
+  const { t } = useTranslation()
   if (series.length === 0) return <EmptyBalance />
   const labels = new Map(series.map((point) => [point.month, point.label]))
   return (
     <ChartCard
-      title={TITLE}
-      description={DESCRIPTION}
+      title={t("dashboardPage.balance.title")}
+      description={t("dashboardPage.balance.description")}
       chart={
-        <ChartContainer config={chartConfig} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+        <ChartContainer config={chartConfigOf(t("dashboardPage.balance.series"))} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
           <LineChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
             <XAxis dataKey="month" tickFormatter={shortMonth} axisLine={false} tickLine={false} tickMargin={8} minTickGap={4} />
@@ -60,15 +59,16 @@ export function BalanceChart({ series }: { series: BalancePoint[] }) {
 }
 
 function EmptyBalance() {
+  const { t } = useTranslation()
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{TITLE}</CardTitle>
-        <CardDescription>{DESCRIPTION}</CardDescription>
+        <CardTitle>{t("dashboardPage.balance.title")}</CardTitle>
+        <CardDescription>{t("dashboardPage.balance.description")}</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="flex h-[240px] items-center justify-center text-center text-sm text-muted-foreground">
-          Aucun solde disponible, importe un relevé bancaire.
+          {t("dashboardPage.balance.empty")}
         </p>
       </CardContent>
     </Card>
@@ -76,12 +76,13 @@ function EmptyBalance() {
 }
 
 function BalanceTable({ series }: { series: BalancePoint[] }) {
+  const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Mois</TableHead>
-          <TableHead className="text-right">Solde</TableHead>
+          <TableHead>{t("dashboardPage.table.month")}</TableHead>
+          <TableHead className="text-right">{t("dashboardPage.balance.series")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

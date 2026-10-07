@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Check, Plus } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { CategoryDialog } from "@/components/categories/category-dialog"
@@ -30,6 +31,7 @@ type CategoryCellProps = {
 }
 
 export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [creating, setCreating] = useState(false)
@@ -46,8 +48,9 @@ export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
       {
         onSuccess: () => {
           if (!categoryId) return
-          toast("Catégorie modifiée", {
-            action: { label: "Toujours classer ainsi", onClick: () => onCreateRule({ ...transaction, categoryId }) },
+          toast(t("transactionsPage.category.changed"), {
+            action: {
+              label: t("transactionsPage.category.alwaysClassify"), onClick: () => onCreateRule({ ...transaction, categoryId }) },
           })
         },
       },
@@ -66,7 +69,7 @@ export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
           <button
             type="button"
             disabled={update.isPending}
-            aria-label="Changer la catégorie"
+            aria-label={t("transactionsPage.category.change")}
             className="rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50"
           >
             <CurrentCategory transaction={transaction} />
@@ -74,12 +77,12 @@ export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
         </PopoverTrigger>
         <PopoverContent className="w-64 p-0" align="start">
           <Command>
-            <CommandInput placeholder="Rechercher une catégorie…" value={search} onValueChange={setSearch} />
+            <CommandInput placeholder={t("transactionsPage.category.search")} value={search} onValueChange={setSearch} />
             <CommandList>
-              <CommandEmpty>Aucune catégorie trouvée.</CommandEmpty>
+              <CommandEmpty>{t("transactionsPage.category.notFound")}</CommandEmpty>
               <CommandGroup>
-                <CommandItem value={NO_CATEGORY} keywords={["Aucune"]} onSelect={() => choose(null)}>
-                  <span className="text-muted-foreground">Aucune</span>
+                <CommandItem value={NO_CATEGORY} keywords={[t("transactionsPage.none")]} onSelect={() => choose(null)}>
+                  <span className="text-muted-foreground">{t("transactionsPage.none")}</span>
                   <SelectedMark visible={transaction.categoryId === null} />
                 </CommandItem>
               </CommandGroup>
@@ -103,7 +106,7 @@ export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
               <CommandGroup forceMount>
                 <CommandItem forceMount value={NEW_CATEGORY} onSelect={startCreating}>
                   <Plus />
-                  <span className="truncate">{newName ? `Créer « ${newName} »` : "Nouvelle catégorie…"}</span>
+                  <span className="truncate">{newName ? t("transactionsPage.category.create", { name: newName }) : t("transactionsPage.category.new")}</span>
                 </CommandItem>
               </CommandGroup>
             </CommandList>

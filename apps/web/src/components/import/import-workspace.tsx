@@ -1,11 +1,13 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { TriangleAlert, Upload } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
+import i18n from "@/i18n"
 import { api, type ImportOutcome, type ImportPreview } from "@/lib/api"
 import { accountsQuery, importPreviewQuery, invalidateAfterImport } from "@/lib/queries"
 import { ImportOptions } from "./import-options"
@@ -18,15 +20,13 @@ type ImportWorkspaceProps = {
   onImported: () => void
 }
 
-function plural(count: number, singular: string, pluralForm: string): string {
-  return `${count} ${count > 1 ? pluralForm : singular}`
-}
-
 function describeOutcome(outcome: ImportOutcome): string {
-  const parts = [plural(outcome.inserted, "transaction importée", "transactions importées")]
-  if (outcome.updated > 0) parts.push(plural(outcome.updated, "mise à jour", "mises à jour"))
-  if (outcome.skipped > 0) parts.push(plural(outcome.skipped, "doublon ignoré", "doublons ignorés"))
-  if (outcome.accountsCreated > 0) parts.push(plural(outcome.accountsCreated, "compte créé", "comptes créés"))
+  const parts = [i18n.t("importWorkspace.outcome.inserted", { count: outcome.inserted })]
+  if (outcome.updated > 0) parts.push(i18n.t("importWorkspace.outcome.updated", { count: outcome.updated }))
+  if (outcome.skipped > 0) parts.push(i18n.t("importWorkspace.outcome.skipped", { count: outcome.skipped }))
+  if (outcome.accountsCreated > 0) {
+    parts.push(i18n.t("importWorkspace.outcome.accountsCreated", { count: outcome.accountsCreated }))
+  }
   return parts.join(", ")
 }
 
@@ -38,6 +38,7 @@ function canImport(preview: ImportPreview, accountId: string | undefined): boole
 }
 
 export function ImportWorkspace({ file, onImported }: ImportWorkspaceProps) {
+  const { t } = useTranslation()
   const queryClient = useQueryClient()
   const [profileId, setProfileId] = useState<string>()
   const [accountId, setAccountId] = useState<string>()
@@ -75,7 +76,7 @@ export function ImportWorkspace({ file, onImported }: ImportWorkspaceProps) {
           <div className="flex justify-end">
             <Button onClick={() => commit.mutate(upload)} disabled={!canImport(data, accountId) || commit.isPending}>
               <Upload />
-              {commit.isPending ? "Import…" : "Importer"}
+              {commit.isPending ? t("importWorkspace.importing") : t("importWorkspace.import")}
             </Button>
           </div>
         </CardContent>
@@ -84,7 +85,7 @@ export function ImportWorkspace({ file, onImported }: ImportWorkspaceProps) {
       <RowErrorsAlert errors={data.errors} total={data.summary.errors} />
       <Card className="gap-0 pb-0">
         <CardHeader className="pb-4">
-          <CardTitle>Aperçu</CardTitle>
+          <CardTitle>{t("importWorkspace.previewTitle")}</CardTitle>
         </CardHeader>
         <CardContent className="px-0">
           <PreviewTable rows={data.rows} total={data.summary.total} fallbackAccountName={fallbackAccountName} />
@@ -95,10 +96,11 @@ export function ImportWorkspace({ file, onImported }: ImportWorkspaceProps) {
 }
 
 function PreviewErrorAlert({ message }: { message: string }) {
+  const { t } = useTranslation()
   return (
     <Alert variant="destructive">
       <TriangleAlert />
-      <AlertTitle>Lecture du fichier impossible</AlertTitle>
+      <AlertTitle>{t("importWorkspace.readError")}</AlertTitle>
       <AlertDescription>{message}</AlertDescription>
     </Alert>
   )

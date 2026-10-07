@@ -1,8 +1,8 @@
 import type { PeriodRange } from "@centime/core"
 import { CircleAlert } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import type { FixedItemOverview } from "@/lib/api"
-import { plural } from "@/lib/dashboard"
 
 type EarlierOverdueProps = {
   overviews: FixedItemOverview[]
@@ -11,6 +11,7 @@ type EarlierOverdueProps = {
 }
 
 export function EarlierOverdue({ overviews, month, onSelect }: EarlierOverdueProps) {
+  const { t } = useTranslation()
   const dueDates = overviews
     .flatMap((overview) => overview.occurrences)
     .filter((report) => report.status === "overdue" && report.dueDate < month.start)
@@ -26,7 +27,7 @@ export function EarlierOverdue({ overviews, month, onSelect }: EarlierOverduePro
       className="h-auto gap-1.5 p-0 text-muted-foreground hover:text-foreground"
     >
       <CircleAlert className="size-3.5" aria-hidden />
-      {plural(dueDates.length, "échéance en retard", "échéances en retard")} sur les mois précédents
+      {t("fixedItemsUi.earlierOverdue", { count: dueDates.length })}
     </Button>
   )
 }

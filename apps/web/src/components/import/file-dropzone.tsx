@@ -1,5 +1,6 @@
 import { FileUp } from "lucide-react"
 import { type DragEvent, type KeyboardEvent, useRef, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { cn } from "@/lib/utils"
 
 type FileDropzoneProps = {
@@ -10,6 +11,7 @@ type FileDropzoneProps = {
 const ACCEPTED_TYPES = ".csv,.xml,text/csv,text/xml,application/xml"
 
 export function FileDropzone({ file, onFileSelected }: FileDropzoneProps) {
+  const { t } = useTranslation()
   const inputRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
 
@@ -52,8 +54,8 @@ export function FileDropzone({ file, onFileSelected }: FileDropzoneProps) {
       )}
     >
       <FileUp className="size-8 text-muted-foreground" />
-      <p className="text-sm font-medium">{file ? file.name : "Déposez un relevé ici ou cliquez pour le choisir"}</p>
-      <p className="text-xs text-muted-foreground">CSV ou camt.053 (XML), 10 Mo maximum</p>
+      <p className="text-sm font-medium">{file ? file.name : t("importWorkspace.dropzone.prompt")}</p>
+      <p className="text-xs text-muted-foreground">{t("importWorkspace.dropzone.hint")}</p>
       <input
         ref={inputRef}
         type="file"

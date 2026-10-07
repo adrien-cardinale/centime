@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { PreviewRow } from "@/lib/api"
@@ -11,8 +12,9 @@ type PreviewTableProps = {
 }
 
 export function PreviewTable({ rows, total, fallbackAccountName }: PreviewTableProps) {
+  const { t } = useTranslation()
   if (rows.length === 0) {
-    return <p className="p-6 text-center text-sm text-muted-foreground">Aucune transaction lisible dans ce fichier.</p>
+    return <p className="p-6 text-center text-sm text-muted-foreground">{t("importWorkspace.preview.empty")}</p>
   }
 
   return (
@@ -20,12 +22,12 @@ export function PreviewTable({ rows, total, fallbackAccountName }: PreviewTableP
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="pl-6">Date</TableHead>
-            <TableHead>Libellé</TableHead>
-            <TableHead>Commerçant</TableHead>
-            <TableHead className="text-right">Montant</TableHead>
-            <TableHead>Compte</TableHead>
-            <TableHead className="pr-6">État</TableHead>
+            <TableHead className="pl-6">{t("importWorkspace.preview.date")}</TableHead>
+            <TableHead>{t("importWorkspace.preview.label")}</TableHead>
+            <TableHead>{t("importWorkspace.preview.merchant")}</TableHead>
+            <TableHead className="text-right">{t("importWorkspace.preview.amount")}</TableHead>
+            <TableHead>{t("importWorkspace.preview.account")}</TableHead>
+            <TableHead className="pr-6">{t("importWorkspace.preview.state")}</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -49,7 +51,7 @@ export function PreviewTable({ rows, total, fallbackAccountName }: PreviewTableP
       </Table>
       {total > rows.length && (
         <p className="border-t p-3 text-center text-xs text-muted-foreground">
-          Aperçu limité aux {rows.length} premières lignes sur {total}.
+          {t("importWorkspace.preview.limited", { shown: rows.length, total })}
         </p>
       )}
     </div>

@@ -4,6 +4,7 @@ import { CategoryBadge } from "@/components/categories/category-badge"
 import { Badge } from "@/components/ui/badge"
 import type { Category, Rule } from "@/lib/api"
 import { fixedItemsQuery } from "@/lib/queries"
+import { useTranslation } from "react-i18next"
 
 type RuleTargetProps = {
   rule: Rule
@@ -11,6 +12,7 @@ type RuleTargetProps = {
 }
 
 export function RuleTarget({ rule, categoriesById }: RuleTargetProps) {
+  const { t } = useTranslation()
   const { data: fixedItems = [] } = useQuery(fixedItemsQuery)
   const category = rule.categoryId ? categoriesById.get(rule.categoryId) : undefined
   const fixedItem = rule.fixedItemId ? fixedItems.find((item) => item.id === rule.fixedItemId) : undefined
@@ -24,7 +26,7 @@ export function RuleTarget({ rule, categoriesById }: RuleTargetProps) {
           {fixedItem.name}
         </Badge>
       )}
-      {rule.markAsTransfer && <Badge variant="secondary">Transfert</Badge>}
+      {rule.markAsTransfer && <Badge variant="secondary">{t("rules.transfer")}</Badge>}
     </div>
   )
 }

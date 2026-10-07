@@ -2,6 +2,7 @@ import { roundCents } from "@centime/core"
 import { Link } from "@tanstack/react-router"
 import { List, Pencil, Trash2 } from "lucide-react"
 import { Fragment, useState } from "react"
+import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
@@ -9,6 +10,7 @@ import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { BudgetOverviewItem, BudgetTotals, Theme } from "@/lib/api"
 import { BUDGET_CURRENCY, budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
+import i18n from "@/i18n"
 import { formatAmount } from "@/lib/format"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
@@ -50,17 +52,18 @@ function groupByTheme(budgets: BudgetOverviewItem[], themes: Theme[]): ThemeBudg
 }
 
 export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
+  const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">Catégorie</TableHead>
-          <TableHead>Période</TableHead>
-          <TableHead className="text-right">Budget</TableHead>
-          <TableHead className="text-right">Dépensé</TableHead>
-          <TableHead>Avancement</TableHead>
-          <TableHead className="text-right">Reste</TableHead>
-          <TableHead className="pr-6 text-right">Actions</TableHead>
+          <TableHead className="pl-6">{t("budgets.table.category")}</TableHead>
+          <TableHead>{t("budgets.table.period")}</TableHead>
+          <TableHead className="text-right">{t("budgets.table.budget")}</TableHead>
+          <TableHead className="text-right">{t("budgets.table.spent")}</TableHead>
+          <TableHead>{t("budgets.table.progress")}</TableHead>
+          <TableHead className="text-right">{t("budgets.table.remaining")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("budgets.table.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -68,7 +71,7 @@ export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
           <Fragment key={group.theme?.id ?? "none"}>
             <TableRow className="bg-muted/40 hover:bg-muted/40">
               <TableCell colSpan={2} className="pl-6 font-semibold">
-                {group.theme?.name ?? "Sans thème"}
+                {group.theme?.name ?? t("budgets.table.noTheme")}
               </TableCell>
               <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
                 {money(group.totals.available)}
@@ -94,13 +97,14 @@ export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
 
 function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
   return [
-    status.carry !== 0 && `Report : ${signedMoney(status.carry)}`,
-    status.pending > 0 && `En suspens : ${money(status.pending)}`,
-    status.projected !== null && status.projected !== 0 && `Au rythme actuel : ${money(status.projected)}`,
+    status.carry !== 0 && i18n.t("budgets.table.carry", { amount: signedMoney(status.carry) }),
+    status.pending > 0 && i18n.t("budgets.table.pending", { amount: money(status.pending) }),
+    status.projected !== null && status.projected !== 0 && i18n.t("budgets.table.projected", { amount: money(status.projected) }),
   ].filter((detail) => detail !== false)
 }
 
 function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (budget: BudgetOverviewItem) => void }) {
+  const { t } = useTranslation()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const { status } = budget
   const { range } = status
@@ -137,18 +141,18 @@ function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (bu
       </TableCell>
       <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" aria-label={`Voir les transactions de ${budget.categoryName}`} asChild>
+          <Button variant="ghost" size="icon" aria-label={t("budgets.table.viewTransactions", { name: budget.categoryName })} asChild>
             <Link to="/transactions" search={{ categoryId: budget.categoryId, from: range.start, to: range.end }}>
               <List />
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" aria-label={`Modifier ${budget.categoryName}`} onClick={() => onEdit(budget)}>
+          <Button variant="ghost" size="icon" aria-label={t("budgets.table.edit", { name: budget.categoryName })} onClick={() => onEdit(budget)}>
             <Pencil />
           </Button>
           <Button
             variant="ghost"
             size="icon"
-            aria-label={`Supprimer ${budget.categoryName}`}
+            aria-label={t("budgets.table.delete", { name: budget.categoryName })}
             onClick={() => setConfirmOpen(true)}
           >
             <Trash2 />

@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Progress } from "@/components/ui/progress"
 import type { BudgetOverviewItem } from "@/lib/api"
@@ -7,8 +8,12 @@ import { budgetStateLabels } from "@/lib/labels"
 import { SummaryCard } from "./summary-card"
 
 export function BudgetsCard({ budgets }: { budgets: BudgetOverviewItem[] }) {
+  const { t } = useTranslation()
   return (
-    <SummaryCard title="Budgets du mois" to="/budgets" isEmpty={budgets.length === 0} emptyMessage="Aucun budget défini.">
+    <SummaryCard title={t("dashboardPage.budgets.title")}
+      to="/budgets"
+      isEmpty={budgets.length === 0}
+      emptyMessage={t("dashboardPage.budgets.empty")}>
       <ul className="space-y-4">
         {budgets.map((budget) => (
           <li key={budget.id} className="space-y-1.5">

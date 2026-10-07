@@ -1,5 +1,6 @@
 import { ArrowLeftRight, Repeat, X } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { CategorySelect } from "@/components/categories/category-select"
 import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
 import { Button } from "@/components/ui/button"
@@ -14,6 +15,7 @@ type BulkActionsBarProps = {
 }
 
 export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
+  const { t } = useTranslation()
   const bulkUpdate = useBulkUpdateTransactions(onClear)
   const [linkOpen, setLinkOpen] = useState(false)
   const count = selectedIds.length
@@ -29,13 +31,13 @@ export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/50 px-4 py-3">
       <p className="text-sm font-medium">
-        {count} sélectionnée{count > 1 ? "s" : ""}
+        {t("transactionsPage.bulk.selected", { count })}
       </p>
       <CategorySelect
         value={undefined}
         onChange={assignCategory}
-        extraOptions={[{ value: NO_CATEGORY, label: "Aucune" }]}
-        placeholder="Attribuer une catégorie"
+        extraOptions={[{ value: NO_CATEGORY, label: t("transactionsPage.none") }]}
+        placeholder={t("transactionsPage.bulk.assignCategory")}
         className="w-56 bg-background"
         disabled={bulkUpdate.isPending}
       />
@@ -43,7 +45,7 @@ export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
         <PopoverTrigger asChild>
           <Button variant="outline" size="sm" disabled={bulkUpdate.isPending}>
             <Repeat />
-            Lier à un poste fixe
+            {t("transactionsPage.linkFixedItem")}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-64 p-0" align="start">
@@ -52,14 +54,14 @@ export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
       </Popover>
       <Button variant="outline" size="sm" onClick={() => setTransfer(true)} disabled={bulkUpdate.isPending}>
         <ArrowLeftRight />
-        Marquer comme transfert
+        {t("transactionsPage.markTransfer")}
       </Button>
       <Button variant="outline" size="sm" onClick={() => setTransfer(false)} disabled={bulkUpdate.isPending}>
-        Retirer le transfert
+        {t("transactionsPage.removeTransfer")}
       </Button>
       <Button variant="ghost" size="sm" onClick={onClear} className="ml-auto">
         <X />
-        Annuler la sélection
+        {t("transactionsPage.bulk.clear")}
       </Button>
     </div>
   )

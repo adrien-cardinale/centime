@@ -1,4 +1,5 @@
 import { Repeat } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -13,6 +14,7 @@ type FixedItemCellProps = {
 }
 
 export function FixedItemCell({ transaction, open, onOpenChange }: FixedItemCellProps) {
+  const { t } = useTranslation()
   const update = useUpdateTransaction()
 
   const choose = (fixedItemId: string | null) => {
@@ -29,7 +31,7 @@ export function FixedItemCell({ transaction, open, onOpenChange }: FixedItemCell
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="gap-3 p-4 sm:max-w-sm">
           <DialogHeader>
-            <DialogTitle>Lier à un poste fixe</DialogTitle>
+            <DialogTitle>{t("transactionsPage.linkFixedItem")}</DialogTitle>
             <DialogDescription className="truncate">{transaction.rawLabel}</DialogDescription>
           </DialogHeader>
           <div className="overflow-hidden rounded-md border">
@@ -42,6 +44,7 @@ export function FixedItemCell({ transaction, open, onOpenChange }: FixedItemCell
 }
 
 function LinkedIndicator({ name, onClick }: { name: string; onClick: () => void }) {
+  const { t } = useTranslation()
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -49,7 +52,7 @@ function LinkedIndicator({ name, onClick }: { name: string; onClick: () => void 
           variant="ghost"
           size="icon"
           onClick={onClick}
-          aria-label={`Poste fixe : ${name}`}
+          aria-label={t("transactionsPage.fixedItemLabel", { name })}
           className="size-6 text-muted-foreground hover:text-foreground"
         >
           <Repeat className="size-4" />

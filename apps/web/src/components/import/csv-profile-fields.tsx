@@ -1,5 +1,6 @@
 import { type CsvColumnChoice, type CsvProfileInput, findCsvColumn } from "@centime/core"
 import type { Control, FieldPathByValue } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -81,6 +82,7 @@ type ColumnFieldProps = {
 const NO_COLUMN = "__none__"
 
 export function ColumnField({ control, name, label, columns, optional = false }: ColumnFieldProps) {
+  const { t } = useTranslation()
   if (columns.length === 0) return <TextField control={control} name={name} label={label} />
 
   return (
@@ -99,18 +101,18 @@ export function ColumnField({ control, name, label, columns, optional = false }:
             >
               <FormControl>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={optional ? "Aucune" : "Choisir une colonne"} />
+                  <SelectValue placeholder={optional ? t("csvProfiles.fields.none") : t("csvProfiles.fields.chooseColumn")} />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                {optional && <SelectItem value={NO_COLUMN}>Aucune</SelectItem>}
+                {optional && <SelectItem value={NO_COLUMN}>{t("csvProfiles.fields.none")}</SelectItem>}
                 {columns.map((column) => (
                   <SelectItem key={column.name} value={column.name}>
                     {column.name}
                     {column.sample && <span className="max-w-32 truncate text-muted-foreground">{column.sample}</span>}
                   </SelectItem>
                 ))}
-                {isMissing && <SelectItem value={field.value}>{field.value} (absente du fichier)</SelectItem>}
+                {isMissing && <SelectItem value={field.value}>{t("csvProfiles.fields.missingFromFile", { name: field.value })}</SelectItem>}
               </SelectContent>
             </Select>
             <FormMessage />

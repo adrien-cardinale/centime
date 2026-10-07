@@ -140,3 +140,7 @@ The master key is stored on the device, next to the database (`master.key`) in t
 3. The app derives its credentials from the key and runs a first synchronization. **Settings** also lets you display the recovery key again.
 
 The recovery key is what lets a new device join the same data; there is nothing to revoke server-side except deleting the account (`DELETE /api/account`). Web Crypto requires a secure context, so serve the browser version over HTTPS (or from `localhost`).
+
+## License
+
+[GNU AGPL-3.0](LICENSE). You are free to use, modify and host this software, including commercially, but if you run a modified version as a network service you must make your modified source code available to its users.

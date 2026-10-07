@@ -70,7 +70,7 @@ function BudgetsPage() {
   const [dialog, setDialog] = useState<DialogState>({ open: false, target: {} })
 
   const openDialog = (target: BudgetDialogTarget) => setDialog({ open: true, target })
-  const changeDate = (next: string) => void navigate({ search: { date: next }, replace: true })
+  const changeDate = (next: string) => void navigate({ search: { date: next }, replace: true, resetScroll: false })
 
   return (
     <div className="space-y-6">
@@ -94,7 +94,9 @@ function BudgetsPage() {
           </div>
         }
       />
-      <PeriodNavigator date={date} onChange={changeDate} />
+      <div className="sticky top-0 z-10 -mx-4 -mt-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
+        <PeriodNavigator date={date} onChange={changeDate} />
+      </div>
       <LatestDataNotice month={month} onSelect={changeDate} />
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {budgets.data && fixedItems.data && occurrences.data ? (
@@ -145,18 +147,16 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
         <PlanSummary plan={plan} />
         <EarlierOverdue overviews={occurrences.items} month={month} onSelect={onSelectDate} />
       </div>
-      <PlanSection title="Revenus fixes" aside={progressText("Reçu", plan.income)}>
-        <Card className="py-0">
-          <CardContent className="px-0">
-            <FixedItemsTable
-              items={incomes}
-              overviews={overviews}
-              month={month}
-              emptyMessage="Aucun revenu fixe pour l'instant."
-              onView={setViewedId}
-            />
-          </CardContent>
-        </Card>
+      <UnbudgetedSpending categories={budgets.unbudgeted} monthLabel={month.label} onCreate={onCreateBudget} />
+      <PlanSection title="Enveloppes variables" aside={progressText("Dépensé", plan.envelopes)}>
+        {budgets.budgets.length === 0 && <EmptyEnvelopes onCreate={() => onCreateBudget()} />}
+        {budgets.budgets.length > 0 && (
+          <Card className="py-0">
+            <CardContent className="px-0">
+              <BudgetsTable budgets={budgets.budgets} themes={themes} onEdit={onEditBudget} />
+            </CardContent>
+          </Card>
+        )}
       </PlanSection>
       <PlanSection title="Charges fixes" aside={progressText("Payé", plan.fixedExpenses)}>
         <Card className="py-0">
@@ -171,17 +171,19 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
           </CardContent>
         </Card>
       </PlanSection>
-      <PlanSection title="Enveloppes variables" aside={progressText("Dépensé", plan.envelopes)}>
-        {budgets.budgets.length === 0 && <EmptyEnvelopes onCreate={() => onCreateBudget()} />}
-        {budgets.budgets.length > 0 && (
-          <Card className="py-0">
-            <CardContent className="px-0">
-              <BudgetsTable budgets={budgets.budgets} themes={themes} onEdit={onEditBudget} />
-            </CardContent>
-          </Card>
-        )}
+      <PlanSection title="Revenus fixes" aside={progressText("Reçu", plan.income)}>
+        <Card className="py-0">
+          <CardContent className="px-0">
+            <FixedItemsTable
+              items={incomes}
+              overviews={overviews}
+              month={month}
+              emptyMessage="Aucun revenu fixe pour l'instant."
+              onView={setViewedId}
+            />
+          </CardContent>
+        </Card>
       </PlanSection>
-      <UnbudgetedSpending categories={budgets.unbudgeted} monthLabel={month.label} onCreate={onCreateBudget} />
       <FixedItemSheet
         item={viewed}
         overview={viewed ? overviews.get(viewed.id) : undefined}

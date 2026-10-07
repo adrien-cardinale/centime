@@ -1,6 +1,6 @@
 import { Repeat } from "lucide-react"
 import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
-import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useUpdateTransaction } from "@/hooks/use-transaction-updates"
 import type { TransactionItem } from "@/lib/api"
@@ -21,16 +21,22 @@ export function FixedItemCell({ transaction, open, onOpenChange }: FixedItemCell
   }
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverAnchor asChild>
-        <span className="inline-flex size-6 items-center justify-center">
-          {transaction.fixedItemName && <LinkedIndicator name={transaction.fixedItemName} onClick={() => onOpenChange(true)} />}
-        </span>
-      </PopoverAnchor>
-      <PopoverContent className="w-64 p-0" align="start">
-        <FixedItemCommand selectedId={transaction.fixedItemId} onSelect={choose} />
-      </PopoverContent>
-    </Popover>
+    <>
+      <span className="inline-flex size-6 items-center justify-center">
+        {transaction.fixedItemName && <LinkedIndicator name={transaction.fixedItemName} onClick={() => onOpenChange(true)} />}
+      </span>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="gap-3 p-4 sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Lier à un poste fixe</DialogTitle>
+            <DialogDescription className="truncate">{transaction.rawLabel}</DialogDescription>
+          </DialogHeader>
+          <div className="overflow-hidden rounded-md border">
+            <FixedItemCommand selectedId={transaction.fixedItemId} onSelect={choose} />
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
 

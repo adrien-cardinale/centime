@@ -1,0 +1,169 @@
+{
+  "common": {
+    "cancel": "Cancel",
+    "never": "Never",
+    "copy": "Copy"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "transactions": "Transactions",
+    "import": "Import",
+    "budget": "Budget",
+    "categories": "Categories",
+    "accounts": "Accounts",
+    "settings": "Settings"
+  },
+  "theme": {
+    "title": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "title": "Language",
+    "fr": "Français",
+    "en": "English"
+  },
+  "settings": {
+    "title": "Settings",
+    "language": {
+      "title": "Language",
+      "description": "Language of the interface, dates and amounts."
+    },
+    "sync": {
+      "title": "Sync server",
+      "configuredDescription": "Changes are exchanged with the server every 5 minutes and after every change.",
+      "unconfiguredDescription": "Connect this device to your centime server to access your data everywhere. The server only sees encrypted data.",
+      "server": "Server",
+      "lastSync": "Last sync",
+      "localChanges": "Local changes",
+      "lastSyncFailed": "Last sync failed",
+      "syncing": "Syncing…",
+      "syncNow": "Sync now",
+      "report": "Sync complete: {{pulled}} received, {{pushed}} sent",
+      "disconnect": "Disconnect",
+      "disconnectTitle": "Disconnect this device?",
+      "disconnectDescription": "Syncing stops. Local data is kept on this computer.",
+      "disconnected": "Device disconnected from the server",
+      "serverAddress": "Server address",
+      "serverHint": "No account or password: your key is enough, and the server only receives encrypted data.",
+      "invalidUrl": "Invalid address (http:// or https://)",
+      "connect": "Connect",
+      "connecting": "Connecting…",
+      "connected": "Device connected and synced",
+      "connectFailed": "Unable to connect"
+    },
+    "recoveryKey": {
+      "title": "Encryption key",
+      "description": "It encrypts your data before it is sent to the server. Enter it on another device to get your budget back. Without it, the data cannot be recovered.",
+      "show": "Show key",
+      "hide": "Hide key",
+      "copied": "Key copied",
+      "copyFailed": "Unable to copy",
+      "notFound": "Key not found on this device",
+      "readFailed": "Unable to read the key"
+    },
+    "localData": {
+      "title": "Local data",
+      "description": "This device's database is encrypted and works offline.",
+      "location": "Location",
+      "size": "Size",
+      "seedHint": "Default categories, rules and CSV profiles are created on first launch. If you deleted them, you can recreate them below.",
+      "seed": "Create default data",
+      "seeded": "Default data created"
+    }
+  },
+  "syncState": {
+    "neverSynced": "Never synced",
+    "syncedAgo": "Synced {{when}}",
+    "noPending": "No pending changes",
+    "pending_one": "{{count}} pending change",
+    "pending_other": "{{count}} pending changes",
+    "notConfigured": "Sync not configured",
+    "syncing": "Syncing…",
+    "offline": "Server unreachable · {{pending}}",
+    "error": "Error: {{message}}",
+    "units": {
+      "byte": "B",
+      "kilo": "KB",
+      "mega": "MB"
+    }
+  },
+  "dashboard": {
+    "alertsLabel": "Items needing attention",
+    "uncategorized_one": "{{count}} uncategorized transaction",
+    "uncategorized_other": "{{count}} uncategorized transactions",
+    "budgetsExceeded_one": "{{count}} budget exceeded",
+    "budgetsExceeded_other": "{{count}} budgets exceeded",
+    "overdue_one": "{{count}} overdue payment",
+    "overdue_other": "{{count}} overdue payments",
+    "pending": "{{count}} pending"
+  },
+  "labels": {
+    "accountKind": {
+      "bank": "Bank account",
+      "card": "Card"
+    },
+    "transactionStatus": {
+      "booked": "Booked",
+      "pending": "Pending"
+    },
+    "rowState": {
+      "new": "New",
+      "duplicate": "Duplicate",
+      "pendingToBooked": "Update"
+    },
+    "csvDelimiter": {
+      ";": "Semicolon ( ; )",
+      ",": "Comma ( , )",
+      "\t": "Tab"
+    },
+    "decimalSeparator": {
+      ".": "Period ( . )",
+      ",": "Comma ( , )"
+    },
+    "amountMode": {
+      "signed": "Signed amount",
+      "debitCredit": "Amount + debit/credit column"
+    },
+    "ruleMatchKind": {
+      "contains": "contains",
+      "regex": "regex"
+    },
+    "ruleField": {
+      "raw_label": "Label",
+      "merchant": "Merchant",
+      "provider_category": "Provider category"
+    },
+    "periodicity": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "occurrenceStatus": {
+      "paid": "Paid",
+      "upcoming": "Upcoming",
+      "due": "Due",
+      "overdue": "Overdue"
+    },
+    "budgetState": {
+      "ok": "Within budget",
+      "warning": "Nearly reached",
+      "exceeded": "Exceeded"
+    },
+    "budgetPeriodGroup": {
+      "monthly": "Monthly",
+      "quarterly": "Quarterly",
+      "yearly": "Yearly"
+    },
+    "quarterMonth": {
+      "0": "1st month of the quarter",
+      "1": "2nd month of the quarter",
+      "2": "3rd month of the quarter"
+    }
+  },
+  "fixedItems": {
+    "dueFirst": "on the 1st",
+    "dueDay": "on the {{day}}"
+  }
+}

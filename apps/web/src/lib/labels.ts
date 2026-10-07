@@ -12,23 +12,26 @@ import type {
   RuleMatchKind,
   TransactionStatus,
 } from "@centime/core"
+import i18n, { currentIntlLocale } from "@/i18n"
 import type { RowState } from "./api"
 
-export const accountKindLabels: Record<AccountKind, string> = {
-  bank: "Compte bancaire",
-  card: "Carte",
+/** Dictionnaire dont chaque valeur est traduite à la lecture, dans la langue courante. */
+function translatedLabels<K extends string>(prefix: string, keys: readonly K[]): Record<K, string> {
+  const labels = {} as Record<K, string>
+  for (const key of keys) {
+    Object.defineProperty(labels, key, {
+      enumerable: true,
+      get: () => i18n.t(`labels.${prefix}.${key}`),
+    })
+  }
+  return labels
 }
 
-export const transactionStatusLabels: Record<TransactionStatus, string> = {
-  booked: "Comptabilisée",
-  pending: "En suspens",
-}
+export const accountKindLabels = translatedLabels<AccountKind>("accountKind", ["bank", "card"])
 
-export const rowStateLabels: Record<RowState, string> = {
-  new: "Nouvelle",
-  duplicate: "Doublon",
-  pendingToBooked: "Mise à jour",
-}
+export const transactionStatusLabels = translatedLabels<TransactionStatus>("transactionStatus", ["booked", "pending"])
+
+export const rowStateLabels = translatedLabels<RowState>("rowState", ["new", "duplicate", "pendingToBooked"])
 
 export const importFormatLabels: Record<ImportFormat, string> = {
   csv: "CSV",
@@ -40,71 +43,42 @@ export const csvEncodingLabels: Record<CsvEncoding, string> = {
   "iso-8859-1": "ISO-8859-1 (Latin-1)",
 }
 
-export const csvDelimiterLabels: Record<CsvDelimiter, string> = {
-  ";": "Point-virgule ( ; )",
-  ",": "Virgule ( , )",
-  "\t": "Tabulation",
+export const csvDelimiterLabels = translatedLabels<CsvDelimiter>("csvDelimiter", [";", ",", "\t"])
+
+export const decimalSeparatorLabels = translatedLabels<DecimalSeparator>("decimalSeparator", [".", ","])
+
+export const amountModeLabels = translatedLabels<CsvAmountMode>("amountMode", ["signed", "debitCredit"])
+
+export const ruleMatchKindLabels = translatedLabels<RuleMatchKind>("ruleMatchKind", ["contains", "regex"])
+
+export const ruleFieldLabels = translatedLabels<RuleField>("ruleField", ["raw_label", "merchant", "provider_category"])
+
+export const periodicityLabels = translatedLabels<Periodicity>("periodicity", ["monthly", "quarterly", "yearly"])
+
+export const occurrenceStatusLabels = translatedLabels<OccurrenceStatus>("occurrenceStatus", [
+  "paid",
+  "upcoming",
+  "due",
+  "overdue",
+])
+
+export const budgetStateLabels = translatedLabels<BudgetState>("budgetState", ["ok", "warning", "exceeded"])
+
+export const budgetPeriodGroupLabels = translatedLabels<Periodicity>("budgetPeriodGroup", [
+  "monthly",
+  "quarterly",
+  "yearly",
+])
+
+function capitalize(text: string): string {
+  return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
-export const decimalSeparatorLabels: Record<DecimalSeparator, string> = {
-  ".": "Point ( . )",
-  ",": "Virgule ( , )",
+export function getMonthLabels(): string[] {
+  const formatter = new Intl.DateTimeFormat(currentIntlLocale(), { month: "long", timeZone: "UTC" })
+  return Array.from({ length: 12 }, (_, month) => capitalize(formatter.format(new Date(Date.UTC(2000, month, 1)))))
 }
 
-export const amountModeLabels: Record<CsvAmountMode, string> = {
-  signed: "Montant signé",
-  debitCredit: "Montant + colonne débit/crédit",
+export function getQuarterMonthLabels(): string[] {
+  return [0, 1, 2].map((index) => i18n.t(`labels.quarterMonth.${index}`))
 }
-
-export const ruleMatchKindLabels: Record<RuleMatchKind, string> = {
-  contains: "contient",
-  regex: "regex",
-}
-
-export const ruleFieldLabels: Record<RuleField, string> = {
-  raw_label: "Libellé",
-  merchant: "Commerçant",
-  provider_category: "Catégorie du fournisseur",
-}
-
-export const periodicityLabels: Record<Periodicity, string> = {
-  monthly: "Mensuel",
-  quarterly: "Trimestriel",
-  yearly: "Annuel",
-}
-
-export const occurrenceStatusLabels: Record<OccurrenceStatus, string> = {
-  paid: "Payé",
-  upcoming: "À venir",
-  due: "À échéance",
-  overdue: "En retard",
-}
-
-export const budgetStateLabels: Record<BudgetState, string> = {
-  ok: "Dans le budget",
-  warning: "Bientôt atteint",
-  exceeded: "Dépassé",
-}
-
-export const budgetPeriodGroupLabels: Record<Periodicity, string> = {
-  monthly: "Mensuels",
-  quarterly: "Trimestriels",
-  yearly: "Annuels",
-}
-
-export const monthLabels = [
-  "Janvier",
-  "Février",
-  "Mars",
-  "Avril",
-  "Mai",
-  "Juin",
-  "Juillet",
-  "Août",
-  "Septembre",
-  "Octobre",
-  "Novembre",
-  "Décembre",
-] as const
-
-export const quarterMonthLabels = ["1er mois du trimestre", "2e mois du trimestre", "3e mois du trimestre"] as const

@@ -1,17 +1,21 @@
 import { format, parseISO } from "date-fns"
+import { currentIntlLocale } from "@/i18n"
 
-const amountFormatters = new Map<string, Intl.NumberFormat>()
+const formatterCache = new Map<string, Intl.NumberFormat>()
 
-function amountFormatter(currency: string): Intl.NumberFormat {
-  const cached = amountFormatters.get(currency)
+/** Formateur mis en cache par locale et options, pour suivre la langue courante. */
+export function numberFormatter(options: Intl.NumberFormatOptions): Intl.NumberFormat {
+  const locale = currentIntlLocale()
+  const cacheKey = `${locale}|${JSON.stringify(options)}`
+  const cached = formatterCache.get(cacheKey)
   if (cached) return cached
-  const formatter = new Intl.NumberFormat("fr-CH", { style: "currency", currency })
-  amountFormatters.set(currency, formatter)
+  const formatter = new Intl.NumberFormat(locale, options)
+  formatterCache.set(cacheKey, formatter)
   return formatter
 }
 
 export function formatAmount(amount: number, currency: string): string {
-  return amountFormatter(currency).format(amount)
+  return numberFormatter({ style: "currency", currency }).format(amount)
 }
 
 export function formatDate(isoDate: string): string {
@@ -22,8 +26,6 @@ export function formatDateTime(isoDateTime: string): string {
   return format(parseISO(isoDateTime), "dd.MM.yyyy HH:mm")
 }
 
-const decimalFormatter = new Intl.NumberFormat("fr-CH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })
-
 export function formatDecimal(amount: number): string {
-  return decimalFormatter.format(amount)
+  return numberFormatter({ minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
 }

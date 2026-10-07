@@ -1,0 +1,169 @@
+{
+  "common": {
+    "cancel": "Annuler",
+    "never": "Jamais",
+    "copy": "Copier"
+  },
+  "nav": {
+    "dashboard": "Tableau de bord",
+    "transactions": "Transactions",
+    "import": "Import",
+    "budget": "Budget",
+    "categories": "Catégories",
+    "accounts": "Comptes",
+    "settings": "Paramètres"
+  },
+  "theme": {
+    "title": "Thème",
+    "light": "Clair",
+    "dark": "Sombre",
+    "system": "Système"
+  },
+  "language": {
+    "title": "Langue",
+    "fr": "Français",
+    "en": "English"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "language": {
+      "title": "Langue",
+      "description": "Langue de l'interface, des dates et des montants."
+    },
+    "sync": {
+      "title": "Serveur de synchronisation",
+      "configuredDescription": "Les modifications sont échangées avec le serveur toutes les 5 minutes et après chaque changement.",
+      "unconfiguredDescription": "Connectez cet appareil à votre serveur centime pour retrouver vos données partout. Le serveur ne voit que des données chiffrées.",
+      "server": "Serveur",
+      "lastSync": "Dernière synchronisation",
+      "localChanges": "Modifications locales",
+      "lastSyncFailed": "Dernière synchronisation en échec",
+      "syncing": "Synchronisation…",
+      "syncNow": "Synchroniser maintenant",
+      "report": "Synchronisation terminée : {{pulled}} reçue(s), {{pushed}} envoyée(s)",
+      "disconnect": "Déconnecter",
+      "disconnectTitle": "Déconnecter cet appareil ?",
+      "disconnectDescription": "La synchronisation s'arrête. Les données locales sont conservées sur cet ordinateur.",
+      "disconnected": "Appareil déconnecté du serveur",
+      "serverAddress": "Adresse du serveur",
+      "serverHint": "Aucun compte ni mot de passe : votre clé suffit, et le serveur ne reçoit que des données chiffrées.",
+      "invalidUrl": "Adresse invalide (http:// ou https://)",
+      "connect": "Connecter",
+      "connecting": "Connexion…",
+      "connected": "Appareil connecté et synchronisé",
+      "connectFailed": "Connexion impossible"
+    },
+    "recoveryKey": {
+      "title": "Clé de chiffrement",
+      "description": "Elle chiffre vos données avant leur envoi au serveur. Saisissez-la sur un autre appareil pour retrouver votre budget. Sans elle, les données sont irrécupérables.",
+      "show": "Afficher la clé",
+      "hide": "Masquer la clé",
+      "copied": "Clé copiée",
+      "copyFailed": "Copie impossible",
+      "notFound": "Clé introuvable sur cet appareil",
+      "readFailed": "Lecture de la clé impossible"
+    },
+    "localData": {
+      "title": "Données locales",
+      "description": "La base de cet appareil est chiffrée et reste utilisable sans connexion.",
+      "location": "Emplacement",
+      "size": "Taille",
+      "seedHint": "Les catégories, règles et profils CSV par défaut sont créés au premier lancement. Si vous les avez supprimés, vous pouvez les recréer ci-dessous.",
+      "seed": "Créer les données par défaut",
+      "seeded": "Données par défaut créées"
+    }
+  },
+  "syncState": {
+    "neverSynced": "Jamais synchronisé",
+    "syncedAgo": "Synchronisé {{when}}",
+    "noPending": "Aucune modification en attente",
+    "pending_one": "{{count}} modification en attente",
+    "pending_other": "{{count}} modifications en attente",
+    "notConfigured": "Synchronisation non configurée",
+    "syncing": "Synchronisation en cours…",
+    "offline": "Serveur injoignable · {{pending}}",
+    "error": "Erreur : {{message}}",
+    "units": {
+      "byte": "o",
+      "kilo": "Ko",
+      "mega": "Mo"
+    }
+  },
+  "dashboard": {
+    "alertsLabel": "Points d'attention",
+    "uncategorized_one": "{{count}} transaction non catégorisée",
+    "uncategorized_other": "{{count}} transactions non catégorisées",
+    "budgetsExceeded_one": "{{count}} budget dépassé",
+    "budgetsExceeded_other": "{{count}} budgets dépassés",
+    "overdue_one": "{{count}} échéance en retard",
+    "overdue_other": "{{count}} échéances en retard",
+    "pending": "{{count}} en suspens"
+  },
+  "labels": {
+    "accountKind": {
+      "bank": "Compte bancaire",
+      "card": "Carte"
+    },
+    "transactionStatus": {
+      "booked": "Comptabilisée",
+      "pending": "En suspens"
+    },
+    "rowState": {
+      "new": "Nouvelle",
+      "duplicate": "Doublon",
+      "pendingToBooked": "Mise à jour"
+    },
+    "csvDelimiter": {
+      ";": "Point-virgule ( ; )",
+      ",": "Virgule ( , )",
+      "\t": "Tabulation"
+    },
+    "decimalSeparator": {
+      ".": "Point ( . )",
+      ",": "Virgule ( , )"
+    },
+    "amountMode": {
+      "signed": "Montant signé",
+      "debitCredit": "Montant + colonne débit/crédit"
+    },
+    "ruleMatchKind": {
+      "contains": "contient",
+      "regex": "regex"
+    },
+    "ruleField": {
+      "raw_label": "Libellé",
+      "merchant": "Commerçant",
+      "provider_category": "Catégorie du fournisseur"
+    },
+    "periodicity": {
+      "monthly": "Mensuel",
+      "quarterly": "Trimestriel",
+      "yearly": "Annuel"
+    },
+    "occurrenceStatus": {
+      "paid": "Payé",
+      "upcoming": "À venir",
+      "due": "À échéance",
+      "overdue": "En retard"
+    },
+    "budgetState": {
+      "ok": "Dans le budget",
+      "warning": "Bientôt atteint",
+      "exceeded": "Dépassé"
+    },
+    "budgetPeriodGroup": {
+      "monthly": "Mensuels",
+      "quarterly": "Trimestriels",
+      "yearly": "Annuels"
+    },
+    "quarterMonth": {
+      "0": "1er mois du trimestre",
+      "1": "2e mois du trimestre",
+      "2": "3e mois du trimestre"
+    }
+  },
+  "fixedItems": {
+    "dueFirst": "le 1er",
+    "dueDay": "le {{day}}"
+  }
+}

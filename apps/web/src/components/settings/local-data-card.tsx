@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { DatabaseZap } from "lucide-react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +13,7 @@ import { refreshSyncState } from "@/lib/sync/sync-store"
 const localDataQueryKey = ["local-data", "default-counts"]
 
 export function LocalDataCard({ neverSynced }: { neverSynced: boolean }) {
+  const { t } = useTranslation()
   const database = getLocalDatabase()
   const queryClient = useQueryClient()
   const counts = useQuery({
@@ -25,7 +27,7 @@ export function LocalDataCard({ neverSynced }: { neverSynced: boolean }) {
       await database.flush()
     },
     onSuccess: async () => {
-      toast.success("Données par défaut créées")
+      toast.success(t("settings.localData.seeded"))
       await Promise.all([queryClient.invalidateQueries(), refreshSyncState()])
     },
     onError: (error) => toast.error(error.message),
@@ -34,31 +36,28 @@ export function LocalDataCard({ neverSynced }: { neverSynced: boolean }) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Données locales</CardTitle>
-        <CardDescription>La base de cet appareil est chiffrée et reste utilisable sans connexion.</CardDescription>
+        <CardTitle>{t("settings.localData.title")}</CardTitle>
+        <CardDescription>{t("settings.localData.description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <dl className="space-y-2">
           <div className="grid gap-1 sm:grid-cols-[12rem_1fr]">
-            <dt className="text-sm text-muted-foreground">Emplacement</dt>
+            <dt className="text-sm text-muted-foreground">{t("settings.localData.location")}</dt>
             <dd className="font-mono text-xs break-all">{database.filePath}</dd>
           </div>
           <div className="grid gap-1 sm:grid-cols-[12rem_1fr]">
-            <dt className="text-sm text-muted-foreground">Taille</dt>
+            <dt className="text-sm text-muted-foreground">{t("settings.localData.size")}</dt>
             <dd className="text-sm">{formatFileSize(database.sizeInBytes())}</dd>
           </div>
         </dl>
         {neverSynced && (
-          <p className="text-sm text-muted-foreground">
-            Les catégories, règles et profils CSV par défaut sont créés au premier lancement. Si vous les avez
-            supprimés, vous pouvez les recréer ci-dessous.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("settings.localData.seedHint")}</p>
         )}
         {counts.isPending && <Skeleton className="h-9 w-56" />}
         {counts.data && lacksDefaultData(counts.data) && (
           <Button variant="outline" onClick={() => seed.mutate()} disabled={seed.isPending}>
             <DatabaseZap />
-            Créer les données par défaut
+            {t("settings.localData.seed")}
           </Button>
         )}
       </CardContent>

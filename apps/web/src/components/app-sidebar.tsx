@@ -1,4 +1,5 @@
 import { Link, useMatchRoute } from "@tanstack/react-router"
+import { useTranslation } from "react-i18next"
 import {
   Sidebar,
   SidebarContent,
@@ -16,6 +17,7 @@ import { ThemeToggle } from "./theme-toggle"
 
 export function AppSidebar() {
   const matchRoute = useMatchRoute()
+  const { t } = useTranslation()
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -31,10 +33,10 @@ export function AppSidebar() {
                 const isActive = Boolean(matchRoute({ to: item.to, fuzzy: item.to !== "/" }))
                 return (
                   <SidebarMenuItem key={item.to}>
-                    <SidebarMenuButton asChild isActive={isActive} tooltip={item.title}>
+                    <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.titleKey)}>
                       <Link to={item.to} aria-current={isActive ? "page" : undefined}>
                         <item.icon />
-                        <span>{item.title}</span>
+                        <span>{t(item.titleKey)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>

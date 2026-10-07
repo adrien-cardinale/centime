@@ -1,5 +1,6 @@
 import { RefreshCw, TriangleAlert, Unplug } from "lucide-react"
 import { useState } from "react"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import {
@@ -14,6 +15,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import i18n from "@/i18n"
 import { formatDateTime } from "@/lib/format"
 import { formatPendingChanges } from "@/lib/sync/sync-labels"
 import { disconnect, type SyncState, syncNow } from "@/lib/sync/sync-store"
@@ -28,10 +30,11 @@ function SyncDetail({ label, value }: { label: string; value: string }) {
 }
 
 function describeReport(pulled: number, pushed: number): string {
-  return `Synchronisation terminée : ${pulled} reçue(s), ${pushed} envoyée(s)`
+  return i18n.t("settings.sync.report", { pulled, pushed })
 }
 
 export function SyncStatusCard({ state }: { state: SyncState }) {
+  const { t } = useTranslation()
   const syncing = state.status === "syncing"
 
   const synchronizeNow = async () => {
@@ -43,21 +46,21 @@ export function SyncStatusCard({ state }: { state: SyncState }) {
   return (
     <div className="space-y-4">
       <dl className="space-y-2">
-        <SyncDetail label="Serveur" value={state.serverUrl ?? ""} />
-        <SyncDetail label="Dernière synchronisation" value={state.lastAt ? formatDateTime(state.lastAt) : "Jamais"} />
-        <SyncDetail label="Modifications locales" value={formatPendingChanges(state.dirtyCount)} />
+        <SyncDetail label={t("settings.sync.server")} value={state.serverUrl ?? ""} />
+        <SyncDetail label={t("settings.sync.lastSync")} value={state.lastAt ? formatDateTime(state.lastAt) : t("common.never")} />
+        <SyncDetail label={t("settings.sync.localChanges")} value={formatPendingChanges(state.dirtyCount)} />
       </dl>
       {state.lastError && (
         <Alert variant="destructive">
           <TriangleAlert />
-          <AlertTitle>Dernière synchronisation en échec</AlertTitle>
+          <AlertTitle>{t("settings.sync.lastSyncFailed")}</AlertTitle>
           <AlertDescription>{state.lastError}</AlertDescription>
         </Alert>
       )}
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => void synchronizeNow()} disabled={syncing}>
           <RefreshCw className={syncing ? "animate-spin" : undefined} />
-          {syncing ? "Synchronisation…" : "Synchroniser maintenant"}
+          {syncing ? t("settings.sync.syncing") : t("settings.sync.syncNow")}
         </Button>
         <DisconnectButton />
       </div>
@@ -66,13 +69,14 @@ export function SyncStatusCard({ state }: { state: SyncState }) {
 }
 
 function DisconnectButton() {
+  const { t } = useTranslation()
   const [pending, setPending] = useState(false)
 
   const confirm = async () => {
     setPending(true)
     try {
       await disconnect()
-      toast.success("Appareil déconnecté du serveur")
+      toast.success(t("settings.sync.disconnected"))
     } finally {
       setPending(false)
     }
@@ -83,19 +87,17 @@ function DisconnectButton() {
       <AlertDialogTrigger asChild>
         <Button variant="outline" disabled={pending}>
           <Unplug />
-          Déconnecter
+          {t("settings.sync.disconnect")}
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
-          <AlertDialogTitle>Déconnecter cet appareil ?</AlertDialogTitle>
-          <AlertDialogDescription>
-            La synchronisation s'arrête. Les données locales sont conservées sur cet ordinateur.
-          </AlertDialogDescription>
+          <AlertDialogTitle>{t("settings.sync.disconnectTitle")}</AlertDialogTitle>
+          <AlertDialogDescription>{t("settings.sync.disconnectDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Annuler</AlertDialogCancel>
-          <AlertDialogAction onClick={() => void confirm()}>Déconnecter</AlertDialogAction>
+          <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
+          <AlertDialogAction onClick={() => void confirm()}>{t("settings.sync.disconnect")}</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

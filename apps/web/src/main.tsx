@@ -3,9 +3,11 @@ import { createRouter, RouterProvider } from "@tanstack/react-router"
 import { ThemeProvider } from "next-themes"
 import { StrictMode } from "react"
 import { createRoot } from "react-dom/client"
+import { useTranslation } from "react-i18next"
 import { AppBoot } from "@/components/startup/app-boot"
 import { Toaster } from "@/components/ui/sonner"
 import { TooltipProvider } from "@/components/ui/tooltip"
+import "@/i18n"
 import { setApi } from "@/lib/api/api-ref"
 import { createApi } from "@/lib/api/create-api"
 import { loadVault, takePendingServerUrl } from "@/lib/crypto/onboarding"
@@ -46,6 +48,12 @@ function boot(): Promise<void> {
   return booted
 }
 
+function LocalizedRouter() {
+  const { i18n } = useTranslation()
+  // Le routeur est remonté au changement de langue pour que les libellés lus hors React soient relus.
+  return <RouterProvider key={i18n.language} router={router} />
+}
+
 declare module "@tanstack/react-router" {
   interface Register {
     router: typeof router
@@ -61,7 +69,7 @@ createRoot(rootElement).render(
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <AppBoot boot={boot}>
-            <RouterProvider router={router} />
+            <LocalizedRouter />
           </AppBoot>
           <Toaster richColors position="top-right" />
         </TooltipProvider>

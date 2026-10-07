@@ -1,6 +1,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import { useForm } from "react-hook-form"
+import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { z } from "zod"
 import { Button } from "@/components/ui/button"
@@ -8,24 +9,27 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from "@/components/ui/input"
 import { configure } from "@/lib/sync/sync-store"
 
-const connectSchema = z.object({
-  serverUrl: z.url({ protocol: /^https?$/, error: "Adresse invalide (http:// ou https://)" }),
-})
+const createConnectSchema = (invalidUrlMessage: string) =>
+  z.object({
+    serverUrl: z.url({ protocol: /^https?$/, error: invalidUrlMessage }),
+  })
 
-type ConnectValues = z.infer<typeof connectSchema>
+type ConnectValues = z.infer<ReturnType<typeof createConnectSchema>>
 
 export function SyncConnectForm() {
+  const { t } = useTranslation()
   const [connecting, setConnecting] = useState(false)
+  const connectSchema = useMemo(() => createConnectSchema(t("settings.sync.invalidUrl")), [t])
   const form = useForm<ConnectValues>({ resolver: zodResolver(connectSchema), defaultValues: { serverUrl: "" } })
 
   const connect = async (values: ConnectValues) => {
     setConnecting(true)
     try {
       const outcome = await configure(values.serverUrl)
-      if (outcome.ok) toast.success("Appareil connecté et synchronisé")
+      if (outcome.ok) toast.success(t("settings.sync.connected"))
       else toast.error(outcome.message)
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Connexion impossible")
+      toast.error(error instanceof Error ? error.message : t("settings.sync.connectFailed"))
     } finally {
       setConnecting(false)
     }
@@ -39,19 +43,17 @@ export function SyncConnectForm() {
           name="serverUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Adresse du serveur</FormLabel>
+              <FormLabel>{t("settings.sync.serverAddress")}</FormLabel>
               <FormControl>
                 <Input placeholder="https://centime.example.ch" autoComplete="url" {...field} />
               </FormControl>
-              <FormDescription>
-                Aucun compte ni mot de passe : votre clé suffit, et le serveur ne reçoit que des données chiffrées.
-              </FormDescription>
+              <FormDescription>{t("settings.sync.serverHint")}</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         <Button type="submit" disabled={connecting}>
-          {connecting ? "Connexion…" : "Connecter"}
+          {connecting ? t("settings.sync.connecting") : t("settings.sync.connect")}
         </Button>
       </form>
     </Form>

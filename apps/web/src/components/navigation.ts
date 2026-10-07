@@ -10,17 +10,17 @@ import {
 } from "lucide-react"
 
 export type NavigationItem = {
-  title: string
+  titleKey: string
   to: "/" | "/accounts" | "/transactions" | "/import" | "/budgets" | "/categories" | "/settings"
   icon: LucideIcon
 }
 
 export const navigationItems: NavigationItem[] = [
-  { title: "Tableau de bord", to: "/", icon: LayoutDashboard },
-  { title: "Transactions", to: "/transactions", icon: ArrowLeftRight },
-  { title: "Import", to: "/import", icon: Upload },
-  { title: "Budget", to: "/budgets", icon: PiggyBank },
-  { title: "Catégories", to: "/categories", icon: FolderTree },
-  { title: "Comptes", to: "/accounts", icon: Wallet },
-  { title: "Paramètres", to: "/settings", icon: Settings },
+  { titleKey: "nav.dashboard", to: "/", icon: LayoutDashboard },
+  { titleKey: "nav.transactions", to: "/transactions", icon: ArrowLeftRight },
+  { titleKey: "nav.import", to: "/import", icon: Upload },
+  { titleKey: "nav.budget", to: "/budgets", icon: PiggyBank },
+  { titleKey: "nav.categories", to: "/categories", icon: FolderTree },
+  { titleKey: "nav.accounts", to: "/accounts", icon: Wallet },
+  { titleKey: "nav.settings", to: "/settings", icon: Settings },
 ]

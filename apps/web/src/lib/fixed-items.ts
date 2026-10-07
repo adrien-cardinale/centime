@@ -1,6 +1,7 @@
 import type { Periodicity, PeriodRange } from "@centime/core"
+import i18n from "@/i18n"
 import type { FixedItem, OccurrenceReport } from "./api"
-import { monthLabels, periodicityLabels, quarterMonthLabels } from "./labels"
+import { getMonthLabels, getQuarterMonthLabels, periodicityLabels } from "./labels"
 
 export const FIXED_ITEM_CURRENCY = "CHF"
 
@@ -18,12 +19,13 @@ export function signedAmount(direction: Direction, absolute: number): number {
 
 function dueMonthLabel(periodicity: Periodicity, dueMonth: number | null): string | null {
   if (periodicity === "monthly" || dueMonth === null) return null
-  const labels: readonly string[] = periodicity === "quarterly" ? quarterMonthLabels : monthLabels
+  const labels: readonly string[] = periodicity === "quarterly" ? getQuarterMonthLabels() : getMonthLabels()
   return labels[dueMonth - 1]?.toLowerCase() ?? null
 }
 
 export function dueDescription(item: Pick<FixedItem, "periodicity" | "dueDay" | "dueMonth">): string {
-  const day = item.dueDay === null || item.dueDay === 1 ? "le 1er" : `le ${item.dueDay}`
+  const day =
+    item.dueDay === null || item.dueDay === 1 ? i18n.t("fixedItems.dueFirst") : i18n.t("fixedItems.dueDay", { day: item.dueDay })
   const month = dueMonthLabel(item.periodicity, item.dueMonth)
   return [periodicityLabels[item.periodicity], month ? `${day}, ${month}` : day].join(" · ")
 }

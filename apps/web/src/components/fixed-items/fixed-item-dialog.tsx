@@ -22,7 +22,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { api, type FixedItem } from "@/lib/api"
 import { type Direction, directionOf, signedAmount } from "@/lib/fixed-items"
-import { monthLabels, periodicityLabels, quarterMonthLabels } from "@/lib/labels"
+import { getMonthLabels, getQuarterMonthLabels, periodicityLabels } from "@/lib/labels"
 import { invalidateFixedItemData } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 import { defaultDueMonth, emptyRule, type FixedItemFormValues, formValuesFor, NO_CATEGORY } from "./fixed-item-form"
@@ -304,7 +304,7 @@ function ScheduleFields({ control, onPeriodicityChange }: ScheduleFieldsProps) {
 }
 
 function DueMonthField({ control, periodicity }: { control: FixedItemControl; periodicity: Periodicity }) {
-  const labels: readonly string[] = periodicity === "quarterly" ? quarterMonthLabels : monthLabels
+  const labels: readonly string[] = periodicity === "quarterly" ? getQuarterMonthLabels() : getMonthLabels()
   return (
     <FormField
       control={control}

@@ -13,12 +13,6 @@
     "test": "bun test"
   },
   "dependencies": {
-    "@centime/core": "workspace:*",
-    "@centime/db": "workspace:*",
-    "@centime/services": "workspace:*",
-    "@hono/zod-validator": "^0.9.1",
-    "@libsql/client": "^0.18.0",
-    "drizzle-orm": "^0.45.3",
     "hono": "^4.13.9",
     "zod": "^4.6.5"
   }

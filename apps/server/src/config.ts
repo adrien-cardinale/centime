@@ -1,49 +1,45 @@
-import { loadEnvFile, resolveDatabaseUrl } from "@centime/db/node"
-import { resolve } from "node:path"
+import { isAbsolute, resolve } from "node:path"
 import { defaultStaticDir, projectRoot } from "./paths"
 
 export type Config = {
   port: number
-  databaseUrl: string
-  appPassword: string
-  sessionSecret: string
+  databasePath: string
+  allowSignup: boolean
   staticDir: string
   isProduction: boolean
 }
 
 export class ConfigError extends Error {}
 
-function loadDotEnv(): void {
-  loadEnvFile(resolve(projectRoot, ".env"))
-}
-
-function requireEnv(name: string): string {
-  const value = process.env[name]?.trim()
-  if (!value) throw new ConfigError(`La variable d'environnement ${name} est obligatoire.`)
-  return value
-}
-
-function parsePort(value: string | undefined): number {
-  const port = Number(value ?? "3000")
-  if (!Number.isInteger(port) || port <= 0 || port > 65535) {
-    throw new ConfigError(`PORT invalide : ${value}`)
-  }
-  return port
-}
-
 function optionalEnv(name: string): string | undefined {
   const value = process.env[name]?.trim()
   return value ? value : undefined
 }
 
+function parsePort(value: string | undefined): number {
+  const port = Number(value ?? "3000")
+  if (!Number.isInteger(port) || port <= 0 || port > 65535) throw new ConfigError(`PORT invalide : ${value}`)
+  return port
+}
+
+function parseBoolean(name: string, value: string | undefined, fallback: boolean): boolean {
+  if (value === undefined) return fallback
+  if (value === "true") return true
+  if (value === "false") return false
+  throw new ConfigError(`${name} doit valoir true ou false : ${value}`)
+}
+
+export function resolveDatabasePath(path: string): string {
+  return isAbsolute(path) ? path : resolve(projectRoot, path)
+}
+
+
 export function loadConfig(): Config {
-  loadDotEnv()
   const staticDir = optionalEnv("STATIC_DIR")
   return {
     port: parsePort(optionalEnv("PORT")),
-    databaseUrl: resolveDatabaseUrl(optionalEnv("DATABASE_URL") ?? "file:./data/centime.db", projectRoot),
-    appPassword: requireEnv("APP_PASSWORD"),
-    sessionSecret: requireEnv("SESSION_SECRET"),
+    databasePath: resolveDatabasePath(optionalEnv("DATABASE_PATH") ?? "./data/relay.db"),
+    allowSignup: parseBoolean("ALLOW_SIGNUP", optionalEnv("ALLOW_SIGNUP"), true),
     staticDir: staticDir ? resolve(projectRoot, staticDir) : defaultStaticDir,
     isProduction: process.env.NODE_ENV === "production",
   }

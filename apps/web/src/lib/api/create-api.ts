@@ -1,7 +1,6 @@
-import { isTauri } from "@/lib/runtime"
+import type { Vault } from "@/lib/crypto/envelope"
 import type { Api } from "./types"
 
-export async function createApi(): Promise<Api> {
-  if (__CENTIME_DESKTOP__ && isTauri()) return (await import("./local")).createLocalApi()
-  return (await import("./http")).createHttpApi()
+export async function createApi(vault: Vault): Promise<Api> {
+  return (await import("./local")).createLocalApi(vault)
 }

@@ -1,9 +1,11 @@
 import type { QueryClient } from "@tanstack/react-query"
 import { fetch as tauriFetch } from "@tauri-apps/plugin-http"
 import { useSyncExternalStore } from "react"
+import { getVault } from "@/lib/crypto/current-vault"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
-import { countPendingChanges } from "@/lib/local-db/local-data"
+import { countPendingChanges, markAllChangesPending } from "@/lib/local-db/local-data"
 import { onMutationSettled } from "@/lib/queries"
+import { isTauri } from "@/lib/runtime"
 import { type FetchLike, normalizeServerUrl, SyncError, type SyncReport, synchronize } from "./sync-client"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
@@ -23,9 +25,7 @@ export type SyncState = {
 
 export type SyncOutcome = { ok: true; report: SyncReport } | { ok: false; message: string }
 
-export type ConnectInput = { serverUrl: string; password: string; label: string }
-
-const fetchFromDesktop: FetchLike = (url, init) => tauriFetch(url, init)
+const fetchFromRuntime: FetchLike = (url, init) => (isTauri() ? tauriFetch(url, init) : fetch(url, init))
 
 let state: SyncState = {
   status: "idle",
@@ -66,7 +66,7 @@ export async function refreshSyncState(): Promise<void> {
     dirtyCount: await countPendingChanges(db),
   }))
   setState({
-    configured: settings.serverUrl !== null && settings.token !== null,
+    configured: settings.serverUrl !== null,
     serverUrl: settings.serverUrl,
     lastAt: settings.lastAt,
     lastError: settings.lastError,
@@ -84,14 +84,14 @@ function messageOf(error: unknown): string {
 
 async function runSynchronization(): Promise<SyncOutcome> {
   const database = getLocalDatabase()
-  const { serverUrl, token } = await database.run(readSyncSettings)
-  if (serverUrl === null || token === null) return { ok: false, message: "Synchronisation non configurée" }
+  const { serverUrl } = await database.run(readSyncSettings)
+  if (serverUrl === null) return { ok: false, message: "Synchronisation non configurée" }
   setState({ status: "syncing" })
   try {
     const report = await synchronize(database.db, {
       serverUrl,
-      token,
-      fetch: fetchFromDesktop,
+      vault: getVault(),
+      fetch: fetchFromRuntime,
       exclusive: (task) => database.run(() => task()),
     })
     await queryClient?.invalidateQueries()
@@ -112,45 +112,23 @@ export function syncNow(): Promise<SyncOutcome> {
   return running
 }
 
-async function requestToken(input: ConnectInput): Promise<string> {
-  const serverUrl = normalizeServerUrl(input.serverUrl)
-  let response: Response
-  try {
-    response = await fetchFromDesktop(`${serverUrl}/api/auth/token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password: input.password, label: input.label }),
-    })
-  } catch {
-    throw new Error("Serveur injoignable : vérifie l'adresse et la connexion réseau")
-  }
-  const body: unknown = await response.json().catch(() => null)
-  if (!response.ok) throw new Error(errorOf(body) ?? `Erreur du serveur (${response.status})`)
-  if (!body || typeof body !== "object" || !("token" in body) || typeof body.token !== "string") {
-    throw new Error("Réponse du serveur invalide")
-  }
-  return body.token
-}
-
-function errorOf(body: unknown): string | null {
-  if (body && typeof body === "object" && "error" in body && typeof body.error === "string") return body.error
-  return null
-}
-
-export async function configure(input: ConnectInput): Promise<SyncOutcome> {
-  const token = await requestToken(input)
+export async function setServerUrl(serverUrl: string): Promise<void> {
   await getLocalDatabase().run(async (db) => {
-    await writeSyncSetting(db, "serverUrl", normalizeServerUrl(input.serverUrl))
-    await writeSyncSetting(db, "token", token)
+    await writeSyncSetting(db, "serverUrl", normalizeServerUrl(serverUrl))
     await writeSyncSetting(db, "cursor", 0)
+    await markAllChangesPending(db)
     await clearSyncSetting(db, "lastError")
   })
   await refreshSyncState()
+}
+
+export async function configure(serverUrl: string): Promise<SyncOutcome> {
+  await setServerUrl(serverUrl)
   return syncNow()
 }
 
 export async function disconnect(): Promise<void> {
-  await getLocalDatabase().run((db) => clearSyncSetting(db, "serverUrl", "token", "lastError"))
+  await getLocalDatabase().run((db) => clearSyncSetting(db, "serverUrl", "lastError"))
   setState({ status: "idle" })
   await refreshSyncState()
 }
@@ -172,7 +150,10 @@ export function startSyncScheduler(client: QueryClient): void {
   setInterval(() => {
     if (state.configured) void syncNow()
   }, SYNC_INTERVAL_MS)
-  void refreshSyncState().then(() => {
-    if (state.configured) void syncNow()
-  })
+  void refreshSyncState()
+    .then(async () => {
+      if (!state.configured && !isTauri()) await configure(window.location.origin)
+      else if (state.configured) await syncNow()
+    })
+    .catch(() => undefined)
 }

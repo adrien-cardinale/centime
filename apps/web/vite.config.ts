@@ -13,9 +13,6 @@ export default defineConfig(({ mode }) => {
   const mobileHost = process.env.TAURI_DEV_HOST
   return {
     plugins: [tanstackRouter({ target: "react", autoCodeSplitting: true }), react(), tailwindcss()],
-    define: {
-      __CENTIME_DESKTOP__: JSON.stringify(desktop),
-    },
     resolve: {
       alias: {
         "@": fileURLToPath(new URL("./src", import.meta.url)),

@@ -17,7 +17,7 @@ FROM ${BUN_IMAGE} AS runtime
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
-    DATABASE_URL=file:/app/data/centime.db
+    DATABASE_PATH=/app/data/relay.db
 COPY package.json bun.lock ./
 COPY packages/core/package.json packages/core/
 COPY packages/db/package.json packages/db/
@@ -26,9 +26,6 @@ COPY apps/server/package.json apps/server/
 COPY apps/web/package.json apps/web/
 COPY apps/desktop/package.json apps/desktop/
 RUN bun install --frozen-lockfile --production --filter '@centime/server'
-COPY packages/core/src packages/core/src
-COPY packages/db/src packages/db/src
-COPY packages/services/src packages/services/src
 COPY apps/server/src apps/server/src
 COPY --from=build /app/apps/web/dist apps/web/dist
 RUN mkdir -p /app/data && chown bun:bun /app/data

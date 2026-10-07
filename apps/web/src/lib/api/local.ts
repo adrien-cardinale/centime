@@ -18,6 +18,7 @@ import {
   transactionChangesSchema,
 } from "@centime/services"
 import { z } from "zod"
+import type { Vault } from "@/lib/crypto/envelope"
 import { setLocalDatabase } from "@/lib/local-db/current-database"
 import { type LocalDatabase, openLocalDb } from "@/lib/local-db/open-local-db"
 import { ApiError } from "./errors"
@@ -27,7 +28,6 @@ import type { Api } from "./types"
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 const UPLOAD_TOO_LARGE = "Fichier trop volumineux (10 Mo maximum)"
-const OFFLINE_UNAVAILABLE = "Indisponible hors ligne"
 const INVALID_REQUEST = "Requête invalide"
 const CSV_MIME_TYPE = "text/csv;charset=utf-8"
 
@@ -70,10 +70,6 @@ async function toImportSource(upload: ImportUpload): Promise<ImportSource> {
   }
 }
 
-function offline(): Promise<never> {
-  return Promise.reject(new ApiError(OFFLINE_UNAVAILABLE, 400))
-}
-
 export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
   const call = async <Result>(task: (db: Db) => Promise<Result>): Promise<Result> => {
     try {
@@ -85,14 +81,6 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
   const surface = apiSurface
 
   return {
-    auth: {
-      me: async () => ({ authenticated: true }),
-      login: async () => ({ authenticated: true }),
-      logout: async () => ({ authenticated: false }),
-      token: offline,
-      tokens: offline,
-      revokeToken: offline,
-    },
     accounts: {
       list: () => call((db) => surface.accounts.list(db)),
       create: (input) => call((db) => surface.accounts.create(db, parseInput(accountInputSchema, input))),
@@ -187,8 +175,8 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
   }
 }
 
-export async function createLocalApi(): Promise<Api> {
-  const database = await openLocalDb()
+export async function createLocalApi(vault: Vault): Promise<Api> {
+  const database = await openLocalDb(vault)
   setLocalDatabase(database)
   return createLocalApiFor(database)
 }

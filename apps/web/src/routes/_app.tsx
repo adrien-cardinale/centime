@@ -1,4 +1,4 @@
-import { createFileRoute, type ErrorComponentProps, Outlet, redirect, useRouter } from "@tanstack/react-router"
+import { createFileRoute, type ErrorComponentProps, Outlet, useRouter } from "@tanstack/react-router"
 import { RotateCw } from "lucide-react"
 import type { ReactNode } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -6,13 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { usePageTitle } from "@/hooks/use-page-title"
-import { authQuery } from "@/lib/queries"
 
 export const Route = createFileRoute("/_app")({
-  beforeLoad: async ({ context }) => {
-    const { authenticated } = await context.queryClient.ensureQueryData(authQuery)
-    if (!authenticated) throw redirect({ to: "/login" })
-  },
   component: AppLayout,
   errorComponent: AppError,
 })

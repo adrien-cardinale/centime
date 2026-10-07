@@ -8,7 +8,7 @@ import {
   seedDefaultRules,
   SYNC_TABLES,
 } from "@centime/db"
-import { count, isNull } from "@centime/db/orm"
+import { count, isNull, sql } from "@centime/db/orm"
 
 const DEFAULT_DATA_TIMESTAMP = "2000-01-01T00:00:00.000Z"
 
@@ -45,4 +45,8 @@ export async function countPendingChanges(db: DbExecutor): Promise<number> {
     total += row?.pending ?? 0
   }
   return total
+}
+
+export async function markAllChangesPending(db: DbExecutor): Promise<void> {
+  for (const { table } of SYNC_TABLES) await db.run(sql`update ${table} set sync_version = null`)
 }

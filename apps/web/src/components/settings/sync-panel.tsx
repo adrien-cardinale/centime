@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSyncStore } from "@/lib/sync/sync-store"
 import { LocalDataCard } from "./local-data-card"
+import { RecoveryKeyCard } from "./recovery-key-card"
 import { SyncConnectForm } from "./sync-connect-form"
 import { SyncStatusCard } from "./sync-status-card"
 
@@ -15,11 +16,12 @@ export default function SyncPanel() {
           <CardDescription>
             {state.configured
               ? "Les modifications sont échangées avec le serveur toutes les 5 minutes et après chaque changement."
-              : "Connectez cet ordinateur à votre serveur centime pour retrouver vos données partout."}
+              : "Connectez cet appareil à votre serveur centime pour retrouver vos données partout. Le serveur ne voit que des données chiffrées."}
           </CardDescription>
         </CardHeader>
         <CardContent>{state.configured ? <SyncStatusCard state={state} /> : <SyncConnectForm />}</CardContent>
       </Card>
+      <RecoveryKeyCard />
       <LocalDataCard neverSynced={state.lastAt === null} />
     </div>
   )

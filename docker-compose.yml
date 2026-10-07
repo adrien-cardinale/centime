@@ -6,8 +6,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      APP_PASSWORD: change-me
-      SESSION_SECRET: change-me-with-a-long-random-string
+      ALLOW_SIGNUP: "true"
     volumes:
       - centime-data:/app/data
 

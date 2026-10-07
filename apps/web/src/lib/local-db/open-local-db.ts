@@ -1,7 +1,9 @@
 import { createProxyDb, type Db, runMigrations } from "@centime/db"
-import { getCurrentWindow } from "@tauri-apps/api/window"
 import type { Database } from "sql.js"
-import { createAutoSaver, createFilePersistence } from "./persistence"
+import type { Vault } from "@/lib/crypto/envelope"
+import { isTauri } from "@/lib/runtime"
+import { createDefaultData } from "./local-data"
+import { createAutoSaver, createPersistence } from "./persistence"
 import { createSerialQueue } from "./serial-queue"
 import { openSqlJsDatabase } from "./sqljs-db"
 import { applyConnectionPragmas, createSqlJsExecutor, isWriteStatement } from "./sqljs-executor"
@@ -22,8 +24,8 @@ function exportSnapshot(database: Database): Uint8Array {
   return bytes
 }
 
-export async function openLocalDb(): Promise<LocalDatabase> {
-  const persistence = await createFilePersistence()
+export async function openLocalDb(vault: Vault): Promise<LocalDatabase> {
+  const persistence = await createPersistence(vault)
   const initialBytes = await persistence.load()
   const database = await openSqlJsDatabase(initialBytes)
   const queue = createSerialQueue()
@@ -43,10 +45,9 @@ export async function openLocalDb(): Promise<LocalDatabase> {
     }),
   )
   await runMigrations(db)
+  if (initialBytes === null) await createDefaultData(db)
   await saver.flush()
-  await getCurrentWindow().onCloseRequested(async () => {
-    await saver.flush().catch(() => undefined)
-  })
+  await flushOnExit(() => saver.flush())
   return {
     db,
     filePath: persistence.filePath,
@@ -54,4 +55,15 @@ export async function openLocalDb(): Promise<LocalDatabase> {
     flush: () => saver.flush(),
     sizeInBytes: () => sizeInBytes,
   }
+}
+
+async function flushOnExit(flush: () => Promise<void>): Promise<void> {
+  if (isTauri()) {
+    const { getCurrentWindow } = await import("@tauri-apps/api/window")
+    await getCurrentWindow().onCloseRequested(async () => {
+      await flush().catch(() => undefined)
+    })
+    return
+  }
+  window.addEventListener("pagehide", () => void flush().catch(() => undefined))
 }

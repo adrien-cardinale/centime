@@ -2,17 +2,6 @@ import { CSV_HEADER_SAMPLE_SIZE } from "@centime/core"
 import { keepPreviousData, type QueryClient, queryOptions, skipToken } from "@tanstack/react-query"
 import { api, type ImportUpload, type TransactionPageFilters } from "./api"
 
-export const authQuery = queryOptions({
-  queryKey: ["auth", "me"],
-  queryFn: api.auth.me,
-  staleTime: 60_000,
-})
-
-export const apiTokensQuery = queryOptions({
-  queryKey: ["auth", "tokens"],
-  queryFn: api.auth.tokens,
-})
-
 export const accountsQuery = queryOptions({
   queryKey: ["accounts"],
   queryFn: api.accounts.list,

@@ -2,23 +2,27 @@ import { type Db, type DbExecutor, SYNC_TABLES, type SyncRow, type SyncTableEntr
 import { SYNC_ROW_SCHEMAS } from "@centime/services"
 import { and, asc, gt, isNull, sql } from "@centime/db/orm"
 import { z } from "zod"
+import type { Vault } from "../crypto/envelope"
 import { applyIncomingRow, type IncomingRow, stampAcceptedRow } from "./sync-apply"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
 export const PUSH_BATCH_SIZE = 500
+export const PULL_PAGE_SIZE = 100
+const PAYLOAD_VERSION = 1
 
 export type FetchLike = (url: string, init: RequestInit) => Promise<Response>
 export type Exclusive = <Result>(task: () => Promise<Result>) => Promise<Result>
 
 export type SyncConfig = {
   serverUrl: string
-  token: string
+  vault: Vault
   fetch: FetchLike
   exclusive?: Exclusive | undefined
   pushBatchSize?: number | undefined
+  pullPageSize?: number | undefined
 }
 
-export type SyncReport = { pulled: number; pushed: number; rejected: number; cursor: number }
+export type SyncReport = { pulled: number; pushed: number; cursor: number }
 
 export type SyncErrorKind = "unauthorized" | "network" | "server"
 
@@ -31,7 +35,8 @@ export class SyncError extends Error {
   }
 }
 
-const UNAUTHORIZED_MESSAGE = "Jeton refusé, reconnecte-toi"
+const UNAUTHORIZED_MESSAGE = "Accès refusé par le serveur : la clé ne correspond pas à ce compte"
+const UNREADABLE_ENTRY_MESSAGE = "Une entrée du serveur est illisible : la clé ne correspond pas ou les données ont été altérées"
 const NETWORK_MESSAGE = "Serveur injoignable : vérifie la connexion réseau et l'adresse du serveur"
 const INVALID_RESPONSE_MESSAGE = "Réponse du serveur invalide"
 
@@ -40,20 +45,15 @@ const tableRowsSchema = z.record(z.string(), z.array(z.unknown()))
 const pullResponseSchema = z.object({
   cursor: z.number().int().min(0),
   hasMore: z.boolean(),
-  changes: tableRowsSchema,
+  entries: z.array(z.object({ seq: z.number().int().min(1), data: z.string() })),
 })
 
-const acceptedRowSchema = z.object({ id: z.string(), syncVersion: z.number().int().nullable() })
+const pushResponseSchema = z.object({ seq: z.number().int().min(1) })
 
-const pushResponseSchema = z.object({
-  cursor: z.number().int().min(0),
-  accepted: z.record(z.string(), z.array(acceptedRowSchema)),
-  rejected: tableRowsSchema,
-})
+const payloadSchema = z.object({ v: z.literal(PAYLOAD_VERSION), changes: tableRowsSchema })
 
 type TableRows = z.infer<typeof tableRowsSchema>
-type PushResponse = z.infer<typeof pushResponseSchema>
-type PushBatch = { changes: Partial<Record<SyncTableName, SyncRow[]>>; updatedAtById: Map<string, string> }
+type PushBatch = { changes: Partial<Record<SyncTableName, SyncRow[]>>; rowCount: number }
 type PushCursorState = { exhausted: Set<SyncTableName>; lastIds: Map<SyncTableName, string> }
 
 type SyncContext = { db: Db; config: SyncConfig; exclusive: Exclusive }
@@ -86,7 +86,8 @@ async function requestJson<Schema extends z.ZodType>(
   init: RequestInit,
   schema: Schema,
 ): Promise<z.output<Schema>> {
-  const headers = { Authorization: `Bearer ${config.token}`, "Content-Type": "application/json" }
+  const { userId, secret } = config.vault.credentials
+  const headers = { Authorization: `Bearer ${userId}.${secret}`, "Content-Type": "application/json" }
   const response = await send(config, path, { ...init, headers })
   if (response.status === 401) throw new SyncError(UNAUTHORIZED_MESSAGE, "unauthorized")
   if (!response.ok) throw new SyncError(await errorMessageOf(response), "server")
@@ -101,31 +102,41 @@ function parseRows(entry: SyncTableEntry, rows: unknown[] | undefined): Incoming
   return parsed.data
 }
 
-async function applyRows(db: DbExecutor, rows: TableRows, mode: "pull" | "overwrite"): Promise<number> {
+type DecodedEntry = { seq: number; changes: TableRows }
+
+async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): Promise<DecodedEntry> {
+  try {
+    const payload = payloadSchema.parse(JSON.parse(await vault.decryptText(entry.data)))
+    return { seq: entry.seq, changes: payload.changes }
+  } catch {
+    throw new SyncError(UNREADABLE_ENTRY_MESSAGE, "server")
+  }
+}
+
+async function applyEntry(db: DbExecutor, entry: DecodedEntry): Promise<number> {
   let applied = 0
-  for (const entry of SYNC_TABLES) {
-    for (const row of parseRows(entry, rows[entry.name])) {
-      await applyIncomingRow(db, entry, row, mode)
-      applied += 1
+  for (const table of SYNC_TABLES) {
+    for (const row of parseRows(table, entry.changes[table.name])) {
+      if (await applyIncomingRow(db, table, { ...row, syncVersion: entry.seq })) applied += 1
     }
   }
   return applied
 }
 
-function countRows(rows: TableRows): number {
-  return SYNC_TABLES.reduce((total, entry) => total + (rows[entry.name]?.length ?? 0), 0)
-}
-
 async function pullPage(context: SyncContext, since: number) {
-  const page = await requestJson(context.config, `/api/sync/pull?since=${since}`, { method: "GET" }, pullResponseSchema)
+  const path = `/api/log?since=${since}&limit=${context.config.pullPageSize ?? PULL_PAGE_SIZE}`
+  const page = await requestJson(context.config, path, { method: "GET" }, pullResponseSchema)
+  const decoded: DecodedEntry[] = []
+  for (const entry of page.entries) decoded.push(await decodeEntry(context.config.vault, entry))
+  let applied = 0
   await context.exclusive(() =>
     context.db.transaction(async (tx) => {
       await tx.run(sql`pragma defer_foreign_keys = on`)
-      await applyRows(tx, page.changes, "pull")
+      for (const entry of decoded) applied += await applyEntry(tx, entry)
       await writeSyncSetting(tx, "cursor", page.cursor)
     }),
   )
-  return page
+  return { ...page, applied }
 }
 
 async function pullAll(context: SyncContext, since: number): Promise<{ cursor: number; pulled: number }> {
@@ -133,7 +144,7 @@ async function pullAll(context: SyncContext, since: number): Promise<{ cursor: n
   let pulled = 0
   for (;;) {
     const page = await pullPage(context, cursor)
-    pulled += countRows(page.changes)
+    pulled += page.applied
     if (page.hasMore && page.cursor <= cursor) throw new SyncError(INVALID_RESPONSE_MESSAGE, "server")
     cursor = page.cursor
     if (!page.hasMore) return { cursor, pulled }
@@ -151,7 +162,7 @@ async function readTableBatch(db: DbExecutor, entry: SyncTableEntry, afterId: st
 }
 
 async function readPushBatch(db: DbExecutor, state: PushCursorState, size: number): Promise<PushBatch | null> {
-  const batch: PushBatch = { changes: {}, updatedAtById: new Map() }
+  const batch: PushBatch = { changes: {}, rowCount: 0 }
   let total = 0
   for (const entry of SYNC_TABLES) {
     if (total >= size) break
@@ -162,53 +173,40 @@ async function readPushBatch(db: DbExecutor, state: PushCursorState, size: numbe
     if (!last) continue
     state.lastIds.set(entry.name, last.id)
     batch.changes[entry.name] = rows
-    for (const row of rows) batch.updatedAtById.set(row.id, row.updatedAt)
     total += rows.length
+    batch.rowCount = total
   }
   return total > 0 ? batch : null
 }
 
-function acceptedVersions(response: PushResponse): number[] {
-  return Object.values(response.accepted).flatMap((rows) => rows.flatMap((row) => row.syncVersion ?? []))
-}
+type PushSummary = { cursor: number; pushed: number; missedChanges: boolean }
 
-export function coversCursorGap(cursor: number, nextCursor: number, versions: number[]): boolean {
-  const unique = new Set(versions)
-  if (unique.size !== versions.length || unique.size !== nextCursor - cursor) return false
-  return versions.every((version) => version > cursor && version <= nextCursor)
-}
-
-async function applyPushResponse(db: DbExecutor, batch: PushBatch, response: PushResponse): Promise<void> {
-  await db.run(sql`pragma defer_foreign_keys = on`)
+async function stampBatch(db: DbExecutor, batch: PushBatch, seq: number): Promise<void> {
   for (const entry of SYNC_TABLES) {
-    for (const accepted of response.accepted[entry.name] ?? []) {
-      const updatedAt = batch.updatedAtById.get(accepted.id)
-      if (updatedAt !== undefined) await stampAcceptedRow(db, entry, { ...accepted, updatedAt })
+    for (const row of batch.changes[entry.name] ?? []) {
+      await stampAcceptedRow(db, entry, { id: row.id, syncVersion: seq, updatedAt: row.updatedAt })
     }
   }
-  await applyRows(db, response.rejected, "overwrite")
 }
 
-type PushSummary = { cursor: number; pushed: number; rejected: number; missedChanges: boolean }
-
 async function pushBatch(context: SyncContext, batch: PushBatch, summary: PushSummary): Promise<void> {
-  const body = JSON.stringify({ changes: batch.changes })
-  const response = await requestJson(context.config, "/api/sync/push", { method: "POST", body }, pushResponseSchema)
-  const contiguous = !summary.missedChanges && coversCursorGap(summary.cursor, response.cursor, acceptedVersions(response))
+  const plain = JSON.stringify({ v: PAYLOAD_VERSION, changes: batch.changes })
+  const body = JSON.stringify({ data: await context.config.vault.encryptText(plain) })
+  const { seq } = await requestJson(context.config, "/api/log", { method: "POST", body }, pushResponseSchema)
+  const contiguous = !summary.missedChanges && seq === summary.cursor + 1
   await context.exclusive(() =>
     context.db.transaction(async (tx) => {
-      await applyPushResponse(tx, batch, response)
-      if (contiguous) await writeSyncSetting(tx, "cursor", response.cursor)
+      await stampBatch(tx, batch, seq)
+      if (contiguous) await writeSyncSetting(tx, "cursor", seq)
     }),
   )
-  summary.pushed += acceptedVersions(response).length
-  summary.rejected += countRows(response.rejected)
-  if (contiguous) summary.cursor = response.cursor
+  summary.pushed += batch.rowCount
+  if (contiguous) summary.cursor = seq
   else summary.missedChanges = true
 }
 
 async function pushAll(context: SyncContext, cursor: number): Promise<PushSummary> {
-  const summary: PushSummary = { cursor, pushed: 0, rejected: 0, missedChanges: false }
+  const summary: PushSummary = { cursor, pushed: 0, missedChanges: false }
   const state: PushCursorState = { exhausted: new Set(), lastIds: new Map() }
   const size = context.config.pushBatchSize ?? PUSH_BATCH_SIZE
   for (;;) {
@@ -222,7 +220,7 @@ async function runSync(context: SyncContext): Promise<SyncReport> {
   const { cursor: storedCursor } = await context.exclusive(() => readSyncSettings(context.db))
   const pulled = await pullAll(context, storedCursor)
   const pushed = await pushAll(context, pulled.cursor)
-  const report = { pulled: pulled.pulled, pushed: pushed.pushed, rejected: pushed.rejected, cursor: pushed.cursor }
+  const report = { pulled: pulled.pulled, pushed: pushed.pushed, cursor: pushed.cursor }
   if (!pushed.missedChanges) return report
   const caughtUp = await pullAll(context, pushed.cursor)
   return { ...report, pulled: report.pulled + caughtUp.pulled, cursor: caughtUp.cursor }

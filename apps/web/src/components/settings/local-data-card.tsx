@@ -35,12 +35,12 @@ export function LocalDataCard({ neverSynced }: { neverSynced: boolean }) {
     <Card>
       <CardHeader>
         <CardTitle>Données locales</CardTitle>
-        <CardDescription>La base de cet ordinateur reste utilisable sans connexion.</CardDescription>
+        <CardDescription>La base de cet appareil est chiffrée et reste utilisable sans connexion.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <dl className="space-y-2">
           <div className="grid gap-1 sm:grid-cols-[12rem_1fr]">
-            <dt className="text-sm text-muted-foreground">Fichier</dt>
+            <dt className="text-sm text-muted-foreground">Emplacement</dt>
             <dd className="font-mono text-xs break-all">{database.filePath}</dd>
           </div>
           <div className="grid gap-1 sm:grid-cols-[12rem_1fr]">
@@ -50,8 +50,8 @@ export function LocalDataCard({ neverSynced }: { neverSynced: boolean }) {
         </dl>
         {neverSynced && (
           <p className="text-sm text-muted-foreground">
-            Les catégories, règles et profils CSV par défaut arrivent depuis le serveur lors de la première
-            synchronisation. Sans serveur, créez-les localement.
+            Les catégories, règles et profils CSV par défaut sont créés au premier lancement. Si vous les avez
+            supprimés, vous pouvez les recréer ci-dessous.
           </p>
         )}
         {counts.isPending && <Skeleton className="h-9 w-56" />}

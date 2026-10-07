@@ -15,7 +15,12 @@ export function numberFormatter(options: Intl.NumberFormatOptions): Intl.NumberF
 }
 
 export function formatAmount(amount: number, currency: string): string {
-  return numberFormatter({ style: "currency", currency }).format(amount)
+  // Une devise hors ISO 4217 (donnée importée ou synchronisée avant validation) ferait lever Intl.NumberFormat.
+  try {
+    return numberFormatter({ style: "currency", currency }).format(amount)
+  } catch {
+    return `${formatDecimal(amount)} ${currency}`
+  }
 }
 
 export function formatDate(isoDate: string): string {

@@ -135,7 +135,7 @@ describe("synchronize", () => {
 
     expect(first.cursor).toBe(1)
     expect((await findTransaction(deviceA, transactionId))?.syncVersion).toBe(1)
-    expect(second).toEqual({ pulled: 0, pushed: 0, cursor: 1 })
+    expect(second).toEqual({ pulled: 0, pushed: 0, cursor: 1, skipped: 0 })
     expect((await readSyncSettings(deviceA)).cursor).toBe(1)
   })
 
@@ -238,11 +238,62 @@ describe("synchronize", () => {
     expect((await readSyncSettings(deviceA)).lastError).toContain("la clé ne correspond pas")
   })
 
-  it("refuses entries it cannot decrypt", async () => {
+  it("skips an entry it cannot decrypt instead of blocking sync forever", async () => {
+    const accountId = await insertAccount(deviceA, "CH01")
+    await insertTransaction(deviceA, accountId, "fp-1")
+    await sync(deviceA)
     relay.entries.push(btoa("n'importe quoi qui n'est pas chiffré, vraiment pas"))
 
-    await expect(sync(deviceA)).rejects.toMatchObject({ kind: "server" })
-    expect((await readSyncSettings(deviceA)).lastError).toContain("illisible")
+    const report = await sync(deviceB)
+
+    expect(report.skipped).toBe(1)
+    expect(report.pulled).toBe(2)
+    expect(report.cursor).toBe(2)
+    expect(await deviceB.select().from(transactions)).toHaveLength(1)
+    expect((await sync(deviceB)).skipped).toBe(0)
+  })
+
+  it("skips an entry written with a newer payload version", async () => {
+    relay.entries.push(await vault.encryptText(JSON.stringify({ v: 2, changes: {} })))
+
+    const report = await sync(deviceA)
+
+    expect(report).toMatchObject({ skipped: 1, cursor: 1 })
+  })
+
+  it("ignores unknown columns added by a newer app version", async () => {
+    const accountId = await insertAccount(deviceA, "CH01")
+    await sync(deviceA)
+    const [account] = await deviceA.select().from(accounts)
+    if (!account) throw new Error("Compte absent")
+    const future = { ...account, futureColumn: "valeur inconnue" }
+    relay.entries.push(await vault.encryptText(JSON.stringify({ v: 1, changes: { accounts: [future] } })))
+
+    const report = await sync(deviceB)
+
+    expect(report.skipped).toBe(0)
+    expect((await deviceB.select().from(accounts)).map((row) => row.id)).toEqual([accountId])
+  })
+
+  it("keeps offline edits when an older duplicate arrives from another device", async () => {
+    const remoteAccountId = await insertAccount(deviceA, "CH01")
+    const remoteTransactionId = await insertTransaction(deviceA, remoteAccountId, "fp-shared")
+    await sync(deviceA)
+    const localAccountId = await insertAccount(deviceB, "CH01")
+    const localId = await insertTransaction(deviceB, localAccountId, "fp-shared")
+    await deviceB
+      .update(transactions)
+      .set({ merchant: "Boulangerie", updatedAt: "2099-01-01T00:00:00.000Z" })
+      .where(eq(transactions.id, localId))
+
+    await sync(deviceB)
+
+    const merged = await findTransaction(deviceB, remoteTransactionId)
+    expect(await findTransaction(deviceB, localId)).toBeUndefined()
+    expect(merged?.merchant).toBe("Boulangerie")
+
+    await sync(deviceA)
+    expect((await findTransaction(deviceA, remoteTransactionId))?.merchant).toBe("Boulangerie")
   })
 
   it("reports an unreachable server as a network error", async () => {

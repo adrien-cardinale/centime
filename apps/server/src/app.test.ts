@@ -202,6 +202,41 @@ describe("DELETE /api/account", () => {
   })
 })
 
+describe("quota de stockage", () => {
+  test("refuse l'écriture au-delà du quota par utilisateur", async () => {
+    store.close()
+    store = openStore(":memory:", { maxUserBytes: 10 })
+    api = createApi({ store })
+    expect((await post("QUJD")).status).toBe(201)
+    expect((await post("QUJD")).status).toBe(201)
+    const refused = await post("QUJD")
+    expect(refused.status).toBe(413)
+    expect(await refused.json()).toHaveProperty("error")
+    expect((await get()).json()).resolves.toMatchObject({ cursor: 2 })
+  })
+
+  test("le quota est compté par utilisateur", async () => {
+    store.close()
+    store = openStore(":memory:", { maxUserBytes: 6 })
+    api = createApi({ store })
+    expect((await post("QUJD")).status).toBe(201)
+    expect((await post("QUJD")).status).toBe(413)
+    expect((await post("QUJD", bearer(USER_B, OTHER_SECRET))).status).toBe(201)
+  })
+})
+
+describe("limitation de débit", () => {
+  test("limite les requêtes par minute et par client", async () => {
+    api = createApi({ store, rateLimitPerMinute: 2 })
+    expect((await post("QUJD")).status).toBe(201)
+    expect((await post("QUJD")).status).toBe(201)
+    const limited = await post("QUJD")
+    expect(limited.status).toBe(429)
+    expect(await limited.json()).toHaveProperty("error")
+    expect((await post("QUJD", bearer(USER_B, OTHER_SECRET))).status).toBe(201)
+  })
+})
+
 describe("routes inconnues", () => {
   test("renvoient une erreur JSON", async () => {
     const response = await api.request("/api/budgets")

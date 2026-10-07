@@ -1,6 +1,6 @@
-import { ACCOUNT_KINDS } from "@centime/core"
+import { ACCOUNT_KINDS, normalizeAccountIdentifier } from "@centime/core"
 import { accounts, type Db } from "@centime/db"
-import { asc, eq, isNull } from "drizzle-orm"
+import { asc, isNull } from "drizzle-orm"
 import { z } from "zod"
 import { ServiceError } from "./errors"
 
@@ -23,9 +23,13 @@ export function listAccounts(db: Db) {
 }
 
 export async function createAccount(db: Db, input: AccountInput) {
-  const existing = await db.query.accounts.findFirst({ where: eq(accounts.identifier, input.identifier) })
-  if (existing) throw new ServiceError("Un compte avec cet identifiant existe déjà", 409)
-  const [created] = await db.insert(accounts).values(input).returning()
+  // L'identifiant est stocké normalisé : c'est la clé de rapprochement des imports et la clé d'unicité de la sync.
+  const identifier = normalizeAccountIdentifier(input.identifier)
+  const rows = await db.select({ identifier: accounts.identifier }).from(accounts)
+  if (rows.some((row) => normalizeAccountIdentifier(row.identifier) === identifier)) {
+    throw new ServiceError("Un compte avec cet identifiant existe déjà", 409)
+  }
+  const [created] = await db.insert(accounts).values({ ...input, identifier }).returning()
   if (!created) throw new Error("Insertion du compte impossible")
   return created
 }

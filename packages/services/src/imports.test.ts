@@ -88,6 +88,15 @@ describe("import service", () => {
     expect(stored.map((transaction) => transaction.status)).toEqual(["booked"])
   })
 
+  it("keeps a promoted transaction when the promoting import is deleted", async () => {
+    const first = await commitImport(db, { bytes: swisscard("En suspens"), fileName: "sc-1.csv" })
+    const second = await commitImport(db, { bytes: swisscard("Comptabilisée"), fileName: "sc-2.csv" })
+    const result = await deleteImport(db, { id: second.importId })
+    expect(result.deletedTransactions).toBe(0)
+    const [stored] = await db.select().from(transactions)
+    expect(stored).toMatchObject({ status: "booked", deletedAt: null, importId: first.importId })
+  })
+
   it("requires an account when the profile has no account column", async () => {
     await db.insert(csvProfiles).values(csvProfileToRow(PROFILE_WITHOUT_ACCOUNT))
     const bytes = utf8("Date;Texte;Montant\n2026-03-01;Loyer;-1200\n")

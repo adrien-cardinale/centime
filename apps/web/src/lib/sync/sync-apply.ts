@@ -53,17 +53,20 @@ async function removeLoser(db: DbExecutor, entry: SyncTableEntry, loserId: strin
 
 /**
  * Deux appareils peuvent créer le même compte (ou importer la même transaction) hors ligne. Le plus petit id gagne
- * partout, et une ligne locale non synchronisée cède toujours : tous les appareils convergent vers la même ligne.
+ * partout, et une ligne locale non synchronisée cède toujours son id : tous les appareils convergent vers la même
+ * ligne. Si la ligne locale sacrifiée est plus récente (modifiée hors ligne), son contenu survit sous l'id gagnant
+ * et reste à re-pousser, pour converger sans perdre les modifications de l'utilisateur.
  */
-async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<"apply" | "skip"> {
+async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow | "skip"> {
   const { table } = entry
   const columns: Record<string, SQLiteColumn> = getTableColumns(table)
   const values: Record<string, unknown> = row
+  let winner = row
   for (const key of entry.uniqueKeys) {
     const column = columns[key]
     if (!column) continue
-    const collisions = await db
-      .select({ id: table.id, syncVersion: table.syncVersion })
+    const collisions: SyncRow[] = await db
+      .select()
       .from(table)
       .where(and(eq(column, values[key]), ne(table.id, row.id)))
     for (const collision of collisions) {
@@ -72,10 +75,13 @@ async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: Inc
         if (entry.name === "accounts") await writeAlias(db, row.id, collision.id)
         return "skip"
       }
+      if (collision.syncVersion === null && Date.parse(collision.updatedAt) > Date.parse(winner.updatedAt)) {
+        winner = { ...collision, id: row.id, syncVersion: null } as IncomingRow
+      }
       await removeLoser(db, entry, collision.id, row.id)
     }
   }
-  return "apply"
+  return winner
 }
 
 async function remapReferences(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow> {
@@ -96,8 +102,9 @@ export async function applyIncomingRow(db: DbExecutor, entry: SyncTableEntry, in
   const row = await remapReferences(db, entry, incoming)
   const local = await findLocal(db, entry, row.id)
   if (local && keepsLocal(local, row)) return false
-  if ((await resolveCollisions(db, entry, row)) === "skip") return false
-  await writeIncoming(db, entry, row, local !== undefined)
+  const resolved = await resolveCollisions(db, entry, row)
+  if (resolved === "skip") return false
+  await writeIncoming(db, entry, resolved, local !== undefined)
   return true
 }
 

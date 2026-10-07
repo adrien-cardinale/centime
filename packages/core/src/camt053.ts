@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser"
 import { normalizeAccountIdentifier } from "./account-identifier"
+import { isCurrencyCode } from "./csv-values"
 import type { ParseError, ParsedTransaction, ParseResult } from "./parsed-transaction"
 import { decodeBytes } from "./text-decoding"
 import type { TransactionStatus } from "./types"
@@ -104,7 +105,7 @@ function toTransaction(entry: unknown, statement: StatementContext): ParsedTrans
     rawLabel,
     merchant: null,
     amount: readAmount(entry),
-    currency: attribute(child(entry, "Amt"), "Ccy") ?? statement.currency,
+    currency: readCurrency(attribute(child(entry, "Amt"), "Ccy")) ?? statement.currency,
     status: readStatus(entry),
     balanceAfter: null,
     sourceRef: text(child(entry, "AcctSvcrRef")),
@@ -112,11 +113,15 @@ function toTransaction(entry: unknown, statement: StatementContext): ParsedTrans
   }
 }
 
+function readCurrency(value: string | null): string | null {
+  return value !== null && isCurrencyCode(value) ? value.toUpperCase() : null
+}
+
 function readStatementContext(statement: unknown): StatementContext {
   const identifier = text(child(statement, "Acct", "Id", "IBAN")) ?? text(child(statement, "Acct", "Id", "Othr", "Id"))
   return {
     accountIdentifier: identifier ? normalizeAccountIdentifier(identifier) : null,
-    currency: text(child(statement, "Acct", "Ccy")) ?? DEFAULT_CURRENCY,
+    currency: readCurrency(text(child(statement, "Acct", "Ccy"))) ?? DEFAULT_CURRENCY,
   }
 }
 

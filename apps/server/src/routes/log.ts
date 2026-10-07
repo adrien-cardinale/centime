@@ -10,6 +10,7 @@ const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/
 
 const UNAUTHORIZED = "Identifiants invalides"
 const SIGNUP_CLOSED = "Les inscriptions sont fermées sur ce serveur"
+const QUOTA_EXCEEDED = "Quota de stockage atteint sur ce serveur"
 const INVALID_BODY = "Corps de requête invalide"
 const INVALID_QUERY = "Paramètres de requête invalides"
 
@@ -43,6 +44,7 @@ export function createLogRoutes({ store }: LogRouteOptions) {
       const result = store.append(credentials.userId, credentials.secretHash, body.data.data)
       if (result.kind === "unauthorized") return c.json({ error: UNAUTHORIZED }, 401)
       if (result.kind === "signup-closed") return c.json({ error: SIGNUP_CLOSED }, 403)
+      if (result.kind === "quota-exceeded") return c.json({ error: QUOTA_EXCEEDED }, 413)
       return c.json({ seq: result.seq }, 201)
     })
 }

@@ -31,33 +31,35 @@ const syncFields = {
   syncVersion: z.number().int().nullable().optional(),
 }
 
+// z.object (et non strictObject) : une colonne ajoutée par une version plus récente de l'app est
+// ignorée au lieu de rendre la ligne — et donc toute la synchronisation — illisible pour ce client.
 export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
-  accounts: z.strictObject({
+  accounts: z.object({
     ...syncFields,
     name: z.string(),
     kind: z.enum(ACCOUNT_KINDS),
     identifier: z.string().min(1),
     currency: z.string(),
   }),
-  themes: z.strictObject({
+  themes: z.object({
     ...syncFields,
     name: z.string(),
     color: z.string(),
     icon: z.string().nullable(),
   }),
-  categories: z.strictObject({
+  categories: z.object({
     ...syncFields,
     name: z.string(),
     color: z.string(),
     icon: z.string().nullable(),
     themeId: reference,
   }),
-  csv_profiles: z.strictObject({
+  csv_profiles: z.object({
     ...syncFields,
     name: z.string(),
     config: z.string(),
   }),
-  imports: z.strictObject({
+  imports: z.object({
     ...syncFields,
     fileName: z.string(),
     format: z.enum(IMPORT_FORMATS),
@@ -67,7 +69,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     skippedCount: z.number().int(),
     updatedCount: z.number().int(),
   }),
-  fixed_items: z.strictObject({
+  fixed_items: z.object({
     ...syncFields,
     name: z.string(),
     expectedAmount: z.number(),
@@ -78,7 +80,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     startDate: isoDateSchema,
     endDate: isoDateSchema.nullable(),
   }),
-  rules: z.strictObject({
+  rules: z.object({
     ...syncFields,
     pattern: z.string(),
     matchKind: z.enum(RULE_MATCH_KINDS),
@@ -88,7 +90,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     markAsTransfer: z.boolean(),
     priority: z.number().int(),
   }),
-  budgets: z.strictObject({
+  budgets: z.object({
     ...syncFields,
     categoryId: z.uuid(),
     amount: z.number(),
@@ -96,7 +98,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     rollover: z.boolean(),
     startDate: isoDateSchema,
   }),
-  transactions: z.strictObject({
+  transactions: z.object({
     ...syncFields,
     accountId: z.uuid(),
     bookingDate: isoDateSchema,

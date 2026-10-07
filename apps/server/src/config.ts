@@ -7,7 +7,11 @@ export type Config = {
   allowSignup: boolean
   staticDir: string
   isProduction: boolean
+  maxUserBytes: number | undefined
+  rateLimitPerMinute: number
 }
+
+const DEFAULT_RATE_LIMIT_PER_MINUTE = 300
 
 export class ConfigError extends Error {}
 
@@ -33,6 +37,13 @@ export function resolveDatabasePath(path: string): string {
   return isAbsolute(path) ? path : resolve(projectRoot, path)
 }
 
+function parseNonNegativeInt(name: string, value: string | undefined): number | undefined {
+  if (value === undefined) return undefined
+  const parsed = Number(value)
+  if (!Number.isInteger(parsed) || parsed < 0) throw new ConfigError(`${name} doit être un entier positif ou nul : ${value}`)
+  return parsed
+}
+
 
 export function loadConfig(): Config {
   const staticDir = optionalEnv("STATIC_DIR")
@@ -42,5 +53,8 @@ export function loadConfig(): Config {
     allowSignup: parseBoolean("ALLOW_SIGNUP", optionalEnv("ALLOW_SIGNUP"), true),
     staticDir: staticDir ? resolve(projectRoot, staticDir) : defaultStaticDir,
     isProduction: process.env.NODE_ENV === "production",
+    maxUserBytes: parseNonNegativeInt("MAX_USER_BYTES", optionalEnv("MAX_USER_BYTES")),
+    rateLimitPerMinute:
+      parseNonNegativeInt("RATE_LIMIT_PER_MINUTE", optionalEnv("RATE_LIMIT_PER_MINUTE")) ?? DEFAULT_RATE_LIMIT_PER_MINUTE,
   }
 }

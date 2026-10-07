@@ -13,7 +13,7 @@ import {
   UNCATEGORIZED_LABEL,
 } from "@centime/core"
 import { accounts, type DbExecutor, themes, transactions } from "@centime/db"
-import { and, asc, count, eq, gte, isNotNull, isNull, lt, lte, type SQL, sql } from "drizzle-orm"
+import { and, asc, count, eq, gte, isNotNull, isNull, lte, type SQL, sql } from "drizzle-orm"
 import { budgetsOverview } from "./budgets"
 import { loadCategoryNodes } from "./categories"
 import { type Clock, systemClock, todayOf } from "./clock"
@@ -97,10 +97,11 @@ function countPending(db: DbExecutor): Promise<number> {
 }
 
 async function loadCategorySpending(db: DbExecutor, month: PeriodRange) {
+  // Dépenses nettes des remboursements, la même convention que les budgets (voir expenseOf dans budgets.ts).
   const rows = await db
     .select({ categoryId: transactions.categoryId, amount: sql<number>`sum(-${transactions.amount})` })
     .from(transactions)
-    .where(and(countedCondition(month.start, month.end), lt(transactions.amount, 0)))
+    .where(countedCondition(month.start, month.end))
     .groupBy(transactions.categoryId)
   return rows.map((row) => ({ categoryId: row.categoryId, amount: Number(row.amount) }))
 }
@@ -149,7 +150,9 @@ export async function categoryBreakdown(db: DbExecutor, month: PeriodRange): Pro
     const themeKey = node?.themeId && labels.has(`theme:${node.themeId}`) ? `theme:${node.themeId}` : null
     addTo(totals, node ? (themeKey ?? `category:${node.id}`) : null, amount)
   }
-  return limitBreakdown([...totals].map(([key, amount]) => toBreakdownEntry(key, amount, labels)))
+  // Un groupe au net négatif (catégorie de revenus, remboursement isolé) n'est pas une dépense : il sort du graphique.
+  const spent = [...totals].filter(([, amount]) => roundCents(amount) > 0)
+  return limitBreakdown(spent.map(([key, amount]) => toBreakdownEntry(key, amount, labels)))
 }
 
 async function loadBankBalances(db: DbExecutor): Promise<BalancePoint[]> {

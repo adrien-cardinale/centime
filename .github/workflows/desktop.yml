@@ -22,9 +22,21 @@ jobs:
           bun-version: 1.3.6
       - run: bun apps/desktop/scripts/check-version.ts "$GITHUB_REF_NAME"
 
+  test:
+    name: Typecheck and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.3.6
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun run test
+
   build:
     name: Build (${{ matrix.name }})
-    needs: check-version
+    needs: [check-version, test]
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -36,6 +48,8 @@ jobs:
             os: windows-latest
           - name: macos
             os: macos-latest
+            # macos-latest est Apple Silicon : le binaire universel couvre aussi les Mac Intel.
+            args: --target universal-apple-darwin
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +58,10 @@ jobs:
           bun-version: 1.3.6
 
       - uses: dtolnay/rust-toolchain@stable
+
+      - name: Add macOS build targets
+        if: matrix.name == 'macos'
+        run: rustup target add aarch64-apple-darwin x86_64-apple-darwin
 
       - uses: swatinem/rust-cache@v2
         with:
@@ -57,12 +75,21 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bun run desktop:build
+      - run: bun run build ${{ matrix.args }}
+        working-directory: apps/desktop
 
       - uses: actions/upload-artifact@v4
         with:
           name: centime-desktop-${{ matrix.name }}
-          path: apps/desktop/src-tauri/target/release/bundle/**/*
+          # Seulement les installateurs : les arborescences intermédiaires (.AppDir, .app, staging WiX/NSIS)
+          # contiennent des liens symboliques qui font échouer upload-artifact.
+          path: |
+            apps/desktop/src-tauri/target/**/bundle/**/*.msi
+            apps/desktop/src-tauri/target/**/bundle/**/*.exe
+            apps/desktop/src-tauri/target/**/bundle/**/*.dmg
+            apps/desktop/src-tauri/target/**/bundle/**/*.deb
+            apps/desktop/src-tauri/target/**/bundle/**/*.rpm
+            apps/desktop/src-tauri/target/**/bundle/**/*.AppImage
           if-no-files-found: error
 
   release:
@@ -83,7 +110,16 @@ jobs:
           GH_REPO: ${{ github.repository }}
         run: |
           mapfile -t files < <(find artifacts -type f \( -name '*.msi' -o -name '*.exe' -o -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' \))
-          prerelease=()
-          if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease=(--prerelease); fi
-          gh release create "$GITHUB_REF_NAME" "${files[@]}" \
-            --title "$GITHUB_REF_NAME" --generate-notes "${prerelease[@]}"
+          if [[ ${#files[@]} -eq 0 ]]; then
+            echo "Aucun installateur trouvé dans les artefacts" >&2
+            exit 1
+          fi
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            # Relance d'un job qui avait partiellement échoué : on complète le release existant.
+            gh release upload "$GITHUB_REF_NAME" "${files[@]}" --clobber
+          else
+            prerelease=()
+            if [[ "$GITHUB_REF_NAME" == *-* ]]; then prerelease=(--prerelease); fi
+            gh release create "$GITHUB_REF_NAME" "${files[@]}" \
+              --title "$GITHUB_REF_NAME" --generate-notes "${prerelease[@]}"
+          fi

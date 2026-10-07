@@ -306,7 +306,9 @@ async function insertNewTransactions(db: DbExecutor, rows: AnalyzedRow[], import
   }
 }
 
-async function promotePendingTransactions(db: DbExecutor, rows: AnalyzedRow[], importId: string): Promise<void> {
+async function promotePendingTransactions(db: DbExecutor, rows: AnalyzedRow[]): Promise<void> {
+  // La transaction existait avant cet import : elle garde son importId d'origine, sinon annuler
+  // l'import qui l'a seulement passée à « booked » la supprimerait avec lui.
   for (const row of rows) {
     if (row.existingId === null) continue
     await db
@@ -316,7 +318,6 @@ async function promotePendingTransactions(db: DbExecutor, rows: AnalyzedRow[], i
         valueDate: row.valueDate,
         balanceAfter: row.balanceAfter,
         sourceRef: row.sourceRef,
-        importId,
       })
       .where(eq(transactions.id, row.existingId))
   }
@@ -353,7 +354,7 @@ export async function commitImport(db: Db, source: ImportSource): Promise<Import
     const analysis = accountsCreated > 0 ? await analyzeImport(tx, source) : preliminary
     const outcome = await recordImport(tx, source, analysis)
     await insertNewTransactions(tx, analysis.rows.filter((row) => row.state === "new"), outcome.importId)
-    await promotePendingTransactions(tx, analysis.rows.filter((row) => row.state === "pendingToBooked"), outcome.importId)
+    await promotePendingTransactions(tx, analysis.rows.filter((row) => row.state === "pendingToBooked"))
     return { ...outcome, accountsCreated }
   })
 }

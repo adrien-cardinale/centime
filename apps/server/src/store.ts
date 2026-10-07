@@ -6,7 +6,11 @@ export const MAX_PAGE_BYTES = 8 * 1024 * 1024
 
 export type LogEntry = { seq: number; data: string }
 export type LogPage = { entries: LogEntry[]; cursor: number; hasMore: boolean }
-export type AppendResult = { kind: "ok"; seq: number } | { kind: "unauthorized" } | { kind: "signup-closed" }
+export type AppendResult =
+  | { kind: "ok"; seq: number }
+  | { kind: "unauthorized" }
+  | { kind: "signup-closed" }
+  | { kind: "quota-exceeded" }
 export type AccessResult = "ok" | "unauthorized" | "unknown"
 
 export type Store = {
@@ -17,7 +21,10 @@ export type Store = {
   close(): void
 }
 
-export type StoreOptions = { allowSignup?: boolean }
+export type StoreOptions = { allowSignup?: boolean; maxUserBytes?: number }
+
+/** Quota par défaut : assez large pour des années de journal chiffré, assez étroit pour protéger le disque. */
+export const DEFAULT_MAX_USER_BYTES = 512 * 1024 * 1024
 
 type UserRow = { secret_hash: string }
 type MetaRow = { seq: number; size: number }
@@ -43,7 +50,7 @@ export function hashesMatch(expected: string, actual: string): boolean {
   return left.length === right.length && crypto.timingSafeEqual(left, right)
 }
 
-export function openStore(path: string, { allowSignup = true }: StoreOptions = {}): Store {
+export function openStore(path: string, { allowSignup = true, maxUserBytes = DEFAULT_MAX_USER_BYTES }: StoreOptions = {}): Store {
   if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true })
   const db = new Database(path, { create: true })
   db.run("pragma journal_mode = wal")
@@ -53,6 +60,9 @@ export function openStore(path: string, { allowSignup = true }: StoreOptions = {
   const findUser = db.query<UserRow, [string]>("select secret_hash from users where id = ?")
   const insertUser = db.query("insert into users (id, secret_hash, created_at) values (?, ?, ?)")
   const nextSeq = db.query<{ next: number }, [string]>("select coalesce(max(seq), 0) + 1 as next from log where user_id = ?")
+  const usedBytes = db.query<{ used: number }, [string]>(
+    "select coalesce(sum(length(data)), 0) as used from log where user_id = ?",
+  )
   const insertEntry = db.query("insert into log (user_id, seq, data, created_at) values (?, ?, ?, ?)")
   const readMeta = db.query<MetaRow, [string, number, number]>(
     "select seq, length(data) as size from log where user_id = ? and seq > ? order by seq limit ?",
@@ -71,6 +81,9 @@ export function openStore(path: string, { allowSignup = true }: StoreOptions = {
       if (!allowSignup) return { kind: "signup-closed" }
       insertUser.run(userId, secretHash, now)
     }
+    // maxUserBytes <= 0 désactive le quota.
+    const used = maxUserBytes > 0 ? (usedBytes.get(userId)?.used ?? 0) : 0
+    if (maxUserBytes > 0 && used + data.length > maxUserBytes) return { kind: "quota-exceeded" }
     const seq = nextSeq.get(userId)?.next ?? 1
     insertEntry.run(userId, seq, data, now)
     return { kind: "ok", seq }

@@ -1,7 +1,7 @@
 import { normalizeAccountIdentifier } from "./account-identifier"
 import type { CsvColumns, CsvProfile } from "./csv-profile"
 import { type CsvRecord, tokenizeCsv } from "./csv-tokenizer"
-import { CsvValueError, parseAmountValue, parseDateValue, resolveStatus, sameText } from "./csv-values"
+import { CsvValueError, isCurrencyCode, parseAmountValue, parseDateValue, resolveStatus, sameText } from "./csv-values"
 import type { ParseError, ParsedTransaction, ParseResult } from "./parsed-transaction"
 import { decodeBytes } from "./text-decoding"
 
@@ -117,6 +117,13 @@ function readAccount(reader: CsvRowReader): string | null {
   return value === null ? null : normalizeAccountIdentifier(value)
 }
 
+function readCurrency(reader: CsvRowReader, profile: CsvProfile): string {
+  const value = reader.optional("currency")
+  if (value === null) return profile.defaultCurrency
+  if (!isCurrencyCode(value)) throw new CsvValueError(`Devise invalide : « ${value} »`)
+  return value.toUpperCase()
+}
+
 function toTransaction(reader: CsvRowReader, profile: CsvProfile): ParsedTransaction {
   const merchant = reader.optional("merchant")
   const rawLabel = reader.optional("label") ?? merchant
@@ -128,7 +135,7 @@ function toTransaction(reader: CsvRowReader, profile: CsvProfile): ParsedTransac
     rawLabel,
     merchant,
     amount: readAmount(reader, profile),
-    currency: (reader.optional("currency") ?? profile.defaultCurrency).toUpperCase(),
+    currency: readCurrency(reader, profile),
     status: resolveStatus(reader.optional("status"), profile.statusMap),
     balanceAfter: readBalance(reader, profile),
     sourceRef: null,

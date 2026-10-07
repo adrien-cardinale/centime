@@ -23,7 +23,7 @@ export type SyncConfig = {
   pullPageSize?: number | undefined
 }
 
-export type SyncReport = { pulled: number; pushed: number; cursor: number }
+export type SyncReport = { pulled: number; pushed: number; cursor: number; skipped: number }
 
 export type SyncErrorKind = "unauthorized" | "network" | "server"
 
@@ -47,7 +47,7 @@ const pullResponseSchema = z.object({
 
 const pushResponseSchema = z.object({ seq: z.number().int().min(1) })
 
-const payloadSchema = z.object({ v: z.literal(PAYLOAD_VERSION), changes: tableRowsSchema })
+const payloadSchema = z.object({ v: z.number().int(), changes: tableRowsSchema })
 
 type TableRows = z.infer<typeof tableRowsSchema>
 type PushBatch = { changes: Partial<Record<SyncTableName, SyncRow[]>>; rowCount: number }
@@ -98,58 +98,94 @@ async function requestJson<Schema extends z.ZodType>(
   return parsed.data
 }
 
-function parseRows(entry: SyncTableEntry, rows: unknown[] | undefined): IncomingRow[] {
-  const parsed = SYNC_ROW_SCHEMAS[entry.name].array().safeParse(rows ?? [])
-  if (!parsed.success) throw new SyncError(`${i18n.t("syncErrors.invalidResponse")} (${entry.name})`, "server")
-  return parsed.data
+type ParsedRows = { rows: IncomingRow[]; skipped: number }
+
+function parseRows(entry: SyncTableEntry, rows: unknown[] | undefined): ParsedRows {
+  const schema = SYNC_ROW_SCHEMAS[entry.name]
+  const parsed: ParsedRows = { rows: [], skipped: 0 }
+  for (const row of rows ?? []) {
+    const result = schema.safeParse(row)
+    if (result.success) parsed.rows.push(result.data)
+    else parsed.skipped += 1
+  }
+  if (parsed.skipped > 0) {
+    console.warn(`Synchronisation : ${parsed.skipped} ligne(s) « ${entry.name} » illisible(s), ignorée(s)`)
+  }
+  return parsed
 }
 
 type DecodedEntry = { seq: number; changes: TableRows }
 
-async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): Promise<DecodedEntry> {
+/**
+ * Le secret d'accès au serveur et la clé de chiffrement dérivent du même secret maître : si le serveur nous a
+ * authentifiés, une entrée illisible est corrompue ou écrite par une version plus récente de l'app. On l'ignore
+ * en avançant le curseur plutôt que de bloquer définitivement la synchronisation de tous les appareils.
+ */
+async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): Promise<DecodedEntry | null> {
   try {
     const payload = payloadSchema.parse(JSON.parse(await vault.decryptText(entry.data)))
+    if (payload.v !== PAYLOAD_VERSION) {
+      console.warn(`Synchronisation : entrée ${entry.seq} écrite en version ${payload.v}, ignorée`)
+      return null
+    }
     return { seq: entry.seq, changes: payload.changes }
   } catch {
-    throw new SyncError(i18n.t("syncErrors.unreadableEntry"), "server")
+    console.warn(`Synchronisation : entrée ${entry.seq} illisible, ignorée`)
+    return null
   }
 }
 
-async function applyEntry(db: DbExecutor, entry: DecodedEntry): Promise<number> {
+async function applyEntry(db: DbExecutor, entry: DecodedEntry): Promise<{ applied: number; skipped: number }> {
   let applied = 0
+  let skipped = 0
   for (const table of SYNC_TABLES) {
-    for (const row of parseRows(table, entry.changes[table.name])) {
+    const parsed = parseRows(table, entry.changes[table.name])
+    skipped += parsed.skipped
+    for (const row of parsed.rows) {
       if (await applyIncomingRow(db, table, { ...row, syncVersion: entry.seq })) applied += 1
     }
   }
-  return applied
+  return { applied, skipped }
 }
 
 async function pullPage(context: SyncContext, since: number) {
   const path = `/api/log?since=${since}&limit=${context.config.pullPageSize ?? PULL_PAGE_SIZE}`
   const page = await requestJson(context.config, path, { method: "GET" }, pullResponseSchema)
   const decoded: DecodedEntry[] = []
-  for (const entry of page.entries) decoded.push(await decodeEntry(context.config.vault, entry))
+  let skipped = 0
+  for (const entry of page.entries) {
+    const result = await decodeEntry(context.config.vault, entry)
+    if (result) decoded.push(result)
+    else skipped += 1
+  }
   let applied = 0
   await context.exclusive(() =>
     context.db.transaction(async (tx) => {
       await tx.run(sql`pragma defer_foreign_keys = on`)
-      for (const entry of decoded) applied += await applyEntry(tx, entry)
+      for (const entry of decoded) {
+        const outcome = await applyEntry(tx, entry)
+        applied += outcome.applied
+        skipped += outcome.skipped
+      }
       await writeSyncSetting(tx, "cursor", page.cursor)
     }),
   )
-  return { ...page, applied }
+  return { ...page, applied, skipped }
 }
 
-async function pullAll(context: SyncContext, since: number): Promise<{ cursor: number; pulled: number }> {
+type PullSummary = { cursor: number; pulled: number; skipped: number }
+
+async function pullAll(context: SyncContext, since: number): Promise<PullSummary> {
   let cursor = since
   let pulled = 0
+  let skipped = 0
   for (;;) {
     const page = await pullPage(context, cursor)
     pulled += page.applied
+    skipped += page.skipped
     if (page.hasMore && page.cursor <= cursor) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
     cursor = page.cursor
-    if (!page.hasMore) return { cursor, pulled }
+    if (!page.hasMore) return { cursor, pulled, skipped }
   }
 }
 
@@ -222,10 +258,15 @@ async function runSync(context: SyncContext): Promise<SyncReport> {
   const { cursor: storedCursor } = await context.exclusive(() => readSyncSettings(context.db))
   const pulled = await pullAll(context, storedCursor)
   const pushed = await pushAll(context, pulled.cursor)
-  const report = { pulled: pulled.pulled, pushed: pushed.pushed, cursor: pushed.cursor }
+  const report = { pulled: pulled.pulled, pushed: pushed.pushed, cursor: pushed.cursor, skipped: pulled.skipped }
   if (!pushed.missedChanges) return report
   const caughtUp = await pullAll(context, pushed.cursor)
-  return { ...report, pulled: report.pulled + caughtUp.pulled, cursor: caughtUp.cursor }
+  return {
+    ...report,
+    pulled: report.pulled + caughtUp.pulled,
+    cursor: caughtUp.cursor,
+    skipped: report.skipped + caughtUp.skipped,
+  }
 }
 
 function messageOf(error: unknown): string {

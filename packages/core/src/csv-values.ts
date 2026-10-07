@@ -25,9 +25,18 @@ export function parseDateValue(value: string, dateFormat: string): IsoDate {
 
 export function parseAmountValue(value: string, decimalSeparator: DecimalSeparator): number {
   const compact = value.trim().replace(THOUSANDS_SEPARATORS, "").replace("−", "-")
-  const normalized = decimalSeparator === "," ? compact.replace(",", ".") : compact
+  // Le séparateur opposé au séparateur décimal du profil est un séparateur de milliers (« 1.234,56 », « 1,234.56 »).
+  const normalized =
+    decimalSeparator === "," ? compact.replaceAll(".", "").replace(",", ".") : compact.replaceAll(",", "")
   if (!AMOUNT_PATTERN.test(normalized)) throw new CsvValueError(`Montant invalide : « ${value} »`)
   return Number(normalized)
+}
+
+const CURRENCY_PATTERN = /^[A-Za-z]{3}$/
+
+/** `Intl.NumberFormat` lève une RangeError sur tout code qui n'a pas la forme ISO 4217 (trois lettres). */
+export function isCurrencyCode(value: string): boolean {
+  return CURRENCY_PATTERN.test(value)
 }
 
 export function resolveStatus(value: string | null, statusMap: Record<string, TransactionStatus> | undefined): TransactionStatus {

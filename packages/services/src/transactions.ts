@@ -1,7 +1,6 @@
-import { categoryWithDescendants, type IsoDate } from "@centime/core"
+import type { IsoDate } from "@centime/core"
 import { accounts, categories, type DbExecutor, fixedItems, transactions } from "@centime/db"
 import { and, count, desc, eq, gte, inArray, isNull, lte, or, type SQL, sql } from "drizzle-orm"
-import { loadCategoryNodes } from "./categories"
 
 export const UNCATEGORIZED = "none"
 export const WITHOUT_FIXED_ITEM = "none"
@@ -12,7 +11,7 @@ export type TransactionFilter = {
   to?: IsoDate | undefined
   search?: string | undefined
   categoryId?: string | undefined
-  includeChildren?: boolean | undefined
+  themeId?: string | undefined
   fixedItemId?: string | undefined
   isTransfer?: boolean | undefined
 }
@@ -37,14 +36,15 @@ function searchCondition(search: string): SQL | undefined {
   )
 }
 
-async function categoryIdsOf(db: DbExecutor, categoryId: string, includeChildren: boolean): Promise<string[]> {
-  if (!includeChildren) return [categoryId]
-  return categoryWithDescendants(await loadCategoryNodes(db), categoryId)
+function categoryCondition(categoryId: string): SQL {
+  return categoryId === UNCATEGORIZED ? isNull(transactions.categoryId) : eq(transactions.categoryId, categoryId)
 }
 
-async function categoryCondition(db: DbExecutor, categoryId: string, includeChildren: boolean): Promise<SQL> {
-  if (categoryId === UNCATEGORIZED) return isNull(transactions.categoryId)
-  return inArray(transactions.categoryId, await categoryIdsOf(db, categoryId, includeChildren))
+function themeCondition(themeId: string): SQL {
+  return inArray(
+    transactions.categoryId,
+    sql`(select ${categories.id} from ${categories} where ${categories.themeId} = ${themeId} and ${categories.deletedAt} is null)`,
+  )
 }
 
 function fixedItemCondition(fixedItemId: string): SQL {
@@ -58,7 +58,8 @@ export async function transactionCondition(db: DbExecutor, filter: TransactionFi
     filter.from ? gte(transactions.bookingDate, filter.from) : undefined,
     filter.to ? lte(transactions.bookingDate, filter.to) : undefined,
     filter.search ? searchCondition(filter.search) : undefined,
-    filter.categoryId ? await categoryCondition(db, filter.categoryId, filter.includeChildren ?? false) : undefined,
+    filter.categoryId ? categoryCondition(filter.categoryId) : undefined,
+    filter.themeId ? themeCondition(filter.themeId) : undefined,
     filter.fixedItemId ? fixedItemCondition(filter.fixedItemId) : undefined,
     filter.isTransfer === undefined ? undefined : eq(transactions.isTransfer, filter.isTransfer),
   )

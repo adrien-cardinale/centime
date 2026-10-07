@@ -16,7 +16,8 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useUpdateTransaction } from "@/hooks/use-transaction-updates"
 import type { TransactionItem } from "@/lib/api"
-import { categoriesQuery } from "@/lib/queries"
+import { groupCategoriesByTheme } from "@/lib/category-groups"
+import { categoriesQuery, themesQuery } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 
 const NO_CATEGORY = "none"
@@ -28,6 +29,7 @@ export function CategoryCell({ transaction }: { transaction: TransactionItem }) 
   const [creating, setCreating] = useState(false)
   const newName = search.trim()
   const { data: categories = [] } = useQuery(categoriesQuery)
+  const { data: themes = [] } = useQuery(themesQuery)
   const update = useUpdateTransaction()
 
   const choose = (categoryId: string | null) => {
@@ -64,19 +66,23 @@ export function CategoryCell({ transaction }: { transaction: TransactionItem }) 
                   <span className="text-muted-foreground">Aucune</span>
                   <SelectedMark visible={transaction.categoryId === null} />
                 </CommandItem>
-                {categories.map((category) => (
-                  <CommandItem
-                    key={category.id}
-                    value={category.id}
-                    keywords={[category.name]}
-                    onSelect={() => choose(category.id)}
-                  >
-                    <ColorDot color={category.color} />
-                    <span className="truncate">{category.name}</span>
-                    <SelectedMark visible={transaction.categoryId === category.id} />
-                  </CommandItem>
-                ))}
               </CommandGroup>
+              {groupCategoriesByTheme(categories, themes).map((group) => (
+                <CommandGroup key={group.theme?.id ?? "none"} heading={group.theme?.name}>
+                  {group.categories.map((category) => (
+                    <CommandItem
+                      key={category.id}
+                      value={category.id}
+                      keywords={[category.name, group.theme?.name ?? ""]}
+                      onSelect={() => choose(category.id)}
+                    >
+                      <ColorDot color={category.color} />
+                      <span className="truncate">{category.name}</span>
+                      <SelectedMark visible={transaction.categoryId === category.id} />
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              ))}
               <CommandSeparator alwaysRender />
               <CommandGroup forceMount>
                 <CommandItem forceMount value={NEW_CATEGORY} onSelect={startCreating}>

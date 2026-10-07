@@ -1,4 +1,4 @@
-import { createProxyDb, type Db, runMigrations, SYNC_TABLES } from "@centime/db"
+import { createProxyDb, type Db, categories, runMigrations } from "@centime/db"
 import { apiSurface, ServiceError } from "@centime/services"
 import initSqlJs from "sql.js"
 import { beforeEach, describe, expect, it } from "bun:test"
@@ -54,7 +54,7 @@ describe("sql.js executor", () => {
     await createDefaultData(db)
 
     expect(lacksDefaultData(await countDefaultData(db))).toBe(false)
-    const [category] = await db.select().from(SYNC_TABLES[1].table)
+    const [category] = await db.select().from(categories)
     expect(category?.updatedAt).toBe("2000-01-01T00:00:00.000Z")
     expect(await countPendingChanges(db)).toBeGreaterThan(0)
   })

@@ -1,6 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { categoriesQuery } from "@/lib/queries"
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { groupCategoriesByTheme } from "@/lib/category-groups"
+import { categoriesQuery, themesQuery } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 import { ColorDot } from "./color-dot"
 
@@ -10,7 +20,6 @@ type CategorySelectProps = {
   value: string | undefined
   onChange: (value: string) => void
   extraOptions?: CategorySelectOption[]
-  excludeId?: string
   excludeIds?: readonly string[]
   placeholder?: string
   className?: string
@@ -22,7 +31,6 @@ export function CategorySelect({
   value,
   onChange,
   extraOptions = [],
-  excludeId,
   excludeIds = [],
   placeholder,
   className,
@@ -30,7 +38,8 @@ export function CategorySelect({
   disabled,
 }: CategorySelectProps) {
   const { data: categories = [] } = useQuery(categoriesQuery)
-  const choices = categories.filter((category) => category.id !== excludeId && !excludeIds.includes(category.id))
+  const { data: themes = [] } = useQuery(themesQuery)
+  const choices = categories.filter((category) => !excludeIds.includes(category.id))
 
   return (
     <Select value={value ?? ""} onValueChange={onChange} disabled={disabled}>
@@ -44,11 +53,16 @@ export function CategorySelect({
           </SelectItem>
         ))}
         {extraOptions.length > 0 && choices.length > 0 && <SelectSeparator />}
-        {choices.map((category) => (
-          <SelectItem key={category.id} value={category.id}>
-            <ColorDot color={category.color} />
-            {category.name}
-          </SelectItem>
+        {groupCategoriesByTheme(choices, themes).map((group) => (
+          <SelectGroup key={group.theme?.id ?? "none"}>
+            {group.theme && <SelectLabel>{group.theme.name}</SelectLabel>}
+            {group.categories.map((category) => (
+              <SelectItem key={category.id} value={category.id}>
+                <ColorDot color={category.color} />
+                {category.name}
+              </SelectItem>
+            ))}
+          </SelectGroup>
         ))}
       </SelectContent>
     </Select>

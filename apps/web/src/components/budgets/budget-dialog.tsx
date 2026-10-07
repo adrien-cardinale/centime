@@ -51,7 +51,7 @@ export function BudgetDialog({ open, onOpenChange, target }: BudgetDialogProps) 
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>{target.budget ? "Modifier le budget" : "Nouveau budget"}</DialogTitle>
-          <DialogDescription>Un plafond pour les dépenses variables d'une catégorie et de ses sous-catégories.</DialogDescription>
+          <DialogDescription>Un plafond pour les dépenses variables d'une catégorie.</DialogDescription>
         </DialogHeader>
         <BudgetForm target={target} onSaved={() => onOpenChange(false)} />
       </DialogContent>

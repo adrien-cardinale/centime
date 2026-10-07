@@ -21,7 +21,7 @@ function accountRow(identifier: string) {
 }
 
 function categoryRow(name: string, updatedAt = EARLY) {
-  return { ...syncFields(updatedAt), name, color: "#4a84c4", icon: null, parentId: null }
+  return { ...syncFields(updatedAt), name, color: "#4a84c4", icon: null, themeId: null }
 }
 
 function transactionRow(accountId: string, fingerprint: string) {
@@ -105,11 +105,12 @@ describe("push then pull", () => {
     expect(next.cursor).toBeGreaterThan(cursor)
   })
 
-  it("accepts a child category pushed before its parent", async () => {
-    const parent = categoryRow("Parent")
-    const child = { ...categoryRow("Enfant"), parentId: parent.id }
-    const result = await pushChanges(db, { changes: { categories: [child, parent] } })
-    expect(result.accepted.categories).toHaveLength(2)
+  it("accepts a category pushed before its theme", async () => {
+    const theme = { ...syncFields(LATER), name: "Thème", color: "#4a84c4", icon: null }
+    const category = { ...categoryRow("Catégorie"), themeId: theme.id }
+    const result = await pushChanges(db, { changes: { categories: [category], themes: [theme] } })
+    expect(result.accepted.categories).toHaveLength(1)
+    expect(result.accepted.themes).toHaveLength(1)
   })
 
   it("rejects an unknown column", async () => {

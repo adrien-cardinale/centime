@@ -13,6 +13,7 @@ import {
 } from "./fixed-items"
 import { commitImport, deleteImport, listImports, previewImport } from "./imports"
 import { applyRules, createRule, deleteRule, listRules, testRule, updateRule } from "./rules"
+import { createTheme, deleteTheme, listThemes, updateTheme } from "./themes"
 import { exportTransactions } from "./transaction-export"
 import { bulkUpdateTransactions, updateTransaction } from "./transaction-updates"
 import { listTransactionPage } from "./transactions"
@@ -39,6 +40,12 @@ export const apiSurface = {
     update: updateTransaction,
     bulkUpdate: bulkUpdateTransactions,
     export: exportTransactions,
+  },
+  themes: {
+    list: listThemes,
+    create: createTheme,
+    update: updateTheme,
+    remove: deleteTheme,
   },
   categories: {
     list: listCategories,

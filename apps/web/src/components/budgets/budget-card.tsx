@@ -131,7 +131,7 @@ function BudgetActions({ budget, onEdit }: BudgetCardProps) {
             Modifier
           </DropdownMenuItem>
           <DropdownMenuItem asChild>
-            <Link to="/transactions" search={{ categoryId: budget.categoryId, from: range.start, to: range.end, includeChildren: true }}>
+            <Link to="/transactions" search={{ categoryId: budget.categoryId, from: range.start, to: range.end }}>
               <List />
               Voir les transactions
             </Link>

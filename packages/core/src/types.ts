@@ -29,11 +29,17 @@ export type Account = SyncColumns & {
   currency: string
 }
 
+export type Theme = SyncColumns & {
+  name: string
+  color: string
+  icon: string | null
+}
+
 export type Category = SyncColumns & {
   name: string
   color: string
   icon: string | null
-  parentId: string | null
+  themeId: string | null
 }
 
 export type Transaction = SyncColumns & {

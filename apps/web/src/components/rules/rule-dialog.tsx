@@ -43,6 +43,7 @@ type RuleDialogProps = {
   rule?: Rule
   initialValues?: Partial<RuleFormValues>
   trigger?: ReactNode
+  applyAfterCreate?: boolean
   open?: boolean
   onOpenChange?: (open: boolean) => void
 }
@@ -64,7 +65,7 @@ function saveRule(rule: Rule | undefined, input: RulePayload) {
   return rule ? api.rules.update(rule.id, input) : api.rules.create(input)
 }
 
-export function RuleDialog({ rule, initialValues, trigger, open, onOpenChange }: RuleDialogProps) {
+export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, open, onOpenChange }: RuleDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false)
   const isOpen = open ?? internalOpen
   const queryClient = useQueryClient()
@@ -77,13 +78,20 @@ export function RuleDialog({ rule, initialValues, trigger, open, onOpenChange }:
   const tester = useRuleTester()
 
   const save = useMutation({
-    mutationFn: (input: RulePayload) => saveRule(rule, input),
-    onSuccess: async () => {
+    mutationFn: async (input: RulePayload) => {
+      const saved = await saveRule(rule, input)
+      const applied = !rule && applyAfterCreate ? await api.rules.apply("all") : null
+      return { saved, applied }
+    },
+    onSuccess: async ({ applied }) => {
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: rulesQuery.queryKey }),
         invalidateTransactionData(queryClient),
       ])
-      toast.success(rule ? "Règle modifiée" : "Règle créée")
+      toast.success(
+        rule ? "Règle modifiée" : "Règle créée",
+        applied ? { description: `${applied.categorized} transaction(s) catégorisée(s)` } : undefined,
+      )
       changeOpen(false)
     },
     onError: (error) => toast.error(error.message),

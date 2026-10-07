@@ -2,7 +2,6 @@ import {
   balanceSeries,
   type BalancePoint,
   type BreakdownEntry,
-  categoryRoots,
   defaultOverviewRange,
   type IsoDate,
   lastMonths,
@@ -13,10 +12,10 @@ import {
   roundCents,
   UNCATEGORIZED_LABEL,
 } from "@centime/core"
-import { accounts, type DbExecutor, transactions } from "@centime/db"
+import { accounts, type DbExecutor, themes, transactions } from "@centime/db"
 import { and, asc, count, eq, gte, isNotNull, isNull, lt, lte, type SQL, sql } from "drizzle-orm"
 import { budgetsOverview } from "./budgets"
-import { type CategoryNode, loadCategoryNodes } from "./categories"
+import { loadCategoryNodes } from "./categories"
 import { type Clock, systemClock, todayOf } from "./clock"
 import { fixedItemsOverview } from "./fixed-items"
 import { listTransactions } from "./transactions"
@@ -110,21 +109,47 @@ function addTo(totals: Map<string | null, number>, key: string | null, amount: n
   totals.set(key, (totals.get(key) ?? 0) + amount)
 }
 
-function toBreakdownEntry(key: string | null, amount: number, nodes: Map<string, CategoryNode>): BreakdownEntry {
-  const node = key === null ? undefined : nodes.get(key)
-  if (!node) return { categoryId: null, name: UNCATEGORIZED_LABEL, color: null, amount: roundCents(amount), kind: "uncategorized" }
-  return { categoryId: node.id, name: node.name, color: node.color, amount: roundCents(amount), kind: "category" }
+type BreakdownLabel = { id: string; name: string; color: string }
+
+function toBreakdownEntry(key: string | null, amount: number, labels: Map<string, BreakdownLabel>): BreakdownEntry {
+  const rounded = roundCents(amount)
+  const [kind, id = ""] = key === null ? [null] : key.split(":")
+  const label = labels.get(key ?? "")
+  if (!label || (kind !== "theme" && kind !== "category")) {
+    return { themeId: null, categoryId: null, name: UNCATEGORIZED_LABEL, color: null, amount: rounded, kind: "uncategorized" }
+  }
+  return {
+    themeId: kind === "theme" ? id : null,
+    categoryId: kind === "category" ? id : null,
+    name: label.name,
+    color: label.color,
+    amount: rounded,
+    kind,
+  }
+}
+
+function loadThemes(db: DbExecutor) {
+  return db.select({ id: themes.id, name: themes.name, color: themes.color }).from(themes).where(isNull(themes.deletedAt))
 }
 
 export async function categoryBreakdown(db: DbExecutor, month: PeriodRange): Promise<BreakdownEntry[]> {
-  const [spending, nodes] = await Promise.all([loadCategorySpending(db, month), loadCategoryNodes(db)])
-  const roots = categoryRoots(nodes)
+  const [spending, nodes, themeRows] = await Promise.all([
+    loadCategorySpending(db, month),
+    loadCategoryNodes(db),
+    loadThemes(db),
+  ])
+  const nodeById = new Map(nodes.map((node) => [node.id, node]))
+  const labels = new Map<string, BreakdownLabel>([
+    ...themeRows.map((theme): [string, BreakdownLabel] => [`theme:${theme.id}`, theme]),
+    ...nodes.map((node): [string, BreakdownLabel] => [`category:${node.id}`, node]),
+  ])
   const totals = new Map<string | null, number>()
   for (const { categoryId, amount } of spending) {
-    addTo(totals, categoryId === null ? null : (roots.get(categoryId) ?? null), amount)
+    const node = categoryId === null ? undefined : nodeById.get(categoryId)
+    const themeKey = node?.themeId && labels.has(`theme:${node.themeId}`) ? `theme:${node.themeId}` : null
+    addTo(totals, node ? (themeKey ?? `category:${node.id}`) : null, amount)
   }
-  const byId = new Map(nodes.map((node) => [node.id, node]))
-  return limitBreakdown([...totals].map(([key, amount]) => toBreakdownEntry(key, amount, byId)))
+  return limitBreakdown([...totals].map(([key, amount]) => toBreakdownEntry(key, amount, labels)))
 }
 
 async function loadBankBalances(db: DbExecutor): Promise<BalancePoint[]> {

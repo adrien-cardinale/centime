@@ -3,7 +3,7 @@ import { periodContaining } from "./budgets"
 import { balanceSeries, type BreakdownEntry, latestBalance, lastMonths, limitBreakdown } from "./dashboard"
 
 function category(id: string, amount: number): BreakdownEntry {
-  return { categoryId: id, name: id, color: "#4a84c4", amount, kind: "category" }
+  return { themeId: null, categoryId: id, name: id, color: "#4a84c4", amount, kind: "category" }
 }
 
 describe("lastMonths", () => {
@@ -21,7 +21,7 @@ describe("limitBreakdown", () => {
     const limited = limitBreakdown(entries)
     expect(limited).toHaveLength(8)
     expect(limited.slice(0, 7).map((entry) => entry.categoryId)).toEqual(["c9", "c8", "c7", "c6", "c5", "c4", "c3"])
-    expect(limited[7]).toEqual({ categoryId: null, name: "Autres", color: null, amount: 60, kind: "other" })
+    expect(limited[7]).toEqual({ themeId: null, categoryId: null, name: "Autres", color: null, amount: 60, kind: "other" })
   })
 
   it("omits Autres when everything fits and drops empty entries", () => {

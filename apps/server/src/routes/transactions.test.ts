@@ -1,4 +1,4 @@
-import { categories, type Db, fixedItems, transactions } from "@centime/db"
+import { categories, type Db, fixedItems, themes, transactions } from "@centime/db"
 import { beforeEach, describe, expect, it } from "bun:test"
 import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
 import { createTransactionRoutes } from "./transactions"
@@ -63,27 +63,21 @@ describe("transaction routes and fixed items", () => {
   })
 })
 
-describe("category filter with subcategories", () => {
-  it("includes descendants at every level only when asked", async () => {
-    const [child] = await db.insert(categories).values({ name: "Charges", color: "#4a84c4", parentId: housing }).returning()
-    const [grandChild] = await db
-      .insert(categories)
-      .values({ name: "Électricité", color: "#4a84c4", parentId: child?.id ?? null })
-      .returning()
+describe("theme filter", () => {
+  it("keeps every category of the theme and nothing else", async () => {
+    const [theme] = await db.insert(themes).values({ name: "Maison", color: "#4a84c4" }).returning()
+    const [charges] = await db.insert(categories).values({ name: "Charges", color: "#4a84c4", themeId: theme?.id ?? null }).returning()
+    const [energy] = await db.insert(categories).values({ name: "Énergie", color: "#4a84c4", themeId: theme?.id ?? null }).returning()
     await insertTestTransactions(db, accountId, [
-      { rawLabel: "Parent", categoryId: housing },
-      { rawLabel: "Enfant", categoryId: child?.id ?? null },
-      { rawLabel: "Petit-enfant", categoryId: grandChild?.id ?? null },
+      { rawLabel: "Charges", categoryId: charges?.id ?? null },
+      { rawLabel: "Énergie", categoryId: energy?.id ?? null },
+      { rawLabel: "Hors thème", categoryId: housing },
       { rawLabel: "Autre" },
     ])
-    const direct = await readJson<Page & { total: number }>(
-      await withErrorHandling(createTransactionRoutes(db)).request(`/?categoryId=${housing}`),
+    const page = await readJson<Page & { total: number }>(
+      await withErrorHandling(createTransactionRoutes(db)).request(`/?themeId=${theme?.id}`),
     )
-    expect(direct.total).toBe(1)
-    const withChildren = await readJson<Page & { total: number }>(
-      await withErrorHandling(createTransactionRoutes(db)).request(`/?categoryId=${housing}&includeChildren=true`),
-    )
-    expect(withChildren.items.map((item) => item.rawLabel).sort()).toEqual(["Enfant", "Parent", "Petit-enfant"])
+    expect(page.items.map((item) => item.rawLabel).sort()).toEqual(["Charges", "Énergie"])
   })
 })
 

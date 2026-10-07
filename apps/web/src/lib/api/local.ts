@@ -5,6 +5,7 @@ import {
   fixedItemPayloadSchema,
   ruleMatcherSchema,
   rulePayloadSchema,
+  themeInputSchema,
 } from "@centime/core"
 import type { Db } from "@centime/db"
 import {
@@ -130,6 +131,13 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
         ),
       bulkUpdate: (ids, changes) =>
         call((db) => surface.transactions.bulkUpdate(db, parseInput(bulkTransactionUpdateSchema, { ids, ...changes }))),
+    },
+    themes: {
+      list: () => call((db) => surface.themes.list(db)),
+      create: (input) => call((db) => surface.themes.create(db, parseInput(themeInputSchema, input))),
+      update: (id, input) =>
+        call((db) => surface.themes.update(db, { ...parseInput(themeInputSchema, input), id: parseInput(idSchema, id) })),
+      remove: (id) => call((db) => surface.themes.remove(db, { id: parseInput(idSchema, id) })),
     },
     categories: {
       list: () => call((db) => surface.categories.list(db)),

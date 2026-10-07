@@ -56,6 +56,11 @@ export function transactionsQuery(filters: TransactionPageFilters) {
   })
 }
 
+export const themesQuery = queryOptions({
+  queryKey: ["themes"],
+  queryFn: api.themes.list,
+})
+
 export const categoriesQuery = queryOptions({
   queryKey: ["categories"],
   queryFn: api.categories.list,
@@ -118,6 +123,7 @@ export async function invalidateTransactionData(queryClient: QueryClient): Promi
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     queryClient.invalidateQueries({ queryKey: categoriesQuery.queryKey }),
+    queryClient.invalidateQueries({ queryKey: themesQuery.queryKey }),
     queryClient.invalidateQueries({ queryKey: fixedItemsQuery.queryKey }),
     invalidateBudgetData(queryClient),
   ])

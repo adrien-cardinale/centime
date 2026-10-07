@@ -7,7 +7,7 @@ import { readMigrationFolder, renderMigrationsModule } from "../scripts/migratio
 import { createProxyDb, type Db, type ProxyExecutor } from "./client"
 import { MIGRATIONS, migrationStatements, runMigrations } from "./migrations"
 import { createDb } from "./node"
-import { accounts, apiTokens } from "./schema"
+import { accounts, apiTokens, categories, themes } from "./schema"
 
 const migrationsFolder = fileURLToPath(new URL("../drizzle", import.meta.url))
 const generatedFile = fileURLToPath(new URL("./migrations.generated.ts", import.meta.url))
@@ -80,5 +80,40 @@ describe("runMigrations", () => {
     expect(await appliedTags(db)).toEqual(MIGRATIONS.map((migration) => migration.tag))
     expect(await db.select().from(apiTokens)).toEqual([])
     expect(await db.select({ syncVersion: accounts.syncVersion }).from(accounts)).toEqual([{ syncVersion: null }])
+  })
+
+  it("turns parent categories into themes", async () => {
+    const db = createDb(":memory:")
+    await simulateDrizzleMigratedDatabase(db, MIGRATIONS.length - 1)
+    const stamp = "2026-01-01T00:00:00.000Z"
+    const insert = (id: string, name: string, parentId: string | null) =>
+      db.run(
+        sql`insert into categories (id, created_at, updated_at, name, color, parent_id)
+            values (${id}, ${stamp}, ${stamp}, ${name}, ${"#4a84c4"}, ${parentId})`,
+      )
+    await insert("food", "Alimentation", null)
+    await insert("groceries", "Courses", "food")
+    await insert("bakery", "Boulangerie", "groceries")
+    await insert("housing", "Logement", null)
+    await insert("rent", "Loyer", "housing")
+    await insert("leisure", "Loisirs", null)
+    await db.run(
+      sql`insert into rules (id, created_at, updated_at, pattern, match_kind, field, category_id, mark_as_transfer, priority)
+          values (${"r1"}, ${stamp}, ${stamp}, ${"logement"}, ${"contains"}, ${"raw_label"}, ${"housing"}, 0, 0)`,
+    )
+
+    await runMigrations(db)
+
+    expect((await db.select({ id: themes.id, name: themes.name }).from(themes)).sort((a, b) => a.id.localeCompare(b.id))).toEqual([
+      { id: "food", name: "Alimentation" },
+      { id: "housing", name: "Logement" },
+    ])
+    const rows = new Map((await db.select().from(categories)).map((row) => [row.id, row]))
+    expect(rows.get("groceries")).toMatchObject({ themeId: "food", deletedAt: null })
+    expect(rows.get("bakery")).toMatchObject({ themeId: "food", deletedAt: null })
+    expect(rows.get("rent")).toMatchObject({ themeId: "housing", deletedAt: null })
+    expect(rows.get("food")?.deletedAt).not.toBeNull()
+    expect(rows.get("housing")).toMatchObject({ themeId: "housing", deletedAt: null })
+    expect(rows.get("leisure")).toMatchObject({ themeId: null, deletedAt: null })
   })
 })

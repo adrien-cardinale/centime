@@ -1,6 +1,6 @@
 import { type CategoryInput, categoryInputSchema } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { type FormEvent, type ReactNode, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -17,15 +17,16 @@ import {
 } from "@/components/ui/dialog"
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { api, type Category } from "@/lib/api"
 import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
-import { invalidateTransactionData } from "@/lib/queries"
-import { CategorySelect } from "./category-select"
+import { invalidateTransactionData, themesQuery } from "@/lib/queries"
+import { ColorDot } from "./color-dot"
 import { ColorPicker } from "./color-picker"
 
 type CategoryFormValues = z.input<typeof categoryInputSchema>
 
-const NO_PARENT = "none"
+const NO_THEME = "none"
 
 type CategoryDialogProps = {
   category?: Category
@@ -37,8 +38,8 @@ type CategoryDialogProps = {
 }
 
 function formValuesFor(category: Category | undefined, initialName = ""): CategoryFormValues {
-  if (!category) return { name: initialName, color: DEFAULT_CATEGORY_COLOR, parentId: null }
-  return { name: category.name, color: category.color, icon: category.icon, parentId: category.parentId }
+  if (!category) return { name: initialName, color: DEFAULT_CATEGORY_COLOR, themeId: null }
+  return { name: category.name, color: category.color, icon: category.icon, themeId: category.themeId }
 }
 
 function saveCategory(category: Category | undefined, input: CategoryInput) {
@@ -49,6 +50,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
   const [internalOpen, setInternalOpen] = useState(false)
   const setOpen = onOpenChange ?? setInternalOpen
   const queryClient = useQueryClient()
+  const { data: themes = [] } = useQuery(themesQuery)
   const form = useForm<CategoryFormValues, unknown, CategoryInput>({
     resolver: zodResolver(categoryInputSchema),
     defaultValues: formValuesFor(category, initialName),
@@ -82,7 +84,7 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{category ? "Modifier la catégorie" : "Nouvelle catégorie"}</DialogTitle>
-          <DialogDescription>Nom, couleur et catégorie parente éventuelle.</DialogDescription>
+          <DialogDescription>Nom, couleur et thème éventuel.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={submit} className="space-y-5">
@@ -112,18 +114,29 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
             />
             <FormField
               control={form.control}
-              name="parentId"
+              name="themeId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Catégorie parente</FormLabel>
-                  <FormControl>
-                    <CategorySelect
-                      value={field.value ?? NO_PARENT}
-                      onChange={(value) => field.onChange(value === NO_PARENT ? null : value)}
-                      extraOptions={[{ value: NO_PARENT, label: "Aucune" }]}
-                      excludeId={category?.id}
-                    />
-                  </FormControl>
+                  <FormLabel>Thème</FormLabel>
+                  <Select
+                    value={field.value ?? NO_THEME}
+                    onValueChange={(value) => field.onChange(value === NO_THEME ? null : value)}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value={NO_THEME}>Aucun thème</SelectItem>
+                      {themes.map((theme) => (
+                        <SelectItem key={theme.id} value={theme.id}>
+                          <ColorDot color={theme.color} />
+                          {theme.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

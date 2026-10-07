@@ -5,9 +5,9 @@ Application de gestion de budget personnelle, mono-utilisateur.
 ## Fonctionnalités
 
 - **Import** : relevés CSV (profils de fournisseurs configurables) et camt.053 (XML), détection des doublons, mise à jour des transactions en suspens.
-- **Catégories et règles** : arborescence de catégories, règles « contient » ou regex sur le libellé, le commerçant ou la catégorie du fournisseur, application à l'import ou à la demande.
+- **Catégories et règles** : catégories regroupées par thèmes (les transactions se classent dans les catégories), règles « contient » ou regex sur le libellé, le commerçant ou la catégorie du fournisseur, application à l'import ou à la demande.
 - **Postes fixes** : charges et revenus récurrents (mensuels, trimestriels, annuels), rapprochement automatique des transactions, échéances à venir et en retard.
-- **Budgets** : plafonds par catégorie (sous-catégories incluses), report du solde, projection au rythme actuel, historique.
+- **Budgets** : plafonds par catégorie, report du solde, projection au rythme actuel, historique.
 - **Plan du mois** : postes fixes et budgets réunis sur une seule page, avec le reste du mois (revenus fixes − charges fixes − enveloppes).
 - **Tableau de bord** : solde bancaire, dépenses, revenus et net du mois comparés au mois précédent, points d'attention, revenus et dépenses sur 12 mois, dépenses par catégorie, évolution du solde, budgets, échéances et dernières transactions.
 - **Export** : export CSV (séparateur `;`, UTF-8 avec BOM) des transactions selon les filtres de la page Transactions.

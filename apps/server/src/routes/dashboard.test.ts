@@ -1,4 +1,4 @@
-import { accounts, categories, type Db, transactions } from "@centime/db"
+import { accounts, categories, type Db, themes, transactions } from "@centime/db"
 import { beforeEach, describe, expect, it } from "bun:test"
 import type { DashboardOverview } from "@centime/services"
 import { createTestAccount, createTestDb, insertTestTransactions, readJson, withErrorHandling } from "../test-support/database"
@@ -15,8 +15,8 @@ async function overview(date = "2026-09-15"): Promise<DashboardOverview> {
   return readJson<DashboardOverview>(response)
 }
 
-async function insertCategory(name: string, parentId: string | null = null): Promise<string> {
-  const [row] = await db.insert(categories).values({ name, color: "#4a84c4", parentId }).returning({ id: categories.id })
+async function insertCategory(name: string, themeId: string | null = null): Promise<string> {
+  const [row] = await db.insert(categories).values({ name, color: "#4a84c4", themeId }).returning({ id: categories.id })
   if (!row) throw new Error("Catégorie de test impossible à créer")
   return row.id
 }
@@ -91,9 +91,11 @@ describe("dashboard route", () => {
     expect(monthlySeries[11]).toMatchObject({ month: "2026-09-01", income: 0, expenses: 0 })
   })
 
-  it("groups spending by top-level category with Autres and Non catégorisées", async () => {
-    const parent = await insertCategory("Alimentation")
-    const child = await insertCategory("Supermarché", parent)
+  it("groups spending by theme, then by category with Autres and Non catégorisées", async () => {
+    const [theme] = await db.insert(themes).values({ name: "Alimentation", color: "#4a84c4" }).returning({ id: themes.id })
+    const themeId = theme?.id ?? ""
+    const parent = await insertCategory("Épicerie", themeId)
+    const child = await insertCategory("Supermarché", themeId)
     const others = await Promise.all(Array.from({ length: 8 }, (_, index) => insertCategory(`Catégorie ${index}`)))
     await insertTestTransactions(db, accountId, [
       { rawLabel: "Parent", categoryId: parent, bookingDate: "2026-09-02", amount: -100 },
@@ -111,10 +113,10 @@ describe("dashboard route", () => {
     const { categoryBreakdown } = await overview()
 
     expect(categoryBreakdown).toHaveLength(8)
-    expect(categoryBreakdown[0]).toMatchObject({ categoryId: parent, name: "Alimentation", amount: 500, kind: "category" })
+    expect(categoryBreakdown[0]).toMatchObject({ themeId, name: "Alimentation", amount: 500, kind: "theme" })
     expect(categoryBreakdown[1]).toMatchObject({ categoryId: null, name: "Non catégorisées", amount: 300, kind: "uncategorized" })
     expect(categoryBreakdown.slice(2, 7).map((entry) => entry.amount)).toEqual([80, 70, 60, 50, 40])
-    expect(categoryBreakdown[7]).toEqual({ categoryId: null, name: "Autres", color: null, amount: 60, kind: "other" })
+    expect(categoryBreakdown[7]).toEqual({ themeId: null, categoryId: null, name: "Autres", color: null, amount: 60, kind: "other" })
   })
 
   it("sums the latest balance of every bank account, month by month", async () => {

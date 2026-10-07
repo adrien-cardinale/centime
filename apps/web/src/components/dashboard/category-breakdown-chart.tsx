@@ -19,18 +19,19 @@ const chartConfig = {
 
 type MonthRange = { start: string; end: string; label: string }
 
-type TransactionsSearch = { categoryId: string; from: string; to: string; includeChildren?: true }
+type TransactionsSearch = { categoryId?: string; themeId?: string; from: string; to: string }
 
 function transactionsSearchOf(entry: CategoryBreakdownEntry, month: MonthRange): TransactionsSearch | null {
   if (entry.kind === "uncategorized") return { categoryId: UNCATEGORIZED_FILTER, from: month.start, to: month.end }
+  if (entry.kind === "theme" && entry.themeId !== null) return { themeId: entry.themeId, from: month.start, to: month.end }
   if (entry.kind === "category" && entry.categoryId !== null) {
-    return { categoryId: entry.categoryId, from: month.start, to: month.end, includeChildren: true }
+    return { categoryId: entry.categoryId, from: month.start, to: month.end }
   }
   return null
 }
 
 function barFill(entry: CategoryBreakdownEntry): string {
-  return entry.kind === "category" ? "var(--color-amount)" : "var(--chart-muted)"
+  return entry.kind === "category" || entry.kind === "theme" ? "var(--color-amount)" : "var(--chart-muted)"
 }
 
 type CategoryBreakdownChartProps = { entries: CategoryBreakdownEntry[]; month: MonthRange }
@@ -70,7 +71,7 @@ export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChar
               onClick={(_, index) => openTransactions(index)}
             >
               {data.map((entry) => (
-                <Cell key={`${entry.kind}-${entry.categoryId ?? entry.name}`} fill={entry.fill} />
+                <Cell key={`${entry.kind}-${entry.themeId ?? entry.categoryId ?? entry.name}`} fill={entry.fill} />
               ))}
               <LabelList
                 dataKey="amount"
@@ -135,7 +136,7 @@ function BreakdownTable({ entries, month }: CategoryBreakdownChartProps) {
         {entries.map((entry) => {
           const search = transactionsSearchOf(entry, month)
           return (
-            <TableRow key={`${entry.kind}-${entry.categoryId ?? entry.name}`}>
+            <TableRow key={`${entry.kind}-${entry.themeId ?? entry.categoryId ?? entry.name}`}>
               <TableCell className="max-w-48 truncate">
                 {search ? (
                   <Link to="/transactions" search={search} className="underline-offset-4 hover:underline">

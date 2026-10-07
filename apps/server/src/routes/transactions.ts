@@ -23,7 +23,7 @@ const filterQuerySchema = z.object({
   to: isoDate.optional(),
   search: z.string().trim().optional(),
   categoryId: z.string().min(1).optional(),
-  includeChildren: booleanFlag,
+  themeId: z.string().min(1).optional(),
   fixedItemId: z.string().min(1).optional(),
   isTransfer: booleanFlag,
 })
@@ -42,7 +42,6 @@ function flagOf(value: "true" | "false" | undefined): boolean | undefined {
 function toFilter(query: FilterQuery): TransactionFilter {
   return {
     ...query,
-    includeChildren: flagOf(query.includeChildren),
     isTransfer: flagOf(query.isTransfer),
   }
 }

@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { type TransferFilter, UNCATEGORIZED_FILTER, WITHOUT_FIXED_ITEM_FILTER } from "@/lib/api"
-import { fixedItemsQuery } from "@/lib/queries"
+import { fixedItemsQuery, themesQuery } from "@/lib/queries"
 
 export type TransactionFilterValues = {
   accountId: string | undefined
@@ -15,6 +15,7 @@ export type TransactionFilterValues = {
   to: string
   search: string
   categoryId: string | undefined
+  themeId: string | undefined
   fixedItemId: string | undefined
   transfer: TransferFilter | undefined
 }
@@ -22,11 +23,11 @@ export type TransactionFilterValues = {
 type TransactionFiltersProps = {
   values: TransactionFilterValues
   onChange: (values: TransactionFilterValues) => void
-  includeChildren?: boolean
   actions?: ReactNode
 }
 
 const ALL = "all"
+const THEME_PREFIX = "theme:"
 
 const transferOptions: Record<TransferFilter | typeof ALL, string> = {
   all: "Toutes",
@@ -38,8 +39,14 @@ function toTransferFilter(value: string): TransferFilter | undefined {
   return value === "hide" || value === "only" ? value : undefined
 }
 
-export function TransactionFilters({ values, onChange, includeChildren = false, actions }: TransactionFiltersProps) {
+export function TransactionFilters({ values, onChange, actions }: TransactionFiltersProps) {
+  const { data: themes = [] } = useQuery(themesQuery)
   const update = (patch: Partial<TransactionFilterValues>) => onChange({ ...values, ...patch })
+  const categoryValue = values.themeId ? `${THEME_PREFIX}${values.themeId}` : (values.categoryId ?? ALL)
+  const changeCategory = (value: string) => {
+    if (value.startsWith(THEME_PREFIX)) update({ themeId: value.slice(THEME_PREFIX.length), categoryId: undefined })
+    else update({ categoryId: value === ALL ? undefined : value, themeId: undefined })
+  }
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -73,14 +80,14 @@ export function TransactionFilters({ values, onChange, includeChildren = false, 
         <Label htmlFor="filter-category">Catégorie</Label>
         <CategorySelect
           id="filter-category"
-          value={values.categoryId ?? ALL}
-          onChange={(value) => update({ categoryId: value === ALL ? undefined : value })}
+          value={categoryValue}
+          onChange={changeCategory}
           extraOptions={[
             { value: ALL, label: "Toutes" },
             { value: UNCATEGORIZED_FILTER, label: "Non catégorisées" },
+            ...themes.map((theme) => ({ value: `${THEME_PREFIX}${theme.id}`, label: `Thème : ${theme.name}` })),
           ]}
         />
-        {includeChildren && <p className="text-xs text-muted-foreground">Sous-catégories incluses</p>}
       </div>
       <div className="space-y-2">
         <Label htmlFor="filter-fixed-item">Poste fixe</Label>

@@ -17,9 +17,9 @@ import { accountsQuery, categoriesQuery, fixedItemsQuery, transactionsQuery } fr
 
 const PAGE_SIZE = 50
 const SEARCH_DEBOUNCE_MS = 300
-type UrlFilterKey = "fixedItemId" | "categoryId" | "from" | "to"
+type UrlFilterKey = "fixedItemId" | "categoryId" | "themeId" | "from" | "to"
 type LocalFilterValues = Omit<TransactionFilterValues, UrlFilterKey>
-type TransactionsSearch = Partial<Record<UrlFilterKey, string>> & { includeChildren?: true }
+type TransactionsSearch = Partial<Record<UrlFilterKey, string>>
 type PageState = { searchKey: string; page: number; selectedIds: Set<string> }
 
 const EMPTY_FILTERS: LocalFilterValues = {
@@ -36,23 +36,15 @@ function validateTransactionsSearch(search: Record<string, unknown>): Transactio
   const entries = {
     fixedItemId: nonEmptyString(search.fixedItemId),
     categoryId: nonEmptyString(search.categoryId),
+    themeId: nonEmptyString(search.themeId),
     from: isIsoDate(search.from) ? search.from : undefined,
     to: isIsoDate(search.to) ? search.to : undefined,
   }
-  const defined = Object.fromEntries(Object.entries(entries).filter(([, value]) => value !== undefined))
-  return includesChildren(search) && defined.categoryId ? { ...defined, includeChildren: true } : defined
+  return Object.fromEntries(Object.entries(entries).filter(([, value]) => value !== undefined))
 }
 
-function includesChildren(search: Record<string, unknown>): boolean {
-  return search.includeChildren === true || search.includeChildren === "true"
-}
-
-function toSearch(
-  { fixedItemId, categoryId, from, to }: TransactionFilterValues,
-  current: TransactionsSearch,
-): TransactionsSearch {
-  const includeChildren = current.includeChildren && categoryId === current.categoryId
-  return validateTransactionsSearch({ fixedItemId, categoryId, from, to, includeChildren })
+function toSearch({ fixedItemId, categoryId, themeId, from, to }: TransactionFilterValues): TransactionsSearch {
+  return validateTransactionsSearch({ fixedItemId, categoryId, themeId, from, to })
 }
 
 function toLocalFilters({ accountId, search, transfer }: TransactionFilterValues): LocalFilterValues {
@@ -60,7 +52,7 @@ function toLocalFilters({ accountId, search, transfer }: TransactionFilterValues
 }
 
 function searchKeyOf(search: TransactionsSearch): string {
-  return JSON.stringify([search.fixedItemId, search.categoryId, search.from, search.to, search.includeChildren])
+  return JSON.stringify([search.fixedItemId, search.categoryId, search.themeId, search.from, search.to])
 }
 
 export const Route = createFileRoute("/_app/transactions")({
@@ -107,11 +99,12 @@ function TransactionsPage() {
     ...localFilters,
     fixedItemId: urlFilters.fixedItemId,
     categoryId: urlFilters.categoryId,
+    themeId: urlFilters.themeId,
     from: urlFilters.from ?? "",
     to: urlFilters.to ?? "",
   }
   const search = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS)
-  const queryFilters = { ...filters, search, includeChildren: urlFilters.includeChildren }
+  const queryFilters = { ...filters, search }
   const { data, isPending, error } = useQuery(transactionsQuery({ ...queryFilters, page, pageSize: PAGE_SIZE }))
 
   const clearSelection = () => setSelectedIds(new Set())
@@ -119,7 +112,7 @@ function TransactionsPage() {
   const changeFilters = (next: TransactionFilterValues) => {
     setLocalFilters(toLocalFilters(next))
     setPage(1)
-    const nextSearch = toSearch(next, urlFilters)
+    const nextSearch = toSearch(next)
     if (searchKeyOf(nextSearch) !== searchKey) void navigate({ search: nextSearch, replace: true })
   }
 
@@ -131,7 +124,6 @@ function TransactionsPage() {
       <TransactionFilters
         values={filters}
         onChange={changeFilters}
-        includeChildren={urlFilters.includeChildren === true}
         actions={<ExportButton filters={queryFilters} disabled={!data || data.total === 0} />}
       />
       {selectedIds.size > 0 && <BulkActionsBar selectedIds={[...selectedIds]} onClear={clearSelection} />}

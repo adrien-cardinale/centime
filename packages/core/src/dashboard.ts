@@ -2,9 +2,10 @@ import { type PeriodRange, shiftPeriod } from "./budgets"
 import { roundCents } from "./fixed-items"
 import type { IsoDate } from "./types"
 
-export type BreakdownKind = "category" | "other" | "uncategorized"
+export type BreakdownKind = "theme" | "category" | "other" | "uncategorized"
 
 export type BreakdownEntry = {
+  themeId: string | null
   categoryId: string | null
   name: string
   color: string | null
@@ -27,7 +28,7 @@ export function lastMonths(reference: PeriodRange, count: number): PeriodRange[]
 function otherEntry(rest: BreakdownEntry[]): BreakdownEntry[] {
   const amount = roundCents(rest.reduce((sum, entry) => sum + entry.amount, 0))
   if (amount <= 0) return []
-  return [{ categoryId: null, name: OTHER_CATEGORIES_LABEL, color: null, amount, kind: "other" }]
+  return [{ themeId: null, categoryId: null, name: OTHER_CATEGORIES_LABEL, color: null, amount, kind: "other" }]
 }
 
 export function limitBreakdown(entries: readonly BreakdownEntry[], visible = BREAKDOWN_VISIBLE_ENTRIES): BreakdownEntry[] {

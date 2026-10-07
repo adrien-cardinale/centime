@@ -9,7 +9,7 @@ export type TransactionFilters = {
   to?: string | undefined
   search?: string | undefined
   categoryId?: string | undefined
-  includeChildren?: boolean | undefined
+  themeId?: string | undefined
   fixedItemId?: string | undefined
   transfer?: TransferFilter | undefined
 }
@@ -25,7 +25,7 @@ export type NormalizedTransactionFilter = {
   to: string | undefined
   search: string | undefined
   categoryId: string | undefined
-  includeChildren: boolean | undefined
+  themeId: string | undefined
   fixedItemId: string | undefined
   isTransfer: boolean | undefined
 }
@@ -42,7 +42,7 @@ export function normalizeTransactionFilter(filters: TransactionFilters): Normali
     to: filters.to || undefined,
     search: filters.search?.trim() || undefined,
     categoryId: filters.categoryId || undefined,
-    includeChildren: filters.categoryId && filters.includeChildren ? true : undefined,
+    themeId: filters.themeId || undefined,
     fixedItemId: filters.fixedItemId || undefined,
     isTransfer: transferFlag(filters.transfer),
   }

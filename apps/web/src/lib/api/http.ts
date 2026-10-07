@@ -1,4 +1,12 @@
-import type { BudgetPayload, CategoryInput, CsvProfileInput, FixedItemPayload, RuleMatcherInput, RulePayload } from "@centime/core"
+import type {
+  BudgetPayload,
+  CategoryInput,
+  CsvProfileInput,
+  FixedItemPayload,
+  RuleMatcherInput,
+  RulePayload,
+  ThemeInput,
+} from "@centime/core"
 import type { AppType } from "@centime/server"
 import { hc, type InferRequestType } from "hono/client"
 import { ApiError } from "./errors"
@@ -42,7 +50,6 @@ function toFilterQuery(filters: TransactionFilters): Record<string, string> {
   const normalized = normalizeTransactionFilter(filters)
   const query = {
     ...normalized,
-    includeChildren: flagQuery(normalized.includeChildren),
     isTransfer: flagQuery(normalized.isTransfer),
   }
   return Object.fromEntries(Object.entries(query).flatMap(([key, value]) => (value === undefined ? [] : [[key, value]])))
@@ -106,6 +113,13 @@ export function createHttpApi() {
         (await successOrThrow(client.api.transactions[":id"].$patch({ param: { id }, json: changes }))).json(),
       bulkUpdate: async (ids: string[], changes: TransactionChanges) =>
         (await successOrThrow(client.api.transactions.$patch({ json: { ids, ...changes } }))).json(),
+    },
+    themes: {
+      list: async () => (await successOrThrow(client.api.themes.$get())).json(),
+      create: async (input: ThemeInput) => (await successOrThrow(client.api.themes.$post({ json: input }))).json(),
+      update: async (id: string, input: ThemeInput) =>
+        (await successOrThrow(client.api.themes[":id"].$put({ param: { id }, json: input }))).json(),
+      remove: async (id: string) => (await successOrThrow(client.api.themes[":id"].$delete({ param: { id } }))).json(),
     },
     categories: {
       list: async () => (await successOrThrow(client.api.categories.$get())).json(),

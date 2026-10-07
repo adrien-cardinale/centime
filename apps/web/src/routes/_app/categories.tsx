@@ -3,11 +3,15 @@ import { CategoriesPanel } from "@/components/categories/categories-panel"
 import { PageHeader } from "@/components/page-header"
 import { RulesPanel } from "@/components/rules/rules-panel"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { categoriesQuery, rulesQuery } from "@/lib/queries"
+import { categoriesQuery, rulesQuery, themesQuery } from "@/lib/queries"
 
 export const Route = createFileRoute("/_app/categories")({
   loader: ({ context }) =>
-    Promise.all([context.queryClient.prefetchQuery(categoriesQuery), context.queryClient.prefetchQuery(rulesQuery)]),
+    Promise.all([
+      context.queryClient.prefetchQuery(categoriesQuery),
+      context.queryClient.prefetchQuery(themesQuery),
+      context.queryClient.prefetchQuery(rulesQuery),
+    ]),
   component: CategoriesPage,
 })
 

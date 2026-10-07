@@ -7,6 +7,7 @@ import { createAccountRoutes } from "./routes/accounts"
 import { createAuthRoutes } from "./routes/auth"
 import { createBudgetRoutes } from "./routes/budgets"
 import { createCategoryRoutes } from "./routes/categories"
+import { createThemeRoutes } from "./routes/themes"
 import { createCsvProfileRoutes } from "./routes/csv-profiles"
 import { createDashboardRoutes } from "./routes/dashboard"
 import { createFixedItemRoutes } from "./routes/fixed-items"
@@ -29,6 +30,7 @@ export function createApi(deps: AppDeps) {
     .route("/csv-profiles", createCsvProfileRoutes(deps.db))
     .route("/imports", createImportRoutes(deps.db))
     .route("/transactions", createTransactionRoutes(deps.db))
+    .route("/themes", createThemeRoutes(deps.db))
     .route("/categories", createCategoryRoutes(deps.db))
     .route("/rules", createRuleRoutes(deps.db))
     .route("/fixed-items", createFixedItemRoutes(deps.db))

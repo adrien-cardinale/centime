@@ -30,6 +30,17 @@ export const accounts = sqliteTable(
   (table) => [syncVersionIndex("accounts", table)],
 )
 
+export const themes = sqliteTable(
+  "themes",
+  {
+    ...syncColumns,
+    name: text("name").notNull(),
+    color: text("color").notNull(),
+    icon: text("icon"),
+  },
+  (table) => [syncVersionIndex("themes", table)],
+)
+
 export const categories = sqliteTable(
   "categories",
   {
@@ -37,9 +48,9 @@ export const categories = sqliteTable(
     name: text("name").notNull(),
     color: text("color").notNull(),
     icon: text("icon"),
-    parentId: text("parent_id").references((): AnySQLiteColumn => categories.id),
+    themeId: text("theme_id").references(() => themes.id),
   },
-  (table) => [syncVersionIndex("categories", table)],
+  (table) => [syncVersionIndex("categories", table), index("categories_theme_id_idx").on(table.themeId)],
 )
 
 export const csvProfiles = sqliteTable(
@@ -169,6 +180,8 @@ export const apiTokens = sqliteTable("api_tokens", {
 
 export type AccountRow = typeof accounts.$inferSelect
 export type NewAccountRow = typeof accounts.$inferInsert
+export type ThemeRow = typeof themes.$inferSelect
+export type NewThemeRow = typeof themes.$inferInsert
 export type CategoryRow = typeof categories.$inferSelect
 export type NewCategoryRow = typeof categories.$inferInsert
 export type TransactionRow = typeof transactions.$inferSelect

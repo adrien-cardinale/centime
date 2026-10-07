@@ -67,6 +67,7 @@ export async function listBudgets(db: DbExecutor, onlyId?: string) {
       categoryId: budgets.categoryId,
       categoryName: categories.name,
       categoryColor: categories.color,
+      themeId: categories.themeId,
       period: budgets.period,
       rollover: budgets.rollover,
       amount: budgets.amount,
@@ -162,29 +163,8 @@ async function loadEligibleTransactions(db: DbExecutor, from: IsoDate, to: IsoDa
   return rows.flatMap(({ categoryId, ...row }) => (categoryId === null ? [] : [{ ...row, categoryId }]))
 }
 
-function nearestBudgetedAncestor(
-  startId: string,
-  parents: Map<string, string | null>,
-  budgeted: ReadonlySet<string>,
-): string | null {
-  const visited = new Set<string>()
-  let current: string | null | undefined = startId
-  while (current && !visited.has(current)) {
-    if (budgeted.has(current)) return current
-    visited.add(current)
-    current = parents.get(current)
-  }
-  return null
-}
-
 function budgetedCategoryMap(nodes: CategoryNode[], budgeted: ReadonlySet<string>): Map<string, string> {
-  const parents = new Map(nodes.map((node) => [node.id, node.parentId]))
-  const mapping = new Map<string, string>()
-  for (const node of nodes) {
-    const target = nearestBudgetedAncestor(node.id, parents, budgeted)
-    if (target !== null) mapping.set(node.id, target)
-  }
-  return mapping
+  return new Map(nodes.filter((node) => budgeted.has(node.id)).map((node) => [node.id, node.id]))
 }
 
 function groupByBudgetedCategory(

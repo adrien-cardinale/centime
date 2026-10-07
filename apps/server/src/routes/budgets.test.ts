@@ -21,8 +21,8 @@ function routes() {
   return withErrorHandling(createBudgetRoutes(db, () => TODAY))
 }
 
-async function insertCategory(name: string, parentId: string | null = null): Promise<string> {
-  const [row] = await db.insert(categories).values({ name, color: "#4a84c4", parentId }).returning({ id: categories.id })
+async function insertCategory(name: string): Promise<string> {
+  const [row] = await db.insert(categories).values({ name, color: "#4a84c4" }).returning({ id: categories.id })
   if (!row) throw new Error("Catégorie de test impossible à créer")
   return row.id
 }
@@ -67,15 +67,14 @@ describe("budget routes", () => {
     expect((await routes().request("/", json("POST", { ...foodBudget, categoryId: food }))).status).toBe(201)
   })
 
-  it("aggregates eligible spending with subcategories, rollover and pending amounts", async () => {
-    const supermarket = await insertCategory("Supermarché", food)
+  it("aggregates eligible spending with rollover and pending amounts", async () => {
     const leisure = await insertCategory("Loisirs")
     const subscription = await insertFixedItem()
     await db.insert(budgets).values({ ...foodBudget, period: "monthly", categoryId: food })
     await insertTestTransactions(db, accountId, [
       { rawLabel: "Courses juillet", categoryId: food, bookingDate: "2026-07-10", amount: -900 },
       { rawLabel: "Courses août", categoryId: food, bookingDate: "2026-08-12", amount: -300 },
-      { rawLabel: "Supermarché septembre", categoryId: supermarket, bookingDate: "2026-09-05", amount: -100 },
+      { rawLabel: "Supermarché septembre", categoryId: food, bookingDate: "2026-09-05", amount: -100 },
       { rawLabel: "Remboursement", categoryId: food, bookingDate: "2026-09-06", amount: 20 },
       { rawLabel: "Virement épargne", categoryId: food, bookingDate: "2026-09-07", amount: -1000, isTransfer: true },
       { rawLabel: "Abonnement", categoryId: food, bookingDate: "2026-09-08", amount: -800, fixedItemId: subscription },
@@ -99,8 +98,7 @@ describe("budget routes", () => {
     })
     expect(item?.history.map((period) => period.spent)).toEqual([0, 0, 0, 0, 900, 300])
     expect(item?.breakdown).toEqual([
-      { categoryId: supermarket, categoryName: "Supermarché", categoryColor: "#4a84c4", spent: 100 },
-      { categoryId: food, categoryName: "Alimentation", categoryColor: "#4a84c4", spent: -20 },
+      { categoryId: food, categoryName: "Alimentation", categoryColor: "#4a84c4", spent: 80 },
     ])
     expect(overview.totals.monthly).toEqual({ available: 700, spent: 80, remaining: 620 })
     expect(overview.envelopes).toEqual({ expected: 500, actual: 80 })

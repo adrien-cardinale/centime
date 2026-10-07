@@ -39,12 +39,18 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     identifier: z.string().min(1),
     currency: z.string(),
   }),
+  themes: z.strictObject({
+    ...syncFields,
+    name: z.string(),
+    color: z.string(),
+    icon: z.string().nullable(),
+  }),
   categories: z.strictObject({
     ...syncFields,
     name: z.string(),
     color: z.string(),
     icon: z.string().nullable(),
-    parentId: reference,
+    themeId: reference,
   }),
   csv_profiles: z.strictObject({
     ...syncFields,

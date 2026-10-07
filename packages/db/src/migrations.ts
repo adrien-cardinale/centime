@@ -7,6 +7,7 @@ export type Migration = { tag: string; when: number; sql: string }
 
 export const MIGRATIONS: readonly Migration[] = GENERATED_MIGRATIONS
 
+const FOREIGN_KEYS_OFF = /PRAGMA foreign_keys\s*=\s*OFF/i
 const STATEMENT_BREAKPOINT = "--> statement-breakpoint"
 
 const appliedMigrations = sqliteTable("__centime_migrations", {
@@ -58,7 +59,9 @@ async function loadAppliedTags(db: Db, migrations: readonly Migration[]): Promis
   return new Set(await adoptDrizzleHistory(db, migrations))
 }
 
+// SQLite ignores PRAGMA foreign_keys inside a transaction: table rebuilds must switch it off beforehand.
 async function applyMigration(db: Db, migration: Migration): Promise<void> {
+  if (FOREIGN_KEYS_OFF.test(migration.sql)) await db.run(sql`PRAGMA foreign_keys=OFF`)
   await db.transaction(async (tx) => {
     for (const statement of migrationStatements(migration)) await tx.run(sql.raw(statement))
     await recordApplied(tx, [migration.tag])

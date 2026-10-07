@@ -18,6 +18,7 @@ export type ImportOutcome = Result<Api["imports"]["commit"]>
 export type ImportHistoryEntry = Result<Api["imports"]["list"]>[number]
 export type TransactionsPage = Result<Api["transactions"]["list"]>
 export type TransactionItem = TransactionsPage["items"][number]
+export type Theme = Result<Api["themes"]["list"]>[number]
 export type Category = Result<Api["categories"]["list"]>[number]
 export type Rule = Result<Api["rules"]["list"]>[number]
 export type RuleTestResult = Result<Api["rules"]["test"]>

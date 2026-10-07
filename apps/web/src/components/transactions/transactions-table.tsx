@@ -126,6 +126,7 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
       </Table>
       {ruleSource && (
         <RuleDialog
+          applyAfterCreate
           open
           initialValues={ruleValuesFrom(ruleSource)}
           onOpenChange={(open) => !open && setRuleSource(null)}

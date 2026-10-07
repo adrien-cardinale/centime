@@ -21,6 +21,7 @@
     "db:migrate": "bun run --cwd packages/db migrate",
     "db:bundle": "bun run --cwd packages/db bundle",
     "desktop:dev": "bun run --cwd apps/desktop dev",
+    "desktop:check-version": "bun apps/desktop/scripts/check-version.ts",
     "desktop:build": "bun run --cwd apps/desktop build",
     "android:dev": "bun run --cwd apps/desktop android:dev",
     "android:build": "bun run --cwd apps/desktop android:build"

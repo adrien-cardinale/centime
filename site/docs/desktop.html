@@ -17,6 +17,9 @@
 <div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html" aria-current="page">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
 <main class="prose"><h1>Desktop app</h1>
 <p>The desktop app is the web UI packaged with Tauri 2. It works offline: business services run in the window against a local SQLite database (sql.js in WebAssembly).</p>
+<h2>Install a release</h2>
+<p>Installers are attached to each tagged version. They are <strong>not code-signed</strong> yet, so your OS warns you on first launch:</p>
+<ul><li><strong>Windows</strong>: SmartScreen shows “Windows protected your PC”. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</li><li><strong>macOS</strong>: Gatekeeper refuses to open the app. Right-click (or Control-click) the app, choose <strong>Open</strong>, then confirm. If it still says the app is damaged, run <code>xattr -dr com.apple.quarantine /Applications/centime.app</code>.</li><li><strong>Linux</strong>: no warning. For an AppImage, make it executable first: <code>chmod +x centime_*.AppImage</code>.</li></ul>
 <h2>Build it</h2>
 <p>Requirements: stable Rust, and the <a href="https://v2.tauri.app/start/prerequisites/">Tauri system dependencies</a> (WebView2 on Windows, Xcode Command Line Tools on macOS, WebKitGTK 4.1 on Linux).</p>
 <pre class="code"><code>bun run desktop:dev     # development window

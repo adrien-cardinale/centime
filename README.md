@@ -101,6 +101,14 @@ Synchronization runs at startup, every 5 minutes, 5 seconds after each change an
 
 The desktop app is the same UI as the web one, packaged with Tauri 2. It works offline: the business services run in the window, on a local SQLite database (sql.js in WebAssembly).
 
+### Installing a release
+
+Installers are attached to each tagged version. They are **not code-signed** yet, so your OS warns you on first launch:
+
+- **Windows**: SmartScreen shows "Windows protected your PC". Click **More info**, then **Run anyway**.
+- **macOS**: Gatekeeper refuses to open the app. Right-click (or Control-click) the app, choose **Open**, then confirm. If it still says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/centime.app`.
+- **Linux**: no warning. For an AppImage, make it executable first: `chmod +x centime_*.AppImage`.
+
 ### Prerequisites
 
 - Stable Rust (`rustup`).

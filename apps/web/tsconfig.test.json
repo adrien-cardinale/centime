@@ -9,7 +9,12 @@
     "types": [
       "bun",
       "vite/client"
-    ]
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
   },
   "include": [
     "src/**/*.test.ts"

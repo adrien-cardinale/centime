@@ -96,7 +96,7 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
               </TableCell>
               <TableCell>{item.merchant ?? "—"}</TableCell>
               <TableCell>
-                <CategoryCell transaction={item} />
+                <CategoryCell transaction={item} onCreateRule={setRuleSource} />
               </TableCell>
               <TableCell className="px-0">
                 <FixedItemCell

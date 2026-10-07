@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { Pencil, Plus, Trash2 } from "lucide-react"
+import { ChevronRight, Pencil, Plus, Trash2 } from "lucide-react"
+import { useState } from "react"
 import { toast } from "sonner"
 import {
   AlertDialog,
@@ -16,9 +17,12 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { api, type Category, type Theme } from "@/lib/api"
+import { ApplyRulesButton } from "@/components/rules/apply-rules-button"
+import { RuleList } from "@/components/rules/category-rules"
+import { api, type Category, type Rule, type Theme } from "@/lib/api"
 import { type CategoryGroup, groupCategoriesByTheme } from "@/lib/category-groups"
 import { categoriesQuery, invalidateTransactionData, rulesQuery, themesQuery } from "@/lib/queries"
+import { cn } from "@/lib/utils"
 import { CategoryDialog } from "./category-dialog"
 import { ColorDot } from "./color-dot"
 import { ThemeDialog } from "./theme-dialog"
@@ -26,14 +30,17 @@ import { ThemeDialog } from "./theme-dialog"
 export function CategoriesPanel() {
   const { data: categories, isPending, error } = useQuery(categoriesQuery)
   const { data: themes } = useQuery(themesQuery)
+  const { data: rules = [] } = useQuery(rulesQuery)
 
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <p className="text-sm text-muted-foreground">
-          Les transactions se classent dans des catégories, que vous pouvez regrouper sous des thèmes.
+          Les transactions se classent dans des catégories, que vous pouvez regrouper sous des thèmes. Les règles
+          classent automatiquement les transactions à l'import ; la priorité la plus haute l'emporte.
         </p>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <ApplyRulesButton />
           <ThemeDialog
             trigger={
               <Button variant="outline">
@@ -56,15 +63,52 @@ export function CategoriesPanel() {
         <CardContent className="px-0">
           {(isPending || !themes) && !error && <Skeleton className="m-6 h-5" />}
           {error && <p className="p-6 text-sm text-destructive">{error.message}</p>}
-          {categories && themes && <CategoriesTable categories={categories} themes={themes} />}
+          {categories && themes && <CategoriesTable categories={categories} themes={themes} rules={rules} />}
         </CardContent>
       </Card>
+      {categories && <OtherRules rules={rules} categories={categories} />}
     </div>
   )
 }
 
-function CategoriesTable({ categories, themes }: { categories: Category[]; themes: Theme[] }) {
+function groupRulesByCategory(rules: Rule[]): Map<string, Rule[]> {
+  const byCategory = new Map<string, Rule[]>()
+  for (const rule of rules) {
+    if (!rule.categoryId) continue
+    byCategory.set(rule.categoryId, [...(byCategory.get(rule.categoryId) ?? []), rule])
+  }
+  return byCategory
+}
+
+function OtherRules({ rules, categories }: { rules: Rule[]; categories: Category[] }) {
+  const otherRules = rules.filter((rule) => !rule.categoryId)
+  if (otherRules.length === 0) return null
+  const categoriesById = new Map(categories.map((category) => [category.id, category]))
+  return (
+    <Card className="py-0">
+      <CardContent className="space-y-2 p-6">
+        <h3 className="font-semibold">Autres règles</h3>
+        <p className="text-sm text-muted-foreground">
+          Règles sans catégorie : transferts ou rattachement à un poste fixe.
+        </p>
+        <RuleList rules={otherRules} categoriesById={categoriesById} />
+      </CardContent>
+    </Card>
+  )
+}
+
+function CategoriesTable({
+  categories,
+  themes,
+  rules,
+}: {
+  categories: Category[]
+  themes: Theme[]
+  rules: Rule[]
+}) {
   const groups = groupCategoriesByTheme(categories, themes)
+  const rulesByCategory = groupRulesByCategory(rules)
+  const categoriesById = new Map(categories.map((category) => [category.id, category]))
   const emptyThemes = themes.filter((theme) => !groups.some((group) => group.theme?.id === theme.id))
   if (groups.length === 0 && emptyThemes.length === 0) {
     return <p className="p-6 text-center text-sm text-muted-foreground">Aucune catégorie.</p>
@@ -81,14 +125,25 @@ function CategoriesTable({ categories, themes }: { categories: Category[]; theme
       </TableHeader>
       <TableBody>
         {[...groups, ...emptyThemes.map((theme) => ({ theme, categories: [] }))].map((group) => (
-          <CategoryGroupRows key={group.theme?.id ?? "none"} group={group} />
+          <CategoryGroupRows
+            key={group.theme?.id ?? "none"}
+            group={group}
+            rulesByCategory={rulesByCategory}
+            categoriesById={categoriesById}
+          />
         ))}
       </TableBody>
     </Table>
   )
 }
 
-function CategoryGroupRows({ group }: { group: CategoryGroup }) {
+type CategoryGroupRowsProps = {
+  group: CategoryGroup
+  rulesByCategory: Map<string, Rule[]>
+  categoriesById: Map<string, Category>
+}
+
+function CategoryGroupRows({ group, rulesByCategory, categoriesById }: CategoryGroupRowsProps) {
   return (
     <>
       <TableRow className="bg-muted/40 hover:bg-muted/40">
@@ -118,12 +173,44 @@ function CategoryGroupRows({ group }: { group: CategoryGroup }) {
         </TableCell>
       </TableRow>
       {group.categories.map((category) => (
-        <TableRow key={category.id}>
-          <TableCell className="pl-12 font-medium">
-            <span className="flex items-center gap-2">
-              <ColorDot color={category.color} className="size-3" />
-              {category.name}
-            </span>
+        <CategoryRows
+          key={category.id}
+          category={category}
+          rules={rulesByCategory.get(category.id) ?? []}
+          categoriesById={categoriesById}
+        />
+      ))}
+    </>
+  )
+}
+
+function CategoryRows({
+  category,
+  rules,
+  categoriesById,
+}: {
+  category: Category
+  rules: Rule[]
+  categoriesById: Map<string, Category>
+}) {
+  const [open, setOpen] = useState(false)
+  return (
+    <>
+        <TableRow>
+          <TableCell className="pl-8 font-medium">
+            <button
+              type="button"
+              aria-expanded={open}
+              onClick={() => setOpen(!open)}
+              className="flex items-center gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+            >
+                <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-90")} />
+                <ColorDot color={category.color} className="size-3" />
+                {category.name}
+                <span className="text-xs font-normal text-muted-foreground">
+                  {rules.length === 0 ? "" : `${rules.length} règle${rules.length > 1 ? "s" : ""}`}
+                </span>
+            </button>
           </TableCell>
           <TableCell className="text-right tabular-nums">{category.transactionCount}</TableCell>
           <TableCell className="pr-6">
@@ -140,7 +227,13 @@ function CategoryGroupRows({ group }: { group: CategoryGroup }) {
             </div>
           </TableCell>
         </TableRow>
-      ))}
+        {open && (
+          <TableRow className="hover:bg-transparent">
+            <TableCell colSpan={3} className="pr-6 pl-14">
+              <RuleList rules={rules} categoriesById={categoriesById} categoryId={category.id} />
+            </TableCell>
+          </TableRow>
+        )}
     </>
   )
 }

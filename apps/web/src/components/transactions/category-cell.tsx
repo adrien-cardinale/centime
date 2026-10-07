@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import { Check, Plus } from "lucide-react"
 import { useState } from "react"
+import { toast } from "sonner"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { CategoryDialog } from "@/components/categories/category-dialog"
 import { ColorDot } from "@/components/categories/color-dot"
@@ -23,7 +24,12 @@ import { cn } from "@/lib/utils"
 const NO_CATEGORY = "none"
 const NEW_CATEGORY = "new"
 
-export function CategoryCell({ transaction }: { transaction: TransactionItem }) {
+type CategoryCellProps = {
+  transaction: TransactionItem
+  onCreateRule: (transaction: TransactionItem) => void
+}
+
+export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState("")
   const [creating, setCreating] = useState(false)
@@ -35,7 +41,17 @@ export function CategoryCell({ transaction }: { transaction: TransactionItem }) 
   const choose = (categoryId: string | null) => {
     setOpen(false)
     if (categoryId === transaction.categoryId) return
-    update.mutate({ id: transaction.id, changes: { categoryId } })
+    update.mutate(
+      { id: transaction.id, changes: { categoryId } },
+      {
+        onSuccess: () => {
+          if (!categoryId) return
+          toast("Catégorie modifiée", {
+            action: { label: "Toujours classer ainsi", onClick: () => onCreateRule({ ...transaction, categoryId }) },
+          })
+        },
+      },
+    )
   }
 
   const startCreating = () => {

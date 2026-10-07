@@ -22,5 +22,10 @@ export const navigationItems: NavigationItem[] = [
   { titleKey: "nav.budget", to: "/budgets", icon: PiggyBank },
   { titleKey: "nav.categories", to: "/categories", icon: FolderTree },
   { titleKey: "nav.accounts", to: "/accounts", icon: Wallet },
-  { titleKey: "nav.settings", to: "/settings", icon: Settings },
 ]
+
+export const settingsItem: NavigationItem = {
+  titleKey: "nav.settings",
+  to: "/settings",
+  icon: Settings,
+}

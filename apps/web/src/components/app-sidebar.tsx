@@ -11,7 +11,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
-import { navigationItems } from "./navigation"
+import { navigationItems, settingsItem } from "./navigation"
 import SyncIndicator from "./sync/sync-indicator"
 import { ThemeToggle } from "./theme-toggle"
 
@@ -48,6 +48,18 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              isActive={Boolean(matchRoute({ to: settingsItem.to, fuzzy: true }))}
+              tooltip={t(settingsItem.titleKey)}
+            >
+              <Link to={settingsItem.to}>
+                <settingsItem.icon />
+                <span>{t(settingsItem.titleKey)}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
           <SidebarMenuItem>
             <ThemeToggle />
           </SidebarMenuItem>

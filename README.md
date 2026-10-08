@@ -120,6 +120,7 @@ Installers are attached to each tagged version. They are **not code-signed** yet
 - **Windows**: SmartScreen shows "Windows protected your PC". Click **More info**, then **Run anyway**.
 - **macOS**: Gatekeeper refuses to open the app. Right-click (or Control-click) the app, choose **Open**, then confirm. If it still says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/centime.app`.
 - **Linux**: no warning. For an AppImage, make it executable first: `chmod +x centime_*.AppImage`.
+- **Android**: download `centime_<version>.apk` on the device and open it. Android asks to allow installing apps from your browser (unknown sources) the first time. The APK is signed with the project's release key, so later versions install over the previous one.
 
 ### Prerequisites
 
@@ -140,6 +141,45 @@ To regenerate the icons from `apps/desktop/src-tauri/icons/icon.png`:
 ```sh
 bun run --cwd apps/desktop icon
 ```
+
+### Android
+
+The same Tauri project also targets Android. The generated project in `apps/desktop/src-tauri/gen/android` is committed (build outputs, `local.properties` and keystores are gitignored there), so CI and every checkout build the same project.
+
+Prerequisites: Android Studio (or the SDK command-line tools) with an NDK, plus the Rust targets. Set `ANDROID_HOME` and `NDK_HOME`, then:
+
+```sh
+rustup target add aarch64-linux-android armv7-linux-androideabi
+bun run android:dev    # run on a connected device or emulator
+bun run android:build  # release build
+```
+
+A release build is only installable if it is signed. Locally and in CI, signing is configured by `apps/desktop/src-tauri/gen/android/keystore.properties` (never committed):
+
+```properties
+keyAlias=centime
+password=<keystore password>
+storeFile=<absolute path to the .jks file>
+```
+
+#### Release signing in CI
+
+Create the release keystore once and keep it safe (losing it means users must uninstall before updating):
+
+```sh
+keytool -genkey -v -keystore centime-release.jks -alias centime \
+  -keyalg RSA -keysize 2048 -validity 10000
+```
+
+Then register it as repository secrets:
+
+```sh
+gh secret set ANDROID_KEYSTORE < <(base64 -w0 centime-release.jks)
+gh secret set ANDROID_KEYSTORE_PASSWORD   # the keystore password
+gh secret set ANDROID_KEY_ALIAS --body centime
+```
+
+On each `v*` tag, the `Build desktop` workflow builds `centime_<version>.apk` (arm64 + arm32) and attaches it to the GitHub release with the other installers. The job fails early with a clear message if the secrets are missing.
 
 ### Local database
 

@@ -20,9 +20,25 @@
 <h1>Know where your money goes.<br>Keep it to yourself.</h1>
 <p class="lead">Centime imports your bank statements, sorts them, tracks recurring items and budgets, and syncs across your devices. The server never sees anything in clear text.</p>
 <p class="cta"><a class="btn primary" href="docs/getting-started.html">Get started</a><a class="btn" href="https://github.com/adrien-cardinale/centime">View on GitHub</a></p>
+<figure class="shot hero-shot">
+<img class="light" src="screenshots/dashboard-light.webp" alt="The Centime dashboard: monthly balance, spending and income, 12-month chart and category breakdown" width="1512" height="920">
+<img class="dark" src="screenshots/dashboard-dark.webp" alt="The Centime dashboard in dark mode" width="1512" height="920" loading="lazy">
+</figure>
 </div></section>
 <section class="wrap"><h2 class="sr">Features</h2>
-<div class="grid"><article class="card"><h3>End-to-end encrypted</h3><p>Your data is encrypted on your device. The sync server is a relay that only stores opaque blobs.</p></article><article class="card"><h3>Import your statements</h3><p>CSV with configurable provider profiles, and camt.053 XML. Duplicates are detected.</p></article><article class="card"><h3>Categories and rules</h3><p>File transactions by category with “contains” or regex rules on label, merchant or provider category.</p></article><article class="card"><h3>Fixed items</h3><p>Recurring expenses and income (monthly, quarterly, yearly), matched automatically, with upcoming and overdue views.</p></article><article class="card"><h3>Budgets</h3><p>Per-category caps, balance carry-over, projection at your current pace and history.</p></article><article class="card"><h3>Month plan</h3><p>Fixed items and budgets on one page, with what remains of the month once everything is accounted for.</p></article><article class="card"><h3>Dashboard</h3><p>Balance, spending, income and net versus last month, 12-month charts, category breakdown and points of attention.</p></article><article class="card"><h3>Web and desktop</h3><p>The same UI in the browser or as an offline Tauri app for Windows, macOS and Linux. Devices stay in sync.</p></article></div></section>
+<div class="grid"><article class="card"><h3>End-to-end encrypted</h3><p>Your data is encrypted on your device. The sync server is a relay that only stores opaque blobs.</p></article><article class="card"><h3>Import your statements</h3><p>CSV with configurable provider profiles, and camt.053 XML. Duplicates are detected.</p></article><article class="card"><h3>Categories and rules</h3><p>File transactions by category with “contains” or regex rules on label, merchant or provider category.</p></article><article class="card"><h3>Fixed items</h3><p>Recurring expenses and income (monthly, quarterly, yearly), matched automatically, with upcoming and overdue views.</p></article><article class="card"><h3>Budgets</h3><p>Per-category caps, balance carry-over, projection at your current pace and history.</p></article><article class="card"><h3>Month plan</h3><p>Fixed items and budgets on one page, with what remains of the month once everything is accounted for.</p></article><article class="card"><h3>Dashboard</h3><p>Balance, spending, income and net versus last month, 12-month charts, category breakdown and points of attention.</p></article><article class="card"><h3>Web and desktop</h3><p>The same UI in the browser or as an offline Tauri app for Windows, macOS and Linux. Devices stay in sync.</p></article></div>
+<div class="shot-row">
+<figure class="shot">
+<img class="light" src="screenshots/budgets-light.webp" alt="The Budget page: fixed income and expenses, then spending envelopes by category" width="1512" height="920" loading="lazy">
+<img class="dark" src="screenshots/budgets-dark.webp" alt="The Budget page in dark mode" width="1512" height="920" loading="lazy">
+<figcaption>The month's plan: fixed items, then envelopes by category.</figcaption>
+</figure>
+<figure class="shot">
+<img class="light" src="screenshots/import-light.webp" alt="The import preview: new rows and detected duplicates before confirming" width="1512" height="920" loading="lazy">
+<img class="dark" src="screenshots/import-dark.webp" alt="The import preview in dark mode" width="1512" height="920" loading="lazy">
+<figcaption>Import preview: duplicates are caught before anything is written.</figcaption>
+</figure>
+</div></section>
 <section class="band"><div class="wrap split">
 <div><h2>Your key, your data</h2>
 <p>On first launch Centime generates a 32-byte master key and shows it as a recovery key. Everything is derived from it on your device: the user id, the auth secret and the AES-256-GCM encryption key. There is no password and no account to hand over.</p>

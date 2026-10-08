@@ -1,3 +1,4 @@
+import { setPeriodLocale } from "@centime/core"
 import { enUS, fr } from "date-fns/locale"
 import i18n from "i18next"
 import { initReactI18next } from "react-i18next"
@@ -56,6 +57,7 @@ export function setLanguage(language: Language): Promise<unknown> {
 
 i18n.on("languageChanged", (language) => {
   if (typeof document !== "undefined") document.documentElement.lang = language
+  setPeriodLocale(dateFnsLocales[isLanguage(language) ? language : DEFAULT_LANGUAGE])
 })
 
 void i18n.use(initReactI18next).init({

@@ -6,6 +6,7 @@ import {
   endOfYear,
   format,
   getQuarter,
+  type Locale,
   parseISO,
   startOfMonth,
   startOfQuarter,
@@ -51,9 +52,22 @@ function capitalize(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1)
 }
 
+// Les libellés de période sont calculés hors de React : l'UI fixe la locale au changement de langue.
+let periodLocale: Locale = fr
+
+export function setPeriodLocale(locale: Locale): void {
+  periodLocale = locale
+}
+
+// L'abréviation date-fns du trimestre en français (« 3ème trim. ») est trop longue : on garde « T3 ».
+function quarterOf(start: Date): string {
+  if (periodLocale.code.startsWith("fr")) return `T${getQuarter(start)}`
+  return format(start, "QQQ", { locale: periodLocale })
+}
+
 function periodLabel(period: Periodicity, start: Date): string {
-  if (period === "monthly") return capitalize(format(start, "LLLL yyyy", { locale: fr }))
-  if (period === "quarterly") return `T${getQuarter(start)} ${format(start, "yyyy")}`
+  if (period === "monthly") return capitalize(format(start, "LLLL yyyy", { locale: periodLocale }))
+  if (period === "quarterly") return `${quarterOf(start)} ${format(start, "yyyy")}`
   return format(start, "yyyy")
 }
 

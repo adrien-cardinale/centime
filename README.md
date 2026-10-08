@@ -2,6 +2,11 @@
 
 Personal, single-user budget management app. Data is end-to-end encrypted: the server is only a relay that stores opaque blobs.
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="site/screenshots/dashboard-dark.webp">
+  <img src="site/screenshots/dashboard-light.webp" alt="The Centime dashboard: monthly tiles, 12-month income and spending chart, category breakdown and balance trend">
+</picture>
+
 ## Features
 
 - **Import**: CSV statements (configurable provider profiles) and camt.053 (XML), duplicate detection, update of pending transactions.
@@ -11,6 +16,13 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
 - **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
 - **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, following the filters of the Transactions page.
+
+## Screenshots
+
+| | |
+| --- | --- |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/budgets-dark.webp"><img src="site/screenshots/budgets-light.webp" alt="Budget page"></picture> *Month plan: fixed items and envelopes* | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/transactions-dark.webp"><img src="site/screenshots/transactions-light.webp" alt="Transactions page"></picture> *Transactions, filters and CSV export* |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/import-dark.webp"><img src="site/screenshots/import-light.webp" alt="Import preview"></picture> *Import preview with duplicate detection* | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/categories-dark.webp"><img src="site/screenshots/categories-light.webp" alt="Categories page"></picture> *Categories, themes and rules* |
 
 ## Structure
 

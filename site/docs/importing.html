@@ -22,8 +22,17 @@
 <li><strong>camt.053</strong> (XML), the ISO 20022 account statement format offered by many European banks.</li></ul>
 <h2>Duplicates and pending transactions</h2>
 <p>Importing overlapping periods is safe: duplicates are detected, and pending transactions are updated when the booked version arrives.</p>
+<figure class="shot">
+<img class="light" src="../screenshots/import-light.webp" alt="The import preview: six rows in the file, five new and one duplicate, shown before confirming" width="1512" height="920" loading="lazy">
+<img class="dark" src="../screenshots/import-dark.webp" alt="The import preview in dark mode" width="1512" height="920" loading="lazy">
+<figcaption>The preview counts new rows, duplicates and updates before anything is written.</figcaption>
+</figure>
 <h2>Exporting</h2>
 <p>The Transactions page exports to CSV (<code>;</code> separator, UTF-8 with BOM, so Excel opens it correctly). The export follows the filters currently applied on the page.</p>
+<figure class="shot">
+<img class="light" src="../screenshots/transactions-light.webp" alt="The Transactions page with its filters (account, dates, search, category, fixed item, transfers) and the Export button" width="1512" height="920" loading="lazy">
+<img class="dark" src="../screenshots/transactions-dark.webp" alt="The Transactions page in dark mode" width="1512" height="920" loading="lazy">
+</figure>
 <nav class="pager"><a href="getting-started.html">← Getting started</a><a href="budgets.html">Categories, fixed items and budgets →</a></nav></main></div>
 <footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
 <script src="../site.js"></script>

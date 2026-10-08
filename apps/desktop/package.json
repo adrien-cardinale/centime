@@ -1,6 +1,6 @@
 {
   "name": "@centime/desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
     "build": "bunx tauri build",
     "android:dev": "bunx tauri android dev",
     "android:build": "bunx tauri android build",
-    "icon": "bunx tauri icon src-tauri/icons/icon.png -o src-tauri/icons"
+    "icon": "bunx tauri icon src-tauri/icons/icon.png"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2"

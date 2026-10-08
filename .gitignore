@@ -10,3 +10,4 @@ dist-desktop
 apps/desktop/src-tauri/target
 apps/desktop/src-tauri/gen/schemas
 *.tsbuildinfo
+apps/desktop/src-tauri/icons/ios

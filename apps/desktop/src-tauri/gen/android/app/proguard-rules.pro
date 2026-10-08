@@ -19,3 +19,12 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Le runtime Tauri (PluginManager) accède à ses classes et enums par réflexion ;
+# sans ces règles, R8 les élague et l'app crash au lancement en release
+# (ExceptionInInitializerError / NoSuchMethodException: values []).
+-keep class app.tauri.** { *; }
+-keepclassmembers enum * {
+    public static **[] values();
+    public static ** valueOf(java.lang.String);
+}

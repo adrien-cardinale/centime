@@ -109,7 +109,7 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{item ? t("fixedItemsUi.dialog.editTitle") : t("fixedItemsUi.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("fixedItemsUi.dialog.description")}</DialogDescription>

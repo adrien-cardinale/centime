@@ -111,7 +111,7 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
   return (
     <Dialog open={isOpen} onOpenChange={changeOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{rule ? t("rules.dialog.editTitle") : t("rules.dialog.newTitle")}</DialogTitle>
           <DialogDescription>

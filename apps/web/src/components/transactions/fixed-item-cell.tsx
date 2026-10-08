@@ -25,9 +25,11 @@ export function FixedItemCell({ transaction, open, onOpenChange }: FixedItemCell
 
   return (
     <>
-      <span className="inline-flex size-6 items-center justify-center">
-        {transaction.fixedItemName && <LinkedIndicator name={transaction.fixedItemName} onClick={() => onOpenChange(true)} />}
-      </span>
+      {transaction.fixedItemName && (
+        <span className="inline-flex size-8 items-center justify-center md:size-6">
+          <LinkedIndicator name={transaction.fixedItemName} onClick={() => onOpenChange(true)} />
+        </span>
+      )}
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="gap-3 p-4 sm:max-w-sm">
           <DialogHeader>
@@ -53,7 +55,7 @@ function LinkedIndicator({ name, onClick }: { name: string; onClick: () => void 
           size="icon"
           onClick={onClick}
           aria-label={t("transactionsPage.fixedItemLabel", { name })}
-          className="size-6 text-muted-foreground hover:text-foreground"
+          className="size-8 text-muted-foreground hover:text-foreground md:size-6"
         >
           <Repeat className="size-4" />
         </Button>

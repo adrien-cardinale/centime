@@ -312,6 +312,7 @@
       "to": "Au",
       "search": "Recherche",
       "searchPlaceholder": "Libellé ou commerçant",
+      "toggle": "Filtres",
       "uncategorized": "Non catégorisées",
       "theme": "Thème : {{name}}",
       "transfers": "Transferts",

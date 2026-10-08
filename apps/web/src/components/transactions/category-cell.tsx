@@ -70,7 +70,7 @@ export function CategoryCell({ transaction, onCreateRule }: CategoryCellProps) {
             type="button"
             disabled={update.isPending}
             aria-label={t("transactionsPage.category.change")}
-            className="rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50"
+            className="-m-1 rounded-full p-1 focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:opacity-50"
           >
             <CurrentCategory transaction={transaction} />
           </button>

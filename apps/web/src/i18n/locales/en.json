@@ -312,6 +312,7 @@
       "to": "To",
       "search": "Search",
       "searchPlaceholder": "Label or merchant",
+      "toggle": "Filters",
       "uncategorized": "Uncategorized",
       "theme": "Theme: {{name}}",
       "transfers": "Transfers",

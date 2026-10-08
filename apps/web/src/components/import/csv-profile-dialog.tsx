@@ -78,7 +78,7 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{profile ? t("csvProfiles.dialog.editTitle") : t("csvProfiles.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("csvProfiles.dialog.description")}</DialogDescription>

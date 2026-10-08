@@ -27,7 +27,7 @@ export function TransactionRowActions({ transaction, onCreateRule, onLinkFixedIt
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("transactionsPage.actions")}>
+        <Button variant="ghost" size="icon" className="size-10 md:size-9" aria-label={t("transactionsPage.actions")}>
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>

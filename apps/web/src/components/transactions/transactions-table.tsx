@@ -6,11 +6,13 @@ import { RuleDialog, type RuleFormValues } from "@/components/rules/rule-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { TransactionItem } from "@/lib/api"
 import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { CategoryCell } from "./category-cell"
 import { FixedItemCell } from "./fixed-item-cell"
+import { TransactionList } from "./transaction-list"
 import { TransactionRowActions } from "./transaction-row-actions"
 
 type TransactionsTableProps = {
@@ -36,6 +38,7 @@ function headerCheckState(items: TransactionItem[], selectedIds: ReadonlySet<str
 
 export function TransactionsTable({ items, selectedIds, onSelectionChange }: TransactionsTableProps) {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
   const [ruleSource, setRuleSource] = useState<TransactionItem | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
 
@@ -45,6 +48,30 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
     if (checked) next.add(id)
     else next.delete(id)
     onSelectionChange(next)
+  }
+
+  if (isMobile) {
+    return (
+      <>
+        <TransactionList
+          items={items}
+          selectedIds={selectedIds}
+          onToggleOne={toggleOne}
+          onToggleAll={toggleAll}
+          onCreateRule={setRuleSource}
+          linkingId={linkingId}
+          onLinkingChange={setLinkingId}
+        />
+        {ruleSource && (
+          <RuleDialog
+            applyAfterCreate
+            open
+            initialValues={ruleValuesFrom(ruleSource)}
+            onOpenChange={(open) => !open && setRuleSource(null)}
+          />
+        )}
+      </>
+    )
   }
 
   return (

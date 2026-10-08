@@ -1,7 +1,5 @@
-import { type CsvProfile, type CsvProfileInput, csvProfileSchema, DEFAULT_CSV_PROFILES } from "@centime/core"
-import type { DbExecutor } from "./client"
-import { type CsvProfileRow, csvProfiles, type NewCsvProfileRow } from "./schema"
-import { type SeedOptions, seedTimestamps } from "./seed-options"
+import { type CsvProfile, type CsvProfileInput, csvProfileSchema } from "@centime/core"
+import type { CsvProfileRow, NewCsvProfileRow } from "./schema"
 
 export function csvProfileToRow(profile: CsvProfileInput): Pick<NewCsvProfileRow, "name" | "config"> {
   const { name, ...config } = profile
@@ -19,11 +17,3 @@ export function csvProfileFromRow(row: Pick<CsvProfileRow, "id" | "name" | "conf
   return parsed.success ? { ...parsed.data, id: row.id } : null
 }
 
-export async function seedDefaultCsvProfiles(db: DbExecutor, options: SeedOptions = {}): Promise<void> {
-  const rows = DEFAULT_CSV_PROFILES.map((profile) => ({
-    id: profile.id,
-    ...csvProfileToRow(profile),
-    ...seedTimestamps(options),
-  }))
-  await db.insert(csvProfiles).values(rows).onConflictDoNothing({ target: csvProfiles.id })
-}

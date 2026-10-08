@@ -25,14 +25,14 @@ describe("encodeCsv", () => {
   it("ends every row with CRLF and round-trips through the tokenizer", () => {
     const rows = [
       ["Libellé", "Montant"],
-      ['Café "Le Coin"; Lausanne', -4.2],
+      ['Café "Le Coin"; Villefictive', -4.2],
       ["Multi\r\nligne", null],
     ]
     const text = encodeCsv(rows, ";")
     expect(text.endsWith("\r\n")).toBe(true)
     expect(tokenizeCsv(text, ";").map((record) => record.fields)).toEqual([
       ["Libellé", "Montant"],
-      ['Café "Le Coin"; Lausanne', "-4.2"],
+      ['Café "Le Coin"; Villefictive', "-4.2"],
       ["Multi\r\nligne", ""],
     ])
   })

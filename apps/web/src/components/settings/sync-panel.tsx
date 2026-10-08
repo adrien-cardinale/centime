@@ -24,7 +24,7 @@ export default function SyncPanel() {
         <CardContent>{state.configured ? <SyncStatusCard state={state} /> : <SyncConnectForm />}</CardContent>
       </Card>
       <RecoveryKeyCard />
-      <LocalDataCard neverSynced={state.lastAt === null} />
+      <LocalDataCard />
     </div>
   )
 }

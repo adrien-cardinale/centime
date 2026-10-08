@@ -1,9 +1,9 @@
 import { describe, expect, it } from "bun:test"
 import { parseCamt053 } from "./camt053"
 import { detectImportFormat } from "./import-format"
-import { encodeLatin1, encodeUtf8 } from "./test-fixtures/encoding"
+import { BANK_CSV } from "./test-fixtures/bank"
 import { CAMT_053, CAMT_IBAN, camtDocument, statement } from "./test-fixtures/camt053"
-import { RAIFFEISEN_CSV } from "./test-fixtures/raiffeisen"
+import { encodeLatin1, encodeUtf8 } from "./test-fixtures/encoding"
 
 describe("parseCamt053", () => {
   const result = parseCamt053(encodeUtf8(CAMT_053))
@@ -78,6 +78,6 @@ describe("detectImportFormat", () => {
   })
 
   it("falls back to CSV", () => {
-    expect(detectImportFormat(encodeLatin1(RAIFFEISEN_CSV))).toBe("csv")
+    expect(detectImportFormat(encodeLatin1(BANK_CSV))).toBe("csv")
   })
 })

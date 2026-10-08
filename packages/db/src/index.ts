@@ -9,7 +9,4 @@ export {
   type SyncTableEntry,
   type SyncTableName,
 } from "./sync-tables"
-export { csvProfileFromRow, csvProfileToRow, seedDefaultCsvProfiles } from "./csv-profiles"
-export { DEFAULT_CATEGORIES, DEFAULT_CATEGORY_IDS, seedDefaultCategories } from "./default-categories"
-export { DEFAULT_RULES, seedDefaultRules } from "./default-rules"
-export { type SeedOptions } from "./seed-options"
+export { csvProfileFromRow, csvProfileToRow } from "./csv-profiles"

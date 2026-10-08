@@ -67,10 +67,7 @@
       "title": "Données locales",
       "description": "La base de cet appareil est chiffrée et reste utilisable sans connexion.",
       "location": "Emplacement",
-      "size": "Taille",
-      "seedHint": "Les catégories, règles et profils CSV par défaut sont créés au premier lancement. Si vous les avez supprimés, vous pouvez les recréer ci-dessous.",
-      "seed": "Créer les données par défaut",
-      "seeded": "Données par défaut créées"
+      "size": "Taille"
     }
   },
   "syncState": {

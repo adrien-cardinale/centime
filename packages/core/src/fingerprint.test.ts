@@ -5,7 +5,7 @@ const baseInput = {
   accountId: "acc-1",
   bookingDate: "2026-09-26",
   amount: -42.5,
-  label: "Migros Lausanne",
+  label: "Migros Villefictive",
 }
 
 describe("fnv1a64", () => {
@@ -31,7 +31,7 @@ describe("computeTransactionFingerprint", () => {
   })
 
   it("ignores label formatting differences", () => {
-    const variant = { ...baseInput, label: "  MIGROS   lausanne " }
+    const variant = { ...baseInput, label: "  MIGROS   villefictive " }
     expect(computeTransactionFingerprint(variant)).toBe(computeTransactionFingerprint(baseInput))
   })
 
@@ -44,7 +44,7 @@ describe("computeTransactionFingerprint", () => {
     ["accountId", { accountId: "acc-2" }],
     ["bookingDate", { bookingDate: "2026-09-27" }],
     ["amount", { amount: 42.5 }],
-    ["label", { label: "Coop Lausanne" }],
+    ["label", { label: "Coop Villefictive" }],
     ["occurrence", { occurrence: 1 }],
   ])("changes when %s changes", (_field, override) => {
     const variant = { ...baseInput, ...override }

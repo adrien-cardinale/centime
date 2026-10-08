@@ -2,7 +2,6 @@ import { createProxyDb, type Db, runMigrations } from "@centime/db"
 import type { Database } from "sql.js"
 import type { Vault } from "@/lib/crypto/envelope"
 import { isTauri } from "@/lib/runtime"
-import { createDefaultData } from "./local-data"
 import { createAutoSaver, createPersistence } from "./persistence"
 import { createSerialQueue } from "./serial-queue"
 import { openSqlJsDatabase } from "./sqljs-db"
@@ -45,7 +44,6 @@ export async function openLocalDb(vault: Vault): Promise<LocalDatabase> {
     }),
   )
   await runMigrations(db)
-  if (initialBytes === null) await createDefaultData(db)
   await saver.flush()
   await flushOnExit(() => saver.flush())
   return {

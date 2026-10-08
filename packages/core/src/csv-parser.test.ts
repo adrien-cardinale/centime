@@ -2,16 +2,16 @@ import { describe, expect, it } from "bun:test"
 import type { CsvProfile } from "./csv-profile"
 import { csvProfileSchema } from "./csv-profile"
 import { detectCsvProfile, findCsvColumn, listCsvColumns, parseCsv } from "./csv-parser"
-import { DEFAULT_CSV_PROFILES, RAIFFEISEN_CSV_PROFILE, SWISSCARD_CSV_PROFILE } from "./default-csv-profiles"
+import { BANK_CSV } from "./test-fixtures/bank"
+import { CARD_CSV } from "./test-fixtures/card"
+import { BANK_TEST_PROFILE, CARD_TEST_PROFILE, TEST_CSV_PROFILES } from "./test-fixtures/csv-profiles"
 import { encodeLatin1, encodeUtf8 } from "./test-fixtures/encoding"
-import { RAIFFEISEN_CSV } from "./test-fixtures/raiffeisen"
-import { SWISSCARD_CSV } from "./test-fixtures/swisscard"
 
-const raiffeisenBytes = encodeLatin1(RAIFFEISEN_CSV)
-const swisscardBytes = encodeUtf8(SWISSCARD_CSV)
+const bankBytes = encodeLatin1(BANK_CSV)
+const cardBytes = encodeUtf8(CARD_CSV)
 
-describe("parseCsv with the Raiffeisen profile", () => {
-  const result = parseCsv(raiffeisenBytes, RAIFFEISEN_CSV_PROFILE)
+describe("parseCsv with the bank test profile", () => {
+  const result = parseCsv(bankBytes, BANK_TEST_PROFILE)
 
   it("decodes ISO-8859-1 accents", () => {
     expect(result.transactions[0]?.rawLabel).toBe("Crédit Société Fictive SA")
@@ -46,18 +46,18 @@ describe("parseCsv with the Raiffeisen profile", () => {
   })
 })
 
-describe("parseCsv with the Swisscard profile", () => {
-  const result = parseCsv(swisscardBytes, SWISSCARD_CSV_PROFILE)
+describe("parseCsv with the card test profile", () => {
+  const result = parseCsv(cardBytes, CARD_TEST_PROFILE)
 
   it("maps a pending debit", () => {
     expect(result.transactions[0]).toMatchObject({
       accountIdentifier: "5555 12** **** 3456",
       bookingDate: "2026-03-25",
-      rawLabel: "EPICERIE FICTIVE 12, LAUSANNE",
+      rawLabel: "EPICERIE FICTIVE 12, VILLEFICTIVE",
       merchant: "Epicerie Fictive",
       amount: -11.95,
       status: "pending",
-      providerCategory: "Comestibles",
+      providerCategory: "Alimentation",
     })
   })
 
@@ -140,9 +140,9 @@ describe("listCsvColumns", () => {
   })
 
   it("decodes headers with the given encoding", () => {
-    const columns = listCsvColumns(raiffeisenBytes, RAIFFEISEN_CSV_PROFILE)
-    expect(findCsvColumn(columns, RAIFFEISEN_CSV_PROFILE.columns.label.toUpperCase())?.name).toBe(
-      RAIFFEISEN_CSV_PROFILE.columns.label,
+    const columns = listCsvColumns(bankBytes, BANK_TEST_PROFILE)
+    expect(findCsvColumn(columns, BANK_TEST_PROFILE.columns.label.toUpperCase())?.name).toBe(
+      BANK_TEST_PROFILE.columns.label,
     )
   })
 
@@ -152,21 +152,21 @@ describe("listCsvColumns", () => {
 })
 
 describe("detectCsvProfile", () => {
-  it("recognises a Raiffeisen export", () => {
-    expect(detectCsvProfile(raiffeisenBytes, DEFAULT_CSV_PROFILES)?.id).toBe(RAIFFEISEN_CSV_PROFILE.id)
+  it("recognises a bank export", () => {
+    expect(detectCsvProfile(bankBytes, TEST_CSV_PROFILES)?.id).toBe(BANK_TEST_PROFILE.id)
   })
 
-  it("recognises a Swisscard export", () => {
-    expect(detectCsvProfile(swisscardBytes, DEFAULT_CSV_PROFILES)?.id).toBe(SWISSCARD_CSV_PROFILE.id)
+  it("recognises a card export", () => {
+    expect(detectCsvProfile(cardBytes, TEST_CSV_PROFILES)?.id).toBe(CARD_TEST_PROFILE.id)
   })
 
   it("returns null for an unknown file", () => {
-    expect(detectCsvProfile(encodeUtf8("foo;bar\n1;2\n"), DEFAULT_CSV_PROFILES)).toBeNull()
+    expect(detectCsvProfile(encodeUtf8("foo;bar\n1;2\n"), TEST_CSV_PROFILES)).toBeNull()
   })
 })
 
-describe("DEFAULT_CSV_PROFILES", () => {
-  it.each(DEFAULT_CSV_PROFILES)("$name satisfies the profile schema", (profile) => {
+describe("TEST_CSV_PROFILES", () => {
+  it.each(TEST_CSV_PROFILES)("$name satisfies the profile schema", (profile) => {
     expect(csvProfileSchema.safeParse(profile).success).toBe(true)
   })
 })

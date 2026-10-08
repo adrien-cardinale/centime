@@ -14,7 +14,7 @@ function rule(overrides: Partial<RuleInput> & Pick<RuleInput, "id" | "pattern">)
 }
 
 function subject(overrides: Partial<RuleSubject> = {}): RuleSubject {
-  return { rawLabel: "Achat Épicerie Fictive Lausanne", merchant: null, providerCategory: null, ...overrides }
+  return { rawLabel: "Achat Épicerie Fictive Villefictive", merchant: null, providerCategory: null, ...overrides }
 }
 
 describe("ruleMatches", () => {

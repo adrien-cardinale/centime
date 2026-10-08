@@ -1,8 +1,8 @@
-import { createProxyDb, type Db, categories, runMigrations } from "@centime/db"
+import { createProxyDb, type Db, runMigrations } from "@centime/db"
 import { apiSurface, ServiceError } from "@centime/services"
 import initSqlJs from "sql.js"
 import { beforeEach, describe, expect, it } from "bun:test"
-import { countDefaultData, countPendingChanges, createDefaultData, lacksDefaultData } from "./local-data"
+import { countPendingChanges } from "./local-data"
 import { applyConnectionPragmas, createSqlJsExecutor, isWriteStatement } from "./sqljs-executor"
 
 const writes: string[] = []
@@ -48,14 +48,11 @@ describe("sql.js executor", () => {
     expect(writes.every((sql) => !/^\s*select/i.test(sql))).toBe(true)
   })
 
-  it("creates default data stamped so that server rows always win", async () => {
-    expect(lacksDefaultData(await countDefaultData(db))).toBe(true)
+  it("counts rows created locally as pending changes", async () => {
+    expect(await countPendingChanges(db)).toBe(0)
 
-    await createDefaultData(db)
+    await apiSurface.categories.create(db, { name: "Voyages", color: "#5b8fc4" })
 
-    expect(lacksDefaultData(await countDefaultData(db))).toBe(false)
-    const [category] = await db.select().from(categories)
-    expect(category?.updatedAt).toBe("2000-01-01T00:00:00.000Z")
-    expect(await countPendingChanges(db)).toBeGreaterThan(0)
+    expect(await countPendingChanges(db)).toBe(1)
   })
 })

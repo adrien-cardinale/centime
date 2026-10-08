@@ -67,10 +67,7 @@
       "title": "Local data",
       "description": "This device's database is encrypted and works offline.",
       "location": "Location",
-      "size": "Size",
-      "seedHint": "Default categories, rules and CSV profiles are created on first launch. If you deleted them, you can recreate them below.",
-      "seed": "Create default data",
-      "seeded": "Default data created"
+      "size": "Size"
     }
   },
   "syncState": {

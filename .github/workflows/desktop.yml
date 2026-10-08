@@ -113,6 +113,9 @@ jobs:
           java-version: '21'
 
       - uses: android-actions/setup-android@v3
+        with:
+          # Le package "tools" (défaut de l'action) a été retiré du dépôt SDK de Google.
+          packages: platform-tools
 
       - name: Install NDK
         run: sdkmanager --install "ndk;$NDK_VERSION"

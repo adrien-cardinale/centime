@@ -54,8 +54,6 @@
       "connectFailed": "Connexion impossible"
     },
     "deviceLink": {
-      "title": "Connecter un autre appareil",
-      "description": "Affichez ce QR code et scannez-le depuis l'application Android : elle reprend la clé de chiffrement et l'adresse du serveur, sans rien saisir.",
       "noServerTitle": "Aucun serveur de synchronisation",
       "noServerDescription": "Connectez d'abord cet appareil à un serveur : sans lui, les deux appareils partageront la clé mais pas les données.",
       "secretTitle": "Ce QR code contient votre clé de chiffrement",

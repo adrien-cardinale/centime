@@ -54,8 +54,6 @@
       "connectFailed": "Unable to connect"
     },
     "deviceLink": {
-      "title": "Connect another device",
-      "description": "Show this QR code and scan it from the Android app: it picks up the encryption key and the server address, with nothing to type.",
       "noServerTitle": "No sync server",
       "noServerDescription": "Connect this device to a server first: without one, both devices will share the key but not the data.",
       "secretTitle": "This QR code holds your encryption key",

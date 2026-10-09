@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/page-header"
 import { BulkActionsBar } from "@/components/transactions/bulk-actions-bar"
+import { CreateTransactionDialog } from "@/components/transactions/create-transaction-dialog"
 import { ExportButton } from "@/components/transactions/export-button"
 import { Pagination } from "@/components/transactions/pagination"
 import { type TransactionFilterValues, TransactionFilters } from "@/components/transactions/transaction-filters"
@@ -122,7 +123,11 @@ function TransactionsPage() {
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("nav.transactions")} description={t("transactionsPage.description")} />
+      <PageHeader
+        title={t("nav.transactions")}
+        description={t("transactionsPage.description")}
+        actions={<CreateTransactionDialog />}
+      />
       <TransactionFilters
         values={filters}
         onChange={changeFilters}
@@ -177,9 +182,12 @@ function EmptyState() {
   return (
     <div className="flex flex-col items-center gap-3 p-10 text-center">
       <p className="text-sm text-muted-foreground">{t("transactionsPage.empty")}</p>
-      <Button asChild>
-        <Link to="/import">{t("transactionsPage.importStatement")}</Link>
-      </Button>
+      <div className="flex flex-wrap items-center justify-center gap-2">
+        <Button asChild>
+          <Link to="/import">{t("transactionsPage.importStatement")}</Link>
+        </Button>
+        <CreateTransactionDialog />
+      </div>
     </div>
   )
 }

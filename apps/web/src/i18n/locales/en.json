@@ -53,6 +53,18 @@
       "connected": "Device connected and synced",
       "connectFailed": "Unable to connect"
     },
+    "deviceLink": {
+      "title": "Connect another device",
+      "description": "Show this QR code and scan it from the Android app: it picks up the encryption key and the server address, with nothing to type.",
+      "noServerTitle": "No sync server",
+      "noServerDescription": "Connect this device to a server first: without one, both devices will share the key but not the data.",
+      "secretTitle": "This QR code holds your encryption key",
+      "secretDescription": "Anyone who photographs it can read your budget. Only show it to your device, then hide it again.",
+      "steps": "The first time the Android app starts, choose “Scan a QR code”.",
+      "show": "Show QR code",
+      "hide": "Hide QR code",
+      "buildFailed": "Unable to build the QR code"
+    },
     "recoveryKey": {
       "title": "Encryption key",
       "description": "It encrypts your data before it is sent to the server. Enter it on another device to get your budget back. Without it, the data cannot be recovered.",
@@ -198,7 +210,14 @@
     "yourKey": "Your key",
     "intro": "No account: a secret key, generated here, encrypts your data on your device.",
     "createKey": "Create a new key",
-    "haveKey": "I already have a key"
+    "haveKey": "I already have a key",
+    "scan": {
+      "action": "Scan a QR code",
+      "scanning": "Scanning…",
+      "hint": "From a device already set up: Settings → Connect another device.",
+      "cameraDenied": "Camera access denied: allow it to scan a QR code",
+      "failed": "Scan interrupted"
+    }
   },
   "periodNavigator": {
     "previous": "Previous month",
@@ -264,7 +283,7 @@
     }
   },
   "transactionsPage": {
-    "description": "All imported transactions, from newest to oldest.",
+    "description": "All your transactions, from newest to oldest.",
     "noMatch": "No transactions match these filters.",
     "empty": "No transactions yet.",
     "importStatement": "Import a statement",
@@ -275,6 +294,22 @@
     "createRule": "Create a rule from this transaction",
     "actions": "Actions",
     "fixedItemLabel": "Fixed item: {{name}}",
+    "create": {
+      "new": "New transaction",
+      "description": "Record a transaction that is missing from your statements.",
+      "account": "Account",
+      "date": "Date",
+      "amount": "Amount",
+      "amountHint": "Negative amount for an expense, positive for income.",
+      "label": "Label",
+      "labelPlaceholder": "Bakery payment",
+      "merchant": "Merchant (optional)",
+      "merchantPlaceholder": "Downtown bakery",
+      "category": "Category",
+      "create": "Add",
+      "creating": "Adding…",
+      "created": "Transaction \"{{label}}\" added"
+    },
     "bulk": {
       "selected_one": "{{count}} selected",
       "selected_other": "{{count}} selected",

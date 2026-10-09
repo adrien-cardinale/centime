@@ -3,6 +3,7 @@ import {
   categoryInputSchema,
   csvProfileSchema,
   fixedItemPayloadSchema,
+  manualTransactionSchema,
   ruleMatcherSchema,
   rulePayloadSchema,
   themeInputSchema,
@@ -101,6 +102,7 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       remove: (id) => call((db) => surface.imports.remove(db, { id: parseInput(idSchema, id) })),
     },
     transactions: {
+      create: (input) => call((db) => surface.transactions.create(db, parseInput(manualTransactionSchema, input))),
       list: ({ page, pageSize, ...filters }) =>
         call((db) =>
           surface.transactions.list(db, { ...validatedFilter(filters), ...parseInput(pageSchema, { page, pageSize }) }),

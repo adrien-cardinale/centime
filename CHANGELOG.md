@@ -9,6 +9,8 @@ The section matching the released version is attached automatically as the GitHu
 ### Added
 
 - Android app: CI now builds a signed `centime_<version>.apk` (arm64 + arm32) and attaches it to each release.
+- Pairing by QR code: **Settings › Connect another device** shows a QR code holding the recovery key and the server address, and the Android app can scan it on first launch instead of typing the key.
+- Transactions: **New transaction** records an operation by hand (account, date, label, merchant, amount, category), for what no statement carries.
 - Transactions: on small screens, the table becomes a card list and the filters collapse behind a **Filters** button showing the number of active filters.
 
 ### Changed

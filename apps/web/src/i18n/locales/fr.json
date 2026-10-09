@@ -53,6 +53,18 @@
       "connected": "Appareil connecté et synchronisé",
       "connectFailed": "Connexion impossible"
     },
+    "deviceLink": {
+      "title": "Connecter un autre appareil",
+      "description": "Affichez ce QR code et scannez-le depuis l'application Android : elle reprend la clé de chiffrement et l'adresse du serveur, sans rien saisir.",
+      "noServerTitle": "Aucun serveur de synchronisation",
+      "noServerDescription": "Connectez d'abord cet appareil à un serveur : sans lui, les deux appareils partageront la clé mais pas les données.",
+      "secretTitle": "Ce QR code contient votre clé de chiffrement",
+      "secretDescription": "Quiconque le photographie peut lire votre budget. Ne le montrez qu'à votre appareil et masquez-le ensuite.",
+      "steps": "Au premier lancement de l'application Android, choisissez « Scanner un QR code ».",
+      "show": "Afficher le QR code",
+      "hide": "Masquer le QR code",
+      "buildFailed": "Génération du QR code impossible"
+    },
     "recoveryKey": {
       "title": "Clé de chiffrement",
       "description": "Elle chiffre vos données avant leur envoi au serveur. Saisissez-la sur un autre appareil pour retrouver votre budget. Sans elle, les données sont irrécupérables.",
@@ -198,7 +210,14 @@
     "yourKey": "Votre clé",
     "intro": "Pas de compte : une clé secrète, générée ici, chiffre vos données sur votre appareil.",
     "createKey": "Créer une nouvelle clé",
-    "haveKey": "J'ai déjà une clé"
+    "haveKey": "J'ai déjà une clé",
+    "scan": {
+      "action": "Scanner un QR code",
+      "scanning": "Scan en cours…",
+      "hint": "Depuis un appareil déjà configuré : Paramètres → Connecter un autre appareil.",
+      "cameraDenied": "Accès à la caméra refusé : autorisez-le pour scanner un QR code",
+      "failed": "Scan interrompu"
+    }
   },
   "periodNavigator": {
     "previous": "Mois précédent",
@@ -264,7 +283,7 @@
     }
   },
   "transactionsPage": {
-    "description": "Toutes les opérations importées, du plus récent au plus ancien.",
+    "description": "Toutes vos opérations, du plus récent au plus ancien.",
     "noMatch": "Aucune transaction ne correspond à ces filtres.",
     "empty": "Aucune transaction pour l'instant.",
     "importStatement": "Importer un relevé",
@@ -275,6 +294,22 @@
     "createRule": "Créer une règle depuis cette transaction",
     "actions": "Actions",
     "fixedItemLabel": "Poste fixe : {{name}}",
+    "create": {
+      "new": "Nouvelle transaction",
+      "description": "Saisissez une opération absente de vos relevés.",
+      "account": "Compte",
+      "date": "Date",
+      "amount": "Montant",
+      "amountHint": "Montant négatif pour une dépense, positif pour une recette.",
+      "label": "Libellé",
+      "labelPlaceholder": "Paiement boulangerie",
+      "merchant": "Commerçant (optionnel)",
+      "merchantPlaceholder": "Boulangerie du centre",
+      "category": "Catégorie",
+      "create": "Ajouter",
+      "creating": "Ajout…",
+      "created": "Transaction « {{label}} » ajoutée"
+    },
     "bulk": {
       "selected_one": "{{count}} sélectionnée",
       "selected_other": "{{count}} sélectionnées",

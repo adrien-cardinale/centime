@@ -14,6 +14,7 @@ import {
 import { commitImport, deleteImport, listImports, previewImport } from "./imports"
 import { applyRules, createRule, deleteRule, listRules, testRule, updateRule } from "./rules"
 import { createTheme, deleteTheme, listThemes, updateTheme } from "./themes"
+import { createTransaction } from "./transaction-create"
 import { exportTransactions } from "./transaction-export"
 import { bulkUpdateTransactions, updateTransaction } from "./transaction-updates"
 import { listTransactionPage } from "./transactions"
@@ -37,6 +38,7 @@ export const apiSurface = {
   },
   transactions: {
     list: listTransactionPage,
+    create: createTransaction,
     update: updateTransaction,
     bulkUpdate: bulkUpdateTransactions,
     export: exportTransactions,

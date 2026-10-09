@@ -10,6 +10,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 ## Features
 
 - **Import**: CSV statements (configurable provider profiles) and camt.053 (XML), duplicate detection, update of pending transactions.
+- **Manual entry**: add from the Transactions page an operation missing from the statements (account, date, label, merchant, amount, category).
 - **Categories and rules**: categories grouped by theme (transactions are filed under categories), "contains" or regex rules on the label, the merchant or the provider category, applied at import time or on demand.
 - **Fixed items**: recurring expenses and income (monthly, quarterly, yearly), automatic transaction matching, upcoming and overdue items.
 - **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
@@ -198,6 +199,16 @@ The master key is stored on the device, next to the database (`master.key`) in t
 1. On first launch the app asks for a key: **create a new one** (and save the displayed recovery key somewhere safe) or **enter an existing one** to join your data on another device.
 2. On the desktop app, enter the server address on that screen, or later in **Settings › Synchronization**. In the browser the server is the one that served the page, so synchronization starts automatically.
 3. The app derives its credentials from the key and runs a first synchronization. **Settings** also lets you display the recovery key again.
+
+#### Pairing the Android app with a QR code
+
+Typing the recovery key on a phone is painful, so an already configured device can hand it over:
+
+1. On the web or desktop app, open **Settings › Connect another device** and click **Show QR code**. It encodes a `centime://link?v=1&k=<key>&s=<server>` URI: the recovery key, without its dashes, and the server address if one is configured.
+2. On the Android app's first launch, choose **Scan a QR code** and point the camera at it. The app asks for camera access the first time.
+3. The key and the server are saved on the phone, which then synchronizes like any other device.
+
+The QR code carries the recovery key in clear text: it is hidden behind a button, shown with a warning, and anyone who photographs it can read the data. Hide it again once the phone is paired.
 
 The recovery key is what lets a new device join the same data; there is nothing to revoke server-side except deleting the account (`DELETE /api/account`). Web Crypto requires a secure context, so serve the browser version over HTTPS (or from `localhost`).
 

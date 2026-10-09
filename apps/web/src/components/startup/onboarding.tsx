@@ -11,20 +11,11 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { completeOnboarding } from "@/lib/crypto/onboarding"
 import { formatMasterKey, generateMasterKey, parseMasterKey } from "@/lib/crypto/master-key"
-import { isTauri } from "@/lib/runtime"
+import { isAndroid, isTauri } from "@/lib/runtime"
+import { parseServerUrl } from "@/lib/sync/server-url"
+import { ScanLinkButton } from "./scan-link-button"
 
 type Mode = "choose" | "create" | "restore"
-
-function normalizeUrl(value: string): string | null {
-  const trimmed = value.trim()
-  if (trimmed === "") return null
-  try {
-    const url = new URL(trimmed)
-    return url.protocol === "http:" || url.protocol === "https:" ? trimmed : null
-  } catch {
-    return null
-  }
-}
 
 function ServerField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation()
@@ -66,7 +57,7 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
   }
 
   const submit = async () => {
-    const url = normalizeUrl(serverUrl)
+    const url = parseServerUrl(serverUrl)
     if (serverUrl.trim() !== "" && url === null) return void toast.error(t("boot.invalidServer"))
     setPending(true)
     try {
@@ -120,7 +111,7 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
   const [pending, setPending] = useState(false)
 
   const submit = async () => {
-    const url = normalizeUrl(serverUrl)
+    const url = parseServerUrl(serverUrl)
     if (serverUrl.trim() !== "" && url === null) return void toast.error(t("boot.invalidServer"))
     setPending(true)
     try {
@@ -179,7 +170,14 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         </CardHeader>
         {mode === "choose" && (
           <CardContent className="flex flex-col gap-2">
-            <Button onClick={() => setMode("create")}>
+            {/* Sur Android, le QR code d'un appareil déjà configuré évite de saisir la clé à la main. */}
+            {isAndroid() && (
+              <>
+                <ScanLinkButton onDone={onDone} />
+                <p className="text-sm text-muted-foreground">{t("boot.scan.hint")}</p>
+              </>
+            )}
+            <Button variant={isAndroid() ? "outline" : "default"} onClick={() => setMode("create")}>
               <Plus />
               {t("boot.createKey")}
             </Button>

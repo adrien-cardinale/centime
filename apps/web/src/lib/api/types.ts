@@ -3,6 +3,7 @@ import type {
   CategoryInput,
   CsvProfileInput,
   FixedItemPayload,
+  ManualTransactionInput,
   RuleMatcherInput,
   RulePayload,
   ThemeInput,
@@ -35,6 +36,7 @@ export type Api = {
     remove(id: string): Out<Surface["imports"]["remove"]>
   }
   transactions: {
+    create(input: ManualTransactionInput): Out<Surface["transactions"]["create"]>
     list(filters: TransactionPageFilters): Out<Surface["transactions"]["list"]>
     export(filters: TransactionFilters): Promise<Blob>
     update(id: string, changes: TransactionChanges): Out<Surface["transactions"]["update"]>

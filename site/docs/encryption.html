@@ -21,6 +21,12 @@
 <li><strong>Derived values</strong> (HKDF-SHA-256, salt <code>centime/v1</code>): a public user id, an auth secret and an AES-256-GCM key.</li>
 <li><strong>Sealed blobs</strong>: random 12-byte IV, format version byte, user id bound as additional authenticated data.</li>
 <li><strong>Authentication</strong>: <code>Authorization: Bearer &lt;userId&gt;.&lt;secret&gt;</code>. The server stores only the SHA-256 of the secret and compares in constant time. No password, no session.</li></ul>
+<h2>Pairing another device with a QR code</h2>
+<p>Typing the recovery key on a phone is painful, so an already configured device can hand it over.</p>
+<ol><li>On the web or desktop app, open <strong>Settings › Encryption key</strong> and click <strong>Show QR code</strong>. It encodes a <code>centime://link?v=1&amp;k=&lt;key&gt;&amp;s=&lt;server&gt;</code> URI: the recovery key and the server address, if one is configured.</li>
+<li>On the Android app's first launch, choose <strong>Scan a QR code</strong> and point the camera at it.</li>
+<li>The key and the server are saved on the phone, which then syncs like any other device.</li></ol>
+<p>The QR code carries the key in clear text: anyone who photographs it can read your data. Hide it again once the phone is paired.</p>
 <h2>Synchronization</h2>
 <p>The server is a dumb, ordered, append-only log. Clients do the merging.</p>
 <ol><li><strong>Pull</strong>: read the log from the stored cursor, decrypt each entry and apply its rows.</li>

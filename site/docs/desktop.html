@@ -20,6 +20,10 @@
 <h2>Install a release</h2>
 <p>Installers are attached to each tagged version. They are <strong>not code-signed</strong> yet, so your OS warns you on first launch:</p>
 <ul><li><strong>Windows</strong>: SmartScreen shows “Windows protected your PC”. Click <strong>More info</strong>, then <strong>Run anyway</strong>.</li><li><strong>macOS</strong>: Gatekeeper refuses to open the app. Right-click (or Control-click) the app, choose <strong>Open</strong>, then confirm. If it still says the app is damaged, run <code>xattr -dr com.apple.quarantine /Applications/centime.app</code>.</li><li><strong>Linux</strong>: no warning. For an AppImage, make it executable first: <code>chmod +x centime_*.AppImage</code>.</li></ul>
+<h2>Updates</h2>
+<p><strong>Settings › Updates</strong> shows the installed version and compares it with the latest release on GitHub. The check runs when the page opens, at most once an hour, and on demand. It only reads the public release manifest.</p>
+<ul><li><strong>Desktop</strong>: the app downloads the signed package, installs it and restarts.</li><li><strong>Android</strong>: the card downloads the <code>.apk</code> of the release, which Android installs over the current app.</li><li><strong>Web</strong>: the card links to the release, since the version served is the one deployed on your server.</li></ul>
+<p>An update only installs if it is signed with the project key, so a package from anywhere else is refused.</p>
 <h2>Build it</h2>
 <p>Requirements: stable Rust, and the <a href="https://v2.tauri.app/start/prerequisites/">Tauri system dependencies</a> (WebView2 on Windows, Xcode Command Line Tools on macOS, WebKitGTK 4.1 on Linux).</p>
 <pre class="code"><code>bun run desktop:dev     # development window

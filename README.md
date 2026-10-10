@@ -232,7 +232,7 @@ The master key is stored on the device, next to the database (`master.key`) in t
 
 Typing the recovery key on a phone is painful, so an already configured device can hand it over:
 
-1. On the web or desktop app, open **Settings › Connect another device** and click **Show QR code**. It encodes a `centime://link?v=1&k=<key>&s=<server>` URI: the recovery key, without its dashes, and the server address if one is configured.
+1. On the web or desktop app, open **Settings › Encryption key** and click **Show QR code**. It encodes a `centime://link?v=1&k=<key>&s=<server>` URI: the recovery key, without its dashes, and the server address if one is configured.
 2. On the Android app's first launch, choose **Scan a QR code** and point the camera at it. The app asks for camera access the first time.
 3. The key and the server are saved on the phone, which then synchronizes like any other device.
 

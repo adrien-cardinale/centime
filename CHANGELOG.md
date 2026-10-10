@@ -4,13 +4,19 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.2.0] - 2026-10-10
+
+### Added
+
+- Automatic updates: **Settings › Updates** shows the installed version and compares it with the latest release. The desktop app downloads the signed package, installs it and restarts; the Android app downloads the `.apk`; the browser version links to the release.
+- Pairing by QR code: **Settings › Encryption key** shows a QR code holding the encryption key and the server address, and the Android app can scan it on first launch instead of typing the key.
+- Transactions: **New transaction** records an operation by hand (account, date, label, merchant, amount, category), for what no statement carries.
+
 ## [0.1.1] - 2026-10-08
 
 ### Added
 
 - Android app: CI now builds a signed `centime_<version>.apk` (arm64 + arm32) and attaches it to each release.
-- Pairing by QR code: **Settings › Connect another device** shows a QR code holding the recovery key and the server address, and the Android app can scan it on first launch instead of typing the key.
-- Transactions: **New transaction** records an operation by hand (account, date, label, merchant, amount, category), for what no statement carries.
 - Transactions: on small screens, the table becomes a card list and the filters collapse behind a **Filters** button showing the number of active filters.
 
 ### Changed

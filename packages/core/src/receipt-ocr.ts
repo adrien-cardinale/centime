@@ -23,13 +23,13 @@ type TotalPick = { amount: number; source: TotalSource; itemsEnd: number; skippe
 type ScoredText = { value: string; confidence: number }
 
 const DECIMAL_TOKEN =
-  /(?<![A-Za-z0-9]|[0-9][.,/:])(\d{1,3}(?:['’. ]\d{3})+|[0-9OolIS]+)[.,]([0-9OIS]{2})(?![0-9]|[.,/:][0-9]|[A-Za-z]{2})/g
+  /(?<![A-Za-z0-9]|[0-9][.,/:])(\d{1,3}(?:['’. ]\d{3})+|[0-9OolIS]+)[.,] ?([0-9OIS]{2})(?![0-9]|[.,/:][0-9]|[A-Za-z]{2})/g
 const AMOUNT = /(?:(?<=^|\s)(-)\s?)?(?<!\d|\d[.,/:])(\d+\.\d{2})(?!\d|[.,/:]\d)(-(?!\d))?/g
 const QUANTITY_WITH_PRICE = /(?<!\S)\d+(?:\.\d+)?\s*[xX×*]\s*-?\d+\.\d{2}(?!\d)/g
 const LEADING_QUANTITY = /^\d+\s*[xX×*]?\s+(?=\S)/
 const CURRENCY_TOKEN = /(?<![A-Za-z])(?:CHF|EUR|SFr\.?|Fr\.)(?![A-Za-z])|€/gi
 const PRICE_SUFFIX = /^(?:[A-Z0-9*]{1,2}|CHF|EUR|€|Fr\.?)?$/i
-const EDGE_PUNCTUATION = /^[\s*:.,;\-]+|[\s*:.,;\-]+$/g
+const EDGE_PUNCTUATION = /^[\s*:.,;|\-]+|[\s*:.,;|\-]+$/g
 
 const TOTAL_KEYWORD = /\b(?:TOTAL|TOTALE|MONTANT|SOMME|SUMME|A PAYER|NET A PAYER)\b/
 const NON_TOTAL_KEYWORD =

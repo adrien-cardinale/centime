@@ -4,6 +4,12 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [Unreleased]
+
+### Fixed
+
+- Receipts: on-device text recognition now reads dot-matrix receipts, whose amounts are printed with a space after the decimal point (`85. 95`). The photo is slightly blurred before recognition to merge the dots of such fonts, and identical lines are no longer lost.
+
 ## [0.5.0] - 2026-10-10
 
 ### Added

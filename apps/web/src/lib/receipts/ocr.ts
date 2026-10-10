@@ -23,6 +23,8 @@ const MIN_OCR_SIDE = 2000
 const MAX_OCR_SIDE = 3000
 const PREPROCESSED_MIME = "image/jpeg"
 const PREPROCESSED_QUALITY = 0.92
+const BLUR_PER_PIXEL = 0.00085
+const OCR_CONTRAST = 1.6
 const SUPPORTED_MIME = /^image\//
 
 let workerPromise: Promise<TesseractWorker> | null = null
@@ -98,6 +100,12 @@ function ocrScale(width: number, height: number): number {
   return Math.min(MAX_OCR_SIDE / longestSide, Math.max(1, MIN_OCR_SIDE / longestSide))
 }
 
+// Un flou gaussien fusionne les points des polices matricielles des tickets, que Tesseract lit mal sinon.
+function ocrFilter(longestSide: number): string {
+  const blur = (longestSide * BLUR_PER_PIXEL).toFixed(2)
+  return `grayscale(1) blur(${blur}px) contrast(${OCR_CONTRAST})`
+}
+
 async function drawForOcr(bitmap: ImageBitmap): Promise<Blob | null> {
   const scale = ocrScale(bitmap.width, bitmap.height)
   const canvas = document.createElement("canvas")
@@ -105,7 +113,7 @@ async function drawForOcr(bitmap: ImageBitmap): Promise<Blob | null> {
   canvas.height = Math.round(bitmap.height * scale)
   const context = canvas.getContext("2d")
   if (!context) return null
-  context.filter = "grayscale(1)"
+  context.filter = ocrFilter(Math.max(canvas.width, canvas.height))
   context.imageSmoothingQuality = "high"
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height)
   return canvasToBlob(canvas)

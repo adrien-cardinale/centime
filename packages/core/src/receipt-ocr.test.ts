@@ -105,6 +105,30 @@ Chewing-gum         2.00
                     9.00
 `
 
+const dotMatrixTicket = `
+MARCHE ASIATIQUE
+CHEZ MY
+Rue de la Plaine 23
+1400 YVERDON-LES-BAINS
+024. 425 22 33
+REG 08-12-2025 18:37
+C1 255683
+SURGELE 46. 50
+| SURGELE 10. 50
+SURGELE 10.50
+SURGELE 10. 50
+SURGELE 5.95
+ALIMENTATION 2.00
+NET TVA 2 83.77
+TVA 2.6% 2.18
+TOTAL 85. 95
+(€61.40)
+ENCAIS. CARTE 85. 95
+TVA Incluse
+CHE-115.792.190 TVA
+MERCI DE VOTRE VISITE
+`
+
 const now = new Date(2026, 9, 10, 12, 0, 0)
 
 describe("parseReceiptText", () => {
@@ -119,6 +143,23 @@ describe("parseReceiptText", () => {
       { label: "Pain mi-blanc", amount: 2.9 },
       { label: "Gruyère AOP", amount: 6.4 },
       { label: "Coca-Cola 0.5l", amount: 2.2 },
+    ])
+    expect(result.confidence.total).toBeGreaterThanOrEqual(0.9)
+  })
+
+  it("reads a dot-matrix ticket whose amounts have a space after the decimal point", () => {
+    const result = parseReceiptText(dotMatrixTicket, { now })
+
+    expect(result.merchant).toBe("MARCHE ASIATIQUE")
+    expect(result.total).toBe(85.95)
+    expect(result.receiptDate).toBe("2025-12-08")
+    expect(result.lines).toEqual([
+      { label: "SURGELE", amount: 46.5 },
+      { label: "SURGELE", amount: 10.5 },
+      { label: "SURGELE", amount: 10.5 },
+      { label: "SURGELE", amount: 10.5 },
+      { label: "SURGELE", amount: 5.95 },
+      { label: "ALIMENTATION", amount: 2 },
     ])
     expect(result.confidence.total).toBeGreaterThanOrEqual(0.9)
   })

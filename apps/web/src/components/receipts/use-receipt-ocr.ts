@@ -28,7 +28,7 @@ export function useReceiptOcr(image: PreparedReceiptImage | null, onRecognized: 
     controllerRef.current = controller
     setState({ running: true, progress: 0 })
     try {
-      const result = await recognizeReceipt(image.bytes, image.mime, {
+      const result = await recognizeReceipt(image, {
         signal: controller.signal,
         onProgress: (progress) => {
           if (!controller.signal.aborted) setState({ running: true, progress })

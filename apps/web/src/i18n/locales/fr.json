@@ -521,6 +521,20 @@
       "size": "Taille : {{size}}",
       "failed": "Lecture du fichier impossible"
     },
+    "crop": {
+      "action": "Recadrer",
+      "apply": "Appliquer",
+      "cancel": "Annuler",
+      "original": "Image d'origine",
+      "hint": "Déplacez le cadre ou tirez ses coins pour que le ticket le remplisse.",
+      "failed": "Recadrage impossible",
+      "corners": {
+        "topLeft": "Coin haut gauche du cadre",
+        "topRight": "Coin haut droit du cadre",
+        "bottomLeft": "Coin bas gauche du cadre",
+        "bottomRight": "Coin bas droit du cadre"
+      }
+    },
     "image": {
       "alt": "Photo du ticket",
       "pdf": "Ticket au format PDF",
@@ -548,7 +562,7 @@
       "linesSum": "Somme des lignes : {{amount}}",
       "useSumAsTotal": "Utiliser comme total",
       "linesMatch": "Les lignes correspondent au total.",
-      "linesMismatch": "Les lignes font {{lines}}, le total est {{total}}.",
+      "linesMismatch": "Les lignes totalisent {{lines}}, le total est {{total}} (écart {{gap}}).",
       "invalidAmount": "Montant invalide"
     },
     "ocr": {
@@ -559,7 +573,8 @@
       "uncertain": "Lecture incertaine, vérifiez ce champ.",
       "failed": "Lecture du ticket impossible. Remplissez les champs à la main.",
       "noText": "Aucun texte lisible sur la photo.",
-      "nothingFound": "Rien à pré-remplir : les champs sont déjà remplis ou le ticket est illisible."
+      "nothingFound": "Rien à pré-remplir : les champs sont déjà remplis ou le ticket est illisible.",
+      "rawText": "Texte lu par l'OCR"
     },
     "ai": {
       "analyze": "Analyser avec l'IA",

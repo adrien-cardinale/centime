@@ -21,6 +21,16 @@ export function linesTotalCents(lines: readonly Pick<ReceiptLine, "amount">[]): 
   return lines.reduce((sum, line) => sum + toCents(line.amount), 0)
 }
 
+export type LinesGap = { linesCents: number; totalCents: number; gapCents: number }
+
+export function linesTotalGap(total: number | null, lines: readonly Pick<ReceiptLine, "amount">[]): LinesGap | null {
+  if (total === null || lines.length === 0) return null
+  const linesCents = linesTotalCents(lines)
+  const totalCents = toCents(Math.abs(total))
+  if (linesCents === totalCents) return null
+  return { linesCents, totalCents, gapCents: linesCents - totalCents }
+}
+
 export function lineCategoryCount(lines: readonly ReceiptLine[] | null): number {
   return new Set((lines ?? []).map((line) => line.categoryId)).size
 }

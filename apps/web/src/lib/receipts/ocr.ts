@@ -3,8 +3,11 @@ import coreUrl from "tesseract.js-core/tesseract-core-lstm.wasm.js?url"
 import coreSimdUrl from "tesseract.js-core/tesseract-core-simd-lstm.wasm.js?url"
 import workerUrl from "tesseract.js/dist/worker.min.js?url"
 import { ocrProgressRatio } from "./ocr-progress"
+import type { PreparedReceiptImage } from "./prepare-image"
 
 type TesseractWorker = import("tesseract.js").Worker
+
+export type OcrImage = Pick<PreparedReceiptImage, "bytes" | "mime" | "source">
 
 export type RecognizedReceipt = ReceiptOcrResult & { rawText: string }
 
@@ -16,7 +19,8 @@ export type RecognizeReceiptOptions = {
 const LANGUAGES = "fra+eng"
 const CACHE_PATH = "centime-ocr"
 const IDLE_TIMEOUT_MS = 60_000
-const TARGET_SIDE = 2000
+const MIN_OCR_SIDE = 2000
+const MAX_OCR_SIDE = 3000
 const PREPROCESSED_MIME = "image/jpeg"
 const PREPROCESSED_QUALITY = 0.92
 const SUPPORTED_MIME = /^image\//
@@ -31,9 +35,12 @@ export function isOcrSupported(mime: string): boolean {
 }
 
 async function createOcrWorker(): Promise<TesseractWorker> {
-  const [tesseract, { simd }] = await Promise.all([import("tesseract.js"), import("wasm-feature-detect")])
+  const [{ createWorker, OEM, PSM }, { simd }] = await Promise.all([
+    import("tesseract.js"),
+    import("wasm-feature-detect"),
+  ])
   const corePath = (await simd()) ? coreSimdUrl : coreUrl
-  return tesseract.createWorker(LANGUAGES, tesseract.OEM.LSTM_ONLY, {
+  const worker = await createWorker(LANGUAGES, OEM.LSTM_ONLY, {
     workerPath: workerUrl,
     corePath,
     workerBlobURL: false,
@@ -44,6 +51,13 @@ async function createOcrWorker(): Promise<TesseractWorker> {
       if (ratio !== null) progressListener?.(ratio)
     },
   })
+  try {
+    await worker.setParameters({ tessedit_pageseg_mode: PSM.SINGLE_BLOCK })
+    return worker
+  } catch (error) {
+    await worker.terminate()
+    throw error
+  }
 }
 
 function sharedWorker(): Promise<TesseractWorker> {
@@ -79,8 +93,13 @@ function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
   return new Promise((resolve) => canvas.toBlob(resolve, PREPROCESSED_MIME, PREPROCESSED_QUALITY))
 }
 
+function ocrScale(width: number, height: number): number {
+  const longestSide = Math.max(width, height)
+  return Math.min(MAX_OCR_SIDE / longestSide, Math.max(1, MIN_OCR_SIDE / longestSide))
+}
+
 async function drawForOcr(bitmap: ImageBitmap): Promise<Blob | null> {
-  const scale = Math.max(1, TARGET_SIDE / Math.max(bitmap.width, bitmap.height))
+  const scale = ocrScale(bitmap.width, bitmap.height)
   const canvas = document.createElement("canvas")
   canvas.width = Math.round(bitmap.width * scale)
   canvas.height = Math.round(bitmap.height * scale)
@@ -92,13 +111,22 @@ async function drawForOcr(bitmap: ImageBitmap): Promise<Blob | null> {
   return canvasToBlob(canvas)
 }
 
-async function preprocess(bytes: Uint8Array, mime: string): Promise<Blob> {
-  const original = new Blob([bytes as BlobPart], { type: mime })
-  if (typeof createImageBitmap !== "function") return original
-  const bitmap = await createImageBitmap(original).catch(() => null)
-  if (!bitmap) return original
+function decodeOriented(image: Blob): Promise<ImageBitmap | null> {
+  return createImageBitmap(image, { imageOrientation: "from-image" }).catch(() => null)
+}
+
+async function decodeBest(source: Blob | null, prepared: Blob): Promise<ImageBitmap | null> {
+  const fullResolution = source ? await decodeOriented(source) : null
+  return fullResolution ?? decodeOriented(prepared)
+}
+
+async function preprocess({ bytes, mime, source }: OcrImage): Promise<Blob> {
+  const prepared = new Blob([bytes as BlobPart], { type: mime })
+  if (typeof createImageBitmap !== "function") return prepared
+  const bitmap = await decodeBest(source, prepared)
+  if (!bitmap) return prepared
   try {
-    return (await drawForOcr(bitmap)) ?? original
+    return (await drawForOcr(bitmap)) ?? prepared
   } finally {
     bitmap.close()
   }
@@ -129,11 +157,10 @@ async function recognizeText(image: Blob, signal: AbortSignal | undefined): Prom
 }
 
 export async function recognizeReceipt(
-  bytes: Uint8Array,
-  mime: string,
+  image: OcrImage,
   options: RecognizeReceiptOptions = {},
 ): Promise<RecognizedReceipt> {
-  if (!isOcrSupported(mime)) throw new Error("Seules les photos peuvent être lues")
+  if (!isOcrSupported(image.mime)) throw new Error("Seules les photos peuvent être lues")
   const { onProgress, signal } = options
   if (signal?.aborted) throw abortError()
   clearIdleTimer()
@@ -141,9 +168,9 @@ export async function recognizeReceipt(
   const listener = onProgress ?? null
   progressListener = listener
   try {
-    const image = await preprocess(bytes, mime)
+    const preprocessed = await preprocess(image)
     if (signal?.aborted) throw abortError()
-    const rawText = await recognizeText(image, signal)
+    const rawText = await recognizeText(preprocessed, signal)
     return { ...parseReceiptText(rawText), rawText }
   } finally {
     activeJobs -= 1

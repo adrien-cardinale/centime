@@ -521,6 +521,20 @@
       "size": "Size: {{size}}",
       "failed": "Cannot read the file"
     },
+    "crop": {
+      "action": "Crop",
+      "apply": "Apply",
+      "cancel": "Cancel",
+      "original": "Original image",
+      "hint": "Move the frame or drag its corners so the receipt fills it.",
+      "failed": "Cannot crop the image",
+      "corners": {
+        "topLeft": "Top left corner of the frame",
+        "topRight": "Top right corner of the frame",
+        "bottomLeft": "Bottom left corner of the frame",
+        "bottomRight": "Bottom right corner of the frame"
+      }
+    },
     "image": {
       "alt": "Receipt photo",
       "pdf": "PDF receipt",
@@ -548,7 +562,7 @@
       "linesSum": "Sum of lines: {{amount}}",
       "useSumAsTotal": "Use as total",
       "linesMatch": "The lines match the total.",
-      "linesMismatch": "The lines add up to {{lines}}, the total is {{total}}.",
+      "linesMismatch": "The lines add up to {{lines}}, the total is {{total}} (gap {{gap}}).",
       "invalidAmount": "Invalid amount"
     },
     "ocr": {
@@ -559,7 +573,8 @@
       "uncertain": "Uncertain reading, check this field.",
       "failed": "Could not read the receipt. Fill in the fields by hand.",
       "noText": "No readable text on the photo.",
-      "nothingFound": "Nothing to pre-fill: the fields are already filled or the receipt is unreadable."
+      "nothingFound": "Nothing to pre-fill: the fields are already filled or the receipt is unreadable.",
+      "rawText": "Text read by the OCR"
     },
     "ai": {
       "analyze": "Analyze with AI",

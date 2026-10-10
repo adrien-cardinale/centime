@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from "lucide-react"
+import { Plus, Trash2, TriangleAlert } from "lucide-react"
 import { type Control, type UseFormSetValue, useFieldArray, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { CategorySelect } from "@/components/categories/category-select"
@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button"
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { formatDecimal, parseAmountInput } from "@/lib/format"
-import { cn } from "@/lib/utils"
 import { emptyLine, type ReceiptDetailsParsed, type ReceiptDetailsValues, type ReceiptLineValues } from "./receipt-form"
-import { toCents } from "./receipt-lines"
+import { linesTotalCents, linesTotalGap } from "./receipt-lines"
 
 const NO_CATEGORY = "none"
 
@@ -17,8 +16,12 @@ type LinesFieldsProps = {
   setValue: UseFormSetValue<ReceiptDetailsValues>
 }
 
-function sumOfLines(lines: readonly ReceiptLineValues[]): number {
-  return lines.reduce((sum, line) => sum + toCents(parseAmountInput(line.amountText) ?? 0), 0)
+function parsedLineAmounts(lines: readonly ReceiptLineValues[]): { amount: number }[] {
+  return lines.map((line) => ({ amount: parseAmountInput(line.amountText) ?? 0 }))
+}
+
+function formatCents(cents: number): string {
+  return formatDecimal(cents / 100)
 }
 
 export function ReceiptLinesFields({ control, setValue }: LinesFieldsProps) {
@@ -114,14 +117,14 @@ function LineFields({ control, index, onRemove }: LineFieldsProps) {
 function LinesBalance({ control, setValue }: LinesFieldsProps) {
   const { t } = useTranslation()
   const [totalText, lines] = useWatch({ control, name: ["totalText", "lines"] })
-  const linesCents = sumOfLines(lines)
+  const amounts = parsedLineAmounts(lines)
+  const linesCents = linesTotalCents(amounts)
   const total = parseAmountInput(totalText)
-  const linesAmount = formatDecimal(linesCents / 100)
 
   if (total === null) {
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-        <span className="tabular-nums">{t("receipts.details.linesSum", { amount: linesAmount })}</span>
+        <span className="tabular-nums">{t("receipts.details.linesSum", { amount: formatCents(linesCents) })}</span>
         <Button
           type="button"
           variant="link"
@@ -135,12 +138,16 @@ function LinesBalance({ control, setValue }: LinesFieldsProps) {
     )
   }
 
-  const balanced = toCents(Math.abs(total)) === linesCents
+  const gap = linesTotalGap(total, amounts)
+  if (!gap) return <p className="text-sm text-muted-foreground">{t("receipts.details.linesMatch")}</p>
   return (
-    <p className={cn("text-sm tabular-nums", balanced ? "text-muted-foreground" : "font-medium text-destructive")}>
-      {balanced
-        ? t("receipts.details.linesMatch")
-        : t("receipts.details.linesMismatch", { lines: linesAmount, total: formatDecimal(Math.abs(total)) })}
+    <p className="flex items-start gap-1.5 text-sm tabular-nums text-amber-600 dark:text-amber-500" role="status">
+      <TriangleAlert className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+      {t("receipts.details.linesMismatch", {
+        lines: formatCents(gap.linesCents),
+        total: formatCents(gap.totalCents),
+        gap: formatCents(Math.abs(gap.gapCents)),
+      })}
     </p>
   )
 }

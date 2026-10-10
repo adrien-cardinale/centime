@@ -35,6 +35,7 @@ import {
   type PrefillResult,
 } from "./receipt-ocr-fill"
 import { ReceiptOcrPanel } from "./receipt-ocr-panel"
+import { ReceiptOcrText } from "./receipt-ocr-text"
 import { type ReaderEngine, useReceiptReader } from "./use-receipt-reader"
 
 type DetailsForm = UseFormReturn<ReceiptDetailsValues, unknown, ReceiptDetailsParsed>
@@ -83,6 +84,7 @@ function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, au
   const { t } = useTranslation()
   const [filled, setFilled] = useState<OcrFilledFields | null>(null)
   const [prefilledBy, setPrefilledBy] = useState<ReaderEngine | null>(null)
+  const [ocrRead, setOcrRead] = useState<{ image: PreparedReceiptImage; text: string } | null>(null)
   const readableImage = image && isOcrSupported(image.mime) ? image : null
   const ai = useAiReadiness()
   const aiEnabled = ai.enabled && readableImage !== null && isAiExtractionSupported(readableImage.mime)
@@ -103,6 +105,7 @@ function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, au
       toast.error(t("receipts.ocr.noText"))
       return
     }
+    if (readableImage) setOcrRead({ image: readableImage, text: result.rawText })
     applyPrefill(result, "ocr")
   }
 
@@ -115,7 +118,10 @@ function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, au
     onExtracted: (result) => applyPrefill(result, "ai"),
   })
   const autoStarted = useRef(false)
-  const { start, cancel } = reader
+  const { start, cancel, engine } = reader
+  useEffect(() => {
+    if (engine !== null) setOcrRead(null)
+  }, [engine])
   const { canAutoRun } = ai
   useEffect(() => {
     if (!autoOcr || !readableImage || !canAutoRun) return
@@ -132,6 +138,7 @@ function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, au
     reader,
     filled,
     prefilledBy,
+    ocrText: ocrRead?.image === readableImage ? ocrRead.text : null,
     available: readableImage !== null,
     aiEnabled,
     aiMissing: !ai.isLoading && !ai.enabled,
@@ -175,6 +182,7 @@ export function ReceiptDetailsForm({
               onCancel={prefill.reader.cancel}
             />
             {aiSettingsHint && prefill.aiMissing && <AiSettingsHint />}
+            {prefill.ocrText && <ReceiptOcrText text={prefill.ocrText} />}
           </div>
         )}
         {showAccount && (

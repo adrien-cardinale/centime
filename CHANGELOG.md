@@ -4,6 +4,18 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [Unreleased]
+
+### Added
+
+- Receipts: **Crop** on the photo step frames the receipt before reading. The frame is suggested from the bright area of the photo and can be moved and resized by its corners; **Original image** restores the uncropped photo.
+- Receipts: after an on-device reading, **Text read by the OCR** shows the raw recognized text in a collapsible section.
+
+### Changed
+
+- Receipts: on-device text recognition now reads the original photo at full resolution (up to 3000 pixels) instead of the 1600-pixel copy, and uses Tesseract's single-block page mode. Far or small receipts lose fewer lines.
+- Receipts: when the lines do not add up to the total, the warning shows the gap instead of only both amounts.
+
 ## [0.4.0] - 2026-10-10
 
 ### Added

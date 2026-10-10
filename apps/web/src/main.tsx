@@ -10,7 +10,8 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import "@/i18n"
 import { setApi } from "@/lib/api/api-ref"
 import { createApi } from "@/lib/api/create-api"
-import { loadVault, takePendingServerUrl } from "@/lib/crypto/onboarding"
+import { takePendingServerUrl } from "@/lib/account/accounts"
+import { loadVault } from "@/lib/crypto/onboarding"
 import { notifyMutationSettled } from "@/lib/queries"
 import { setServerUrl, startSyncScheduler } from "@/lib/sync/sync-store"
 import { routeTree } from "./routeTree.gen"
@@ -30,8 +31,8 @@ const router = createRouter({
   scrollRestoration: true,
 })
 
-async function startSync(): Promise<void> {
-  const serverUrl = takePendingServerUrl()
+async function startSync(accountId: string): Promise<void> {
+  const serverUrl = await takePendingServerUrl(accountId)
   if (serverUrl !== null) await setServerUrl(serverUrl)
   startSyncScheduler(queryClient)
 }
@@ -40,8 +41,9 @@ let booted: Promise<void> | null = null
 
 function boot(): Promise<void> {
   booted ??= (async () => {
-    setApi(await createApi(await loadVault()))
-    await startSync()
+    const vault = await loadVault()
+    setApi(await createApi(vault))
+    await startSync(vault.credentials.userId)
   })().catch((error: unknown) => {
     booted = null
     throw error

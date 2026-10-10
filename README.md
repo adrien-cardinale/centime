@@ -226,15 +226,17 @@ On each `v*` tag, the `Build desktop` workflow builds `centime_<version>.apk` (a
 
 ### Local database
 
-The database lives in the application data folder, file `centime.db`:
+Each account on the device has its own folder in the application data folder, `accounts/<id>/`, holding its database `centime.db` and its master key `master.key`. The `<id>` is the public identifier derived from the key. The file `accounts.json`, next to the `accounts/` folder, lists the accounts with their names and the active one. The application data folder is:
 
 - Linux: `~/.local/share/ch.centime.desktop/`
 - macOS: `~/Library/Application Support/ch.centime.desktop/`
 - Windows: `%APPDATA%\ch.centime.desktop\`
 
-It is saved 500 ms after each change and when the window closes, by writing a temporary file then renaming it. The file is **encrypted** (AES-256-GCM, same format as the sync entries); a plain SQLite file from an earlier version is read once and re-encrypted on the next save. In the browser, the sealed database is kept in IndexedDB instead.
+Several accounts can coexist on one device. **Settings › Accounts** adds, renames and switches accounts; switching reloads the app on the chosen account. A `centime.db` and `master.key` from an earlier single-account version are moved into `accounts/<id>/` automatically on the next launch.
 
-The master key is stored on the device, next to the database (`master.key`) in the desktop app, or in IndexedDB in the browser. Disk encryption (BitLocker, FileVault…) is still advisable: anyone who can read the whole application data folder can read both the key and the database.
+Each database is saved 500 ms after each change and when the window closes, by writing a temporary file then renaming it. The file is **encrypted** (AES-256-GCM, same format as the sync entries); a plain SQLite file from an earlier version is read once and re-encrypted on the next save. In the browser, the sealed databases, the keys and the account list are kept in IndexedDB instead (entries `database:<id>`, `master-key:<id>` and `accounts`).
+
+Each master key is stored on the device, next to its database in the desktop app, or in IndexedDB in the browser. Disk encryption (BitLocker, FileVault…) is still advisable: anyone who can read the whole application data folder can read both the keys and the databases. Account names in `accounts.json` are not encrypted.
 
 ### Connecting synchronization
 

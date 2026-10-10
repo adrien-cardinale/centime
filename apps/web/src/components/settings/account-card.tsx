@@ -15,7 +15,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
+import { AddAccountDialog } from "@/components/device-accounts/add-account-dialog"
+import { DeviceAccountList } from "@/components/device-accounts/device-account-list"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
 import { deleteAccountEverywhere, leaveDevice } from "@/lib/account/account-actions"
 
 export function AccountCard({ syncConfigured }: { syncConfigured: boolean }) {
@@ -27,9 +30,15 @@ export function AccountCard({ syncConfigured }: { syncConfigured: boolean }) {
         <CardTitle>{t("settings.account.title")}</CardTitle>
         <CardDescription>{t("settings.account.description")}</CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-wrap gap-2">
-        <LeaveDeviceButton syncConfigured={syncConfigured} />
-        {syncConfigured && <DeleteAccountButton />}
+      <CardContent className="space-y-4">
+        <DeviceAccountList />
+        <AddAccountDialog />
+        <Separator />
+        <p className="text-sm text-muted-foreground">{t("settings.account.activeActions")}</p>
+        <div className="flex flex-wrap gap-2">
+          <LeaveDeviceButton syncConfigured={syncConfigured} />
+          {syncConfigured && <DeleteAccountButton />}
+        </div>
       </CardContent>
     </Card>
   )

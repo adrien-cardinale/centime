@@ -10,7 +10,8 @@ The section matching the released version is attached automatically as the GitHu
 
 - The web app also builds as a static site (`build:static`, path set by `BASE_PATH`) and runs without a relay. It is published on GitHub Pages under `app/`, and asks for the relay address at first launch, like the desktop app.
 - Relay: `ALLOWED_ORIGINS` (comma-separated) lets a web app hosted on another origin, such as GitHub Pages, synchronize with the relay.
-- Settings: a new **Account** card. **Leave this account on this device** erases the encryption key and the local database, then returns to the welcome screen; server data stays available to other devices. **Delete the account on the server** (when sync is configured) deletes all server data for every device, then does the same local wipe.
+- Several accounts on one device. Each account has its own key and its own encrypted database, under `accounts/<id>/` in the desktop app. The **Accounts** card in Settings lists them, renames them, switches the active one (the app reloads) and adds one with the same create, restore or scan steps as the first launch. With two accounts or more, an account switcher appears at the bottom of the sidebar. The `centime.db` and `master.key` of an earlier version are moved automatically.
+- Settings: **Remove this account from this device** erases the active account's key and local database, then switches to the next account, or returns to the welcome screen if none is left; server data stays available to other devices. **Delete the account on the server** (when sync is configured) deletes all server data for every device, then does the same local removal.
 
 ## [0.2.1] - 2026-10-10
 

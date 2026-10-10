@@ -7,13 +7,14 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import i18n from "@/i18n"
+import { getVault } from "@/lib/crypto/current-vault"
 import { buildDeviceLink } from "@/lib/crypto/device-link"
 import { formatMasterKey } from "@/lib/crypto/master-key"
 import { createKeyStore } from "@/lib/local-db/key-store"
 import { isAndroid } from "@/lib/runtime"
 
 async function readKey() {
-  const key = await (await createKeyStore()).load()
+  const key = await (await createKeyStore(getVault().credentials.userId)).load()
   if (key === null) throw new Error(i18n.t("settings.recoveryKey.notFound"))
   return key
 }

@@ -2,6 +2,7 @@ import { appDataDir, join } from "@tauri-apps/api/path"
 import { exists, mkdir, readFile, remove, rename, writeFile } from "@tauri-apps/plugin-fs"
 import { isSealed, type Vault } from "@/lib/crypto/envelope"
 import { isTauri } from "@/lib/runtime"
+import { accountDirectory, accountEntry } from "./account-paths"
 import { idbDelete, idbGet, idbSet } from "./idb"
 
 const DATABASE_FILE = "centime.db"
@@ -19,9 +20,8 @@ export type Persistence = {
   remove(): Promise<void>
 }
 
-export async function createFilePersistence(): Promise<Persistence> {
-  const directory = await appDataDir()
-  const filePath = await join(directory, DATABASE_FILE)
+export async function createFileStore(directory: string, fileName: string): Promise<Persistence> {
+  const filePath = await join(directory, fileName)
   const temporaryPath = `${filePath}${TEMPORARY_SUFFIX}`
   return {
     filePath,
@@ -37,13 +37,22 @@ export async function createFilePersistence(): Promise<Persistence> {
   }
 }
 
-function createBrowserPersistence(): Persistence {
+export function createEntryStore(entry: string): Persistence {
   return {
     filePath: BROWSER_LOCATION,
-    load: () => idbGet(BROWSER_ENTRY),
-    save: (bytes) => idbSet(BROWSER_ENTRY, bytes),
-    remove: () => idbDelete(BROWSER_ENTRY),
+    load: () => idbGet(entry),
+    save: (bytes) => idbSet(entry, bytes),
+    remove: () => idbDelete(entry),
   }
+}
+
+export async function createDatabaseStore(id: string): Promise<Persistence> {
+  if (!isTauri()) return createEntryStore(accountEntry(BROWSER_ENTRY, id))
+  return createFileStore(await accountDirectory(id), DATABASE_FILE)
+}
+
+export async function createLegacyDatabaseStore(): Promise<Persistence> {
+  return isTauri() ? createFileStore(await appDataDir(), DATABASE_FILE) : createEntryStore(BROWSER_ENTRY)
 }
 
 function isPlainSqlite(bytes: Uint8Array): boolean {
@@ -67,8 +76,7 @@ export function withEncryption(inner: Persistence, vault: Vault): Persistence {
 }
 
 export async function createPersistence(vault: Vault): Promise<Persistence> {
-  const inner = isTauri() ? await createFilePersistence() : createBrowserPersistence()
-  return withEncryption(inner, vault)
+  return withEncryption(await createDatabaseStore(vault.credentials.userId), vault)
 }
 
 export type AutoSaverOptions = {

@@ -30,9 +30,10 @@
 bun run desktop:build   # installer</code></pre>
 <p>The installer lands in <code>apps/desktop/src-tauri/target/release/bundle</code>.</p>
 <h2>Local database</h2>
-<p>File <code>centime.db</code> in the application data folder:</p>
+<p>Each account has its own folder <code>accounts/&lt;id&gt;/</code> in the application data folder, with its database <code>centime.db</code> and its key <code>master.key</code>. The file <code>accounts.json</code> lists the accounts and the active one. The application data folder is:</p>
 <ul><li>Linux: <code>~/.local/share/ch.centime.desktop/</code></li><li>macOS: <code>~/Library/Application Support/ch.centime.desktop/</code></li><li>Windows: <code>%APPDATA%\ch.centime.desktop\</code></li></ul>
-<p>It is saved 500 ms after each change and when the window closes, and the file is encrypted with AES-256-GCM. The master key is stored next to it (<code>master.key</code>), so disk encryption (BitLocker, FileVault…) is still advisable.</p>
+<p>Several accounts can coexist on one device: <strong>Settings › Accounts</strong> adds, renames and switches them. Files from an earlier single-account version are moved into <code>accounts/&lt;id&gt;/</code> automatically.</p>
+<p>Each database is saved 500 ms after each change and when the window closes, and the file is encrypted with AES-256-GCM. Its master key is stored next to it, so disk encryption (BitLocker, FileVault…) is still advisable.</p>
 <h2>Connect synchronization</h2>
 <ol><li>On first launch, create a key or enter an existing one.</li>
 <li>Enter the server address on that screen, or later in <strong>Settings › Synchronization</strong>.</li>

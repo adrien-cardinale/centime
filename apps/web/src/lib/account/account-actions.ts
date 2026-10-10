@@ -1,10 +1,11 @@
+import { getVault } from "@/lib/crypto/current-vault"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
-import { createKeyStore } from "@/lib/local-db/key-store"
 import { deleteServerAccount, getSyncState, syncNow } from "@/lib/sync/sync-store"
+import { removeAccount, setActiveAccount } from "./accounts"
 
-async function wipeDevice(): Promise<void> {
+async function removeActiveAccount(): Promise<void> {
   await getLocalDatabase().erase()
-  await (await createKeyStore()).clear()
+  await removeAccount(getVault().credentials.userId)
   window.location.reload()
 }
 
@@ -13,10 +14,16 @@ export async function leaveDevice(): Promise<void> {
     const outcome = await syncNow()
     if (!outcome.ok) throw new Error(outcome.message)
   }
-  await wipeDevice()
+  await removeActiveAccount()
 }
 
 export async function deleteAccountEverywhere(): Promise<void> {
   await deleteServerAccount()
-  await wipeDevice()
+  await removeActiveAccount()
+}
+
+export async function switchAccount(id: string): Promise<void> {
+  await getLocalDatabase().flush()
+  await setActiveAccount(id)
+  window.location.reload()
 }

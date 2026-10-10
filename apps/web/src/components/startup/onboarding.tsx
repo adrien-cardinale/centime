@@ -167,10 +167,36 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
   )
 }
 
-export function Onboarding({ onDone }: { onDone: () => void }) {
+export function OnboardingSteps({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation()
   const [mode, setMode] = useState<Mode>("choose")
   const back = () => setMode("choose")
+
+  if (mode === "create") return <CreateKeyStep onDone={onDone} onBack={back} />
+  if (mode === "restore") return <RestoreKeyStep onDone={onDone} onBack={back} />
+  return (
+    <CardContent className="flex flex-col gap-2">
+      {/* Sur Android, le QR code d'un appareil déjà configuré évite de saisir la clé à la main. */}
+      {isAndroid() && (
+        <>
+          <p className="text-sm text-muted-foreground">{t("boot.scan.hint")}</p>
+          <ScanLinkButton onDone={onDone} />
+        </>
+      )}
+      <Button variant={isAndroid() ? "outline" : "default"} onClick={() => setMode("create")}>
+        <Plus />
+        {t("boot.createKey")}
+      </Button>
+      <Button variant="outline" onClick={() => setMode("restore")}>
+        <KeyRound />
+        {isAndroid() ? t("boot.enterKeyManually") : t("boot.haveKey")}
+      </Button>
+    </CardContent>
+  )
+}
+
+export function Onboarding({ onDone }: { onDone: () => void }) {
+  const { t } = useTranslation()
 
   return (
     <main className="flex min-h-svh items-start justify-center bg-muted/40 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:items-center sm:px-6">
@@ -181,27 +207,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             {t("boot.intro")}
           </CardDescription>
         </CardHeader>
-        {mode === "choose" && (
-          <CardContent className="flex flex-col gap-2">
-            {/* Sur Android, le QR code d'un appareil déjà configuré évite de saisir la clé à la main. */}
-            {isAndroid() && (
-              <>
-                <p className="text-sm text-muted-foreground">{t("boot.scan.hint")}</p>
-                <ScanLinkButton onDone={onDone} />
-              </>
-            )}
-            <Button variant={isAndroid() ? "outline" : "default"} onClick={() => setMode("create")}>
-              <Plus />
-              {t("boot.createKey")}
-            </Button>
-            <Button variant="outline" onClick={() => setMode("restore")}>
-              <KeyRound />
-              {isAndroid() ? t("boot.enterKeyManually") : t("boot.haveKey")}
-            </Button>
-          </CardContent>
-        )}
-        {mode === "create" && <CreateKeyStep onDone={onDone} onBack={back} />}
-        {mode === "restore" && <RestoreKeyStep onDone={onDone} onBack={back} />}
+        <OnboardingSteps onDone={onDone} />
       </Card>
     </main>
   )

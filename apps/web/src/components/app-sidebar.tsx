@@ -12,6 +12,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar"
+import { AccountSwitcher } from "./device-accounts/account-switcher"
 import { navigationItems, settingsItem } from "./navigation"
 import SyncIndicator from "./sync/sync-indicator"
 import { ThemeToggle } from "./theme-toggle"
@@ -58,6 +59,7 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
+          <AccountSwitcher replace={replaceOverlayEntry} onNavigate={closeMobileSidebar} />
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild

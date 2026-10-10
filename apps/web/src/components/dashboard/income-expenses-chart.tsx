@@ -10,7 +10,8 @@ import {
 } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { MonthlyPoint } from "@/lib/api"
-import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth } from "@/lib/dashboard"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth, visibleMonths } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
@@ -21,12 +22,14 @@ function chartConfigOf(labels: { income: string; expenses: string }) {
   } satisfies ChartConfig
 }
 
-export function IncomeExpensesChart({ series }: { series: MonthlyPoint[] }) {
+export function IncomeExpensesChart({ series: fullSeries }: { series: MonthlyPoint[] }) {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
+  const series = visibleMonths(fullSeries, isMobile)
   const labels = new Map(series.map((point) => [point.month, point.label]))
   return (
     <ChartCard
-      title={t("dashboardPage.incomeExpenses.title")}
+      title={t("dashboardPage.incomeExpenses.title", { count: series.length })}
       description={t("dashboardPage.incomeExpenses.description")}
       chart={
         <ChartContainer config={chartConfigOf({ income: t("dashboardPage.table.income"), expenses: t("dashboardPage.table.expenses") })} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
@@ -43,7 +46,7 @@ export function IncomeExpensesChart({ series }: { series: MonthlyPoint[] }) {
                 />
               }
             />
-            <ChartLegend content={<ChartLegendContent />} />
+            <ChartLegend content={<ChartLegendContent className="flex-wrap gap-x-4 gap-y-1" />} />
             <Bar dataKey="income" fill="var(--color-income)" radius={[4, 4, 0, 0]} maxBarSize={16} />
             <Bar dataKey="expenses" fill="var(--color-expenses)" radius={[4, 4, 0, 0]} maxBarSize={16} />
           </BarChart>

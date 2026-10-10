@@ -5,27 +5,31 @@ import { CategorySelect } from "@/components/categories/category-select"
 import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
 import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { useBulkUpdateTransactions } from "@/hooks/use-transaction-updates"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { MobileBulkActionsBar } from "./mobile-bulk-actions-bar"
+import { useBulkActions } from "./use-bulk-actions"
 
 const NO_CATEGORY = "none"
 
-type BulkActionsBarProps = {
+export type BulkActionsBarProps = {
   selectedIds: string[]
   onClear: () => void
 }
 
-export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
+export function BulkActionsBar(props: BulkActionsBarProps) {
+  const isMobile = useIsMobile()
+  return isMobile ? <MobileBulkActionsBar {...props} /> : <DesktopBulkActionsBar {...props} />
+}
+
+function DesktopBulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
   const { t } = useTranslation()
-  const bulkUpdate = useBulkUpdateTransactions(onClear)
+  const actions = useBulkActions(selectedIds, onClear)
   const [linkOpen, setLinkOpen] = useState(false)
   const count = selectedIds.length
 
-  const assignCategory = (value: string) =>
-    bulkUpdate.mutate({ ids: selectedIds, changes: { categoryId: value === NO_CATEGORY ? null : value } })
-  const setTransfer = (isTransfer: boolean) => bulkUpdate.mutate({ ids: selectedIds, changes: { isTransfer } })
   const linkFixedItem = (fixedItemId: string | null) => {
     setLinkOpen(false)
-    bulkUpdate.mutate({ ids: selectedIds, changes: { fixedItemId } })
+    actions.linkFixedItem(fixedItemId)
   }
 
   return (
@@ -35,15 +39,15 @@ export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
       </p>
       <CategorySelect
         value={undefined}
-        onChange={assignCategory}
+        onChange={(value) => actions.assignCategory(value === NO_CATEGORY ? null : value)}
         extraOptions={[{ value: NO_CATEGORY, label: t("transactionsPage.none") }]}
         placeholder={t("transactionsPage.bulk.assignCategory")}
         className="w-56 bg-background"
-        disabled={bulkUpdate.isPending}
+        disabled={actions.pending}
       />
       <Popover open={linkOpen} onOpenChange={setLinkOpen}>
         <PopoverTrigger asChild>
-          <Button variant="outline" size="sm" disabled={bulkUpdate.isPending}>
+          <Button variant="outline" size="sm" disabled={actions.pending}>
             <Repeat />
             {t("transactionsPage.linkFixedItem")}
           </Button>
@@ -52,11 +56,11 @@ export function BulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
           <FixedItemCommand onSelect={linkFixedItem} />
         </PopoverContent>
       </Popover>
-      <Button variant="outline" size="sm" onClick={() => setTransfer(true)} disabled={bulkUpdate.isPending}>
+      <Button variant="outline" size="sm" onClick={() => actions.setTransfer(true)} disabled={actions.pending}>
         <ArrowLeftRight />
         {t("transactionsPage.markTransfer")}
       </Button>
-      <Button variant="outline" size="sm" onClick={() => setTransfer(false)} disabled={bulkUpdate.isPending}>
+      <Button variant="outline" size="sm" onClick={() => actions.setTransfer(false)} disabled={actions.pending}>
         {t("transactionsPage.removeTransfer")}
       </Button>
       <Button variant="ghost" size="sm" onClick={onClear} className="ml-auto">

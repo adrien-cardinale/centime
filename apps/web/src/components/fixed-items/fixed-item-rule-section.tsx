@@ -24,12 +24,10 @@ export function FixedItemRuleSection({ control, tester, onToggle }: RuleSectionP
   return (
     <fieldset className="space-y-4 rounded-md border p-4">
       <legend className="px-1 text-sm font-medium">{t("fixedItemsUi.rule.legend")}</legend>
-      <div className="flex items-center gap-2">
+      <Label htmlFor="rule-enabled" className="flex min-h-11 cursor-pointer items-center gap-3 font-normal">
         <Checkbox id="rule-enabled" checked={enabled} onCheckedChange={(checked) => onToggle(checked === true)} />
-        <Label htmlFor="rule-enabled" className="font-normal">
-          {t("fixedItemsUi.rule.autoLink")}
-        </Label>
-      </div>
+        {t("fixedItemsUi.rule.autoLink")}
+      </Label>
       {enabled && (
         <>
           <div className="grid gap-4 sm:grid-cols-2">

@@ -10,6 +10,7 @@ import { useRuleTester } from "@/components/rules/rule-matcher-inputs"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -26,7 +27,14 @@ import { api, type FixedItem } from "@/lib/api"
 import { type Direction, directionOf, signedAmount } from "@/lib/fixed-items"
 import { getMonthLabels, getQuarterMonthLabels, periodicityLabels } from "@/lib/labels"
 import { invalidateFixedItemData } from "@/lib/queries"
-import { defaultDueMonth, emptyRule, type FixedItemFormValues, formValuesFor, NO_CATEGORY } from "./fixed-item-form"
+import {
+  amountFromText,
+  defaultDueMonth,
+  emptyRule,
+  type FixedItemFormValues,
+  formValuesFor,
+  NO_CATEGORY,
+} from "./fixed-item-form"
 import { FixedItemRuleSection } from "./fixed-item-rule-section"
 
 type FixedItemControl = Control<FixedItemFormValues, unknown, FixedItemPayload>
@@ -91,7 +99,7 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
   function updateAmount(nextDirection: Direction, text: string) {
     setDirection(nextDirection)
     setAmountText(text)
-    form.setValue("expectedAmount", signedAmount(nextDirection, Number(text === "" ? 0 : text)), {
+    form.setValue("expectedAmount", signedAmount(nextDirection, amountFromText(text)), {
       shouldValidate: form.formState.isSubmitted,
     })
   }
@@ -109,7 +117,7 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{item ? t("fixedItemsUi.dialog.editTitle") : t("fixedItemsUi.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("fixedItemsUi.dialog.description")}</DialogDescription>
@@ -142,10 +150,9 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
                     <FormLabel>{t("fixedItemsUi.dialog.expectedAmount")}</FormLabel>
                     <FormControl>
                       <Input
-                        type="number"
+                        type="text"
                         inputMode="decimal"
-                        min={0}
-                        step="0.01"
+                        autoComplete="off"
                         placeholder="0.00"
                         value={amountText}
                         onChange={(event) => updateAmount(direction, event.target.value)}
@@ -175,7 +182,12 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
               )}
             />
             <FixedItemRuleSection control={form.control} tester={tester} onToggle={toggleRule} />
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? t("fixedItemsUi.dialog.saving") : t("fixedItemsUi.dialog.save")}
               </Button>
@@ -250,6 +262,7 @@ function ScheduleFields({ control, onPeriodicityChange }: ScheduleFieldsProps) {
             <FormControl>
               <Input
                 type="number"
+                inputMode="numeric"
                 min={1}
                 max={31}
                 step={1}

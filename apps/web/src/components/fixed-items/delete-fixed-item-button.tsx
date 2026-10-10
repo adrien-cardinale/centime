@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Trash2 } from "lucide-react"
+import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import {
@@ -17,7 +18,13 @@ import { Button } from "@/components/ui/button"
 import { api, type FixedItem } from "@/lib/api"
 import { invalidateFixedItemData } from "@/lib/queries"
 
-export function DeleteFixedItemButton({ item }: { item: FixedItem }) {
+type DeleteFixedItemButtonProps = {
+  item: FixedItem
+  trigger?: ReactNode
+  onDeleted?: () => void
+}
+
+export function DeleteFixedItemButton({ item, trigger, onDeleted }: DeleteFixedItemButtonProps) {
   const { t } = useTranslation()
   const queryClient = useQueryClient()
   const remove = useMutation({
@@ -25,6 +32,7 @@ export function DeleteFixedItemButton({ item }: { item: FixedItem }) {
     onSuccess: async () => {
       await invalidateFixedItemData(queryClient)
       toast.success(t("fixedItemsUi.delete.deleted", { name: item.name }))
+      onDeleted?.()
     },
     onError: (error) => toast.error(error.message),
   })
@@ -32,9 +40,11 @@ export function DeleteFixedItemButton({ item }: { item: FixedItem }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.delete.label", { name: item.name })} disabled={remove.isPending}>
-          <Trash2 />
-        </Button>
+        {trigger ?? (
+          <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.delete.label", { name: item.name })} disabled={remove.isPending}>
+            <Trash2 />
+          </Button>
+        )}
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>

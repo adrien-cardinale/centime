@@ -2,10 +2,17 @@ import { type fixedItemPayloadSchema, isoDateOf, type Periodicity, type RuleMatc
 import { startOfMonth } from "date-fns"
 import type { z } from "zod"
 import type { FixedItem } from "@/lib/api"
+import { parseAmountInput } from "@/lib/format"
 
 export type FixedItemFormValues = z.input<typeof fixedItemPayloadSchema>
 
 export const NO_CATEGORY = "none"
+
+export function amountFromText(text: string): number {
+  if (text.trim() === "") return 0
+  const amount = parseAmountInput(text)
+  return amount === null ? Number.NaN : Math.abs(amount)
+}
 
 export function emptyRule(pattern: string): RuleMatcherInput {
   return { pattern, matchKind: "contains", field: "raw_label" }

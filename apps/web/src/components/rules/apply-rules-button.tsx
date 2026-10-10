@@ -32,6 +32,16 @@ function summary(result: ApplyRulesResult): string {
 }
 
 export function ApplyRulesButton() {
+  return <ApplyRulesDialog withTrigger />
+}
+
+type ApplyRulesDialogProps = {
+  withTrigger?: boolean
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+}
+
+export function ApplyRulesDialog({ withTrigger = false, open, onOpenChange }: ApplyRulesDialogProps) {
   const { t } = useTranslation()
   const [scope, setScope] = useState<ApplyRulesScope>("uncategorized")
   const queryClient = useQueryClient()
@@ -45,13 +55,15 @@ export function ApplyRulesButton() {
   })
 
   return (
-    <AlertDialog>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline" disabled={apply.isPending}>
-          <RefreshCw />
-          {t("rules.apply.button")}
-        </Button>
-      </AlertDialogTrigger>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      {withTrigger && (
+        <AlertDialogTrigger asChild>
+          <Button variant="outline" disabled={apply.isPending}>
+            <RefreshCw />
+            {t("rules.apply.button")}
+          </Button>
+        </AlertDialogTrigger>
+      )}
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("rules.apply.title")}</AlertDialogTitle>

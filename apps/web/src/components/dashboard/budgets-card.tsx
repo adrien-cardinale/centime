@@ -17,8 +17,8 @@ export function BudgetsCard({ budgets }: { budgets: BudgetOverviewItem[] }) {
       <ul className="space-y-4">
         {budgets.map((budget) => (
           <li key={budget.id} className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <CategoryBadge name={budget.categoryName} color={budget.categoryColor} className="max-w-40" />
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <CategoryBadge name={budget.categoryName} color={budget.categoryColor} className="max-w-full sm:max-w-40" />
               <span className="text-xs whitespace-nowrap text-muted-foreground tabular-nums">
                 {money(budget.status.spent)} / {money(budget.status.available)}
               </span>

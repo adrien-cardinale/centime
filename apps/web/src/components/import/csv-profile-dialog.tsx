@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -78,7 +79,7 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{profile ? t("csvProfiles.dialog.editTitle") : t("csvProfiles.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("csvProfiles.dialog.description")}</DialogDescription>
@@ -86,7 +87,12 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
         <Form {...form}>
           <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-6">
             <ProfileSections control={form.control} sourceFile={sourceFile} />
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? t("csvProfiles.dialog.saving") : t("csvProfiles.dialog.save")}
               </Button>

@@ -42,11 +42,12 @@ export function RecoveryKeyCard({ serverUrl }: { serverUrl: string | null }) {
   }
 
   const copy = async () => {
-    if (phrase === null) return
-    await navigator.clipboard.writeText(phrase).then(
-      () => toast.success(t("settings.recoveryKey.copied")),
-      () => toast.error(t("settings.recoveryKey.copyFailed")),
-    )
+    try {
+      await navigator.clipboard.writeText(phrase ?? (await formatMasterKey(await readKey())))
+      toast.success(t("settings.recoveryKey.copied"))
+    } catch {
+      toast.error(t("settings.recoveryKey.copyFailed"))
+    }
   }
 
   return (
@@ -66,12 +67,10 @@ export function RecoveryKeyCard({ serverUrl }: { serverUrl: string | null }) {
             {phrase === null ? <Eye /> : <EyeOff />}
             {phrase === null ? t("settings.recoveryKey.show") : t("settings.recoveryKey.hide")}
           </Button>
-          {phrase !== null && (
-            <Button variant="outline" onClick={() => void copy()}>
-              <Copy />
-              {t("common.copy")}
-            </Button>
-          )}
+          <Button variant="outline" onClick={() => void copy()}>
+            <Copy />
+            {t("common.copy")}
+          </Button>
           {/* Sur Android, l'appairage se fait en scannant le QR code d'un autre appareil, pas en l'affichant. */}
           {!isAndroid() && (
             <Button variant="outline" onClick={() => void toggleLink()}>
@@ -95,8 +94,16 @@ export function RecoveryKeyCard({ serverUrl }: { serverUrl: string | null }) {
               <AlertDescription>{t("settings.deviceLink.secretDescription")}</AlertDescription>
             </Alert>
             {/* Fond blanc et modules noirs en dur : un QR code suit le contraste du papier, pas celui du thème. */}
-            <div className="w-fit rounded-md border bg-white p-3">
-              <QRCodeSVG value={link} size={256} level="M" marginSize={2} bgColor="#ffffff" fgColor="#000000" />
+            <div className="w-full max-w-72 rounded-md border bg-white p-3">
+              <QRCodeSVG
+                value={link}
+                size={256}
+                level="M"
+                marginSize={2}
+                bgColor="#ffffff"
+                fgColor="#000000"
+                className="block h-auto w-full"
+              />
             </div>
             <p className="text-sm text-muted-foreground">{t("settings.deviceLink.steps")}</p>
           </div>

@@ -5,7 +5,11 @@ import { formatAmount, numberFormatter } from "./format"
 export const DASHBOARD_CURRENCY = "CHF"
 export const CATEGORY_LABEL_MAX_LENGTH = 18
 export const CHART_HEIGHT_CLASS = "h-[240px]"
+export const MOBILE_CHART_MONTHS = 6
 
+export function visibleMonths<Point>(series: Point[], isMobile: boolean): Point[] {
+  return isMobile ? series.slice(-MOBILE_CHART_MONTHS) : series
+}
 
 export function money(amount: number): string {
   return formatAmount(amount, DASHBOARD_CURRENCY)

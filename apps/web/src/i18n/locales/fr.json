@@ -2,7 +2,9 @@
   "common": {
     "cancel": "Annuler",
     "never": "Jamais",
-    "copy": "Copier"
+    "copy": "Copier",
+    "fileSaved": "Fichier enregistré",
+    "fileSaveFailed": "Impossible d'enregistrer le fichier"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -98,7 +100,9 @@
       "title": "Données locales",
       "description": "La base de cet appareil est chiffrée et reste utilisable sans connexion.",
       "location": "Emplacement",
-      "size": "Taille"
+      "size": "Taille",
+      "androidBackup": "Sur Android, vos données restent sur cet appareil. Connectez un serveur de synchronisation pour les sauvegarder.",
+      "configureSync": "Configurer la synchronisation"
     }
   },
   "syncState": {
@@ -235,8 +239,12 @@
       "scanning": "Scan en cours…",
       "hint": "Depuis un appareil déjà configuré : Paramètres → Connecter un autre appareil.",
       "cameraDenied": "Accès à la caméra refusé : autorisez-le pour scanner un QR code",
-      "failed": "Scan interrompu"
-    }
+      "failed": "Scan interrompu",
+      "settingsTitle": "Autoriser la caméra dans les réglages ?",
+      "settingsDescription": "L'accès à la caméra a été refusé. Autorisez-le dans les réglages de l'appareil pour scanner un QR code.",
+      "openSettings": "Ouvrir les réglages"
+    },
+    "enterKeyManually": "Saisir la clé à la main"
   },
   "periodNavigator": {
     "previous": "Mois précédent",
@@ -272,7 +280,7 @@
       "empty": "Aucune dépense ce mois-ci."
     },
     "incomeExpenses": {
-      "title": "Revenus et dépenses, 12 derniers mois",
+      "title": "Revenus et dépenses, {{count}} derniers mois",
       "description": "Transactions comptabilisées, hors transferts."
     },
     "kpi": {
@@ -319,7 +327,11 @@
       "account": "Compte",
       "date": "Date",
       "amount": "Montant",
-      "amountHint": "Montant négatif pour une dépense, positif pour une recette.",
+      "amountHint": "Saisissez le montant sans signe, avec une virgule ou un point.",
+      "amountPlaceholder": "25,40",
+      "direction": "Type d'opération",
+      "expense": "Dépense",
+      "income": "Revenu",
       "label": "Libellé",
       "labelPlaceholder": "Paiement boulangerie",
       "merchant": "Commerçant (optionnel)",
@@ -333,6 +345,7 @@
       "selected_one": "{{count}} sélectionnée",
       "selected_other": "{{count}} sélectionnées",
       "assignCategory": "Attribuer une catégorie",
+      "transferActions": "Transferts",
       "clear": "Annuler la sélection",
       "updated_one": "{{count}} transaction mise à jour",
       "updated_other": "{{count}} transactions mises à jour"
@@ -367,6 +380,8 @@
       "search": "Recherche",
       "searchPlaceholder": "Libellé ou commerçant",
       "toggle": "Filtres",
+      "reset": "Réinitialiser",
+      "showResults": "Voir les résultats",
       "uncategorized": "Non catégorisées",
       "theme": "Thème : {{name}}",
       "transfers": "Transferts",
@@ -402,12 +417,15 @@
     "description": "Importez un relevé CSV ou camt.053 et vérifiez l'aperçu avant de valider.",
     "tabImport": "Importer",
     "tabProfiles": "Profils CSV",
-    "fileTooLarge": "Fichier trop volumineux (10 Mo maximum)"
+    "fileTooLarge": "Fichier trop volumineux (10 Mo maximum)",
+    "unsupportedFile": "Format non pris en charge : choisissez un fichier .csv ou .xml"
   },
   "importWorkspace": {
     "dropzone": {
       "prompt": "Déposez un relevé ici ou cliquez pour le choisir",
-      "hint": "CSV ou camt.053 (XML), 10 Mo maximum"
+      "hint": "CSV ou camt.053 (XML), 10 Mo maximum",
+      "touchPrompt": "Touchez pour choisir un relevé",
+      "choose": "Choisir un fichier"
     },
     "options": {
       "detectedFormat": "Format détecté",
@@ -628,7 +646,8 @@
     },
     "colorPicker": {
       "color": "Couleur {{color}}"
-    }
+    },
+    "moreActions": "Plus d'actions"
   },
   "rules": {
     "empty": "Aucune règle pour cette catégorie.",
@@ -764,6 +783,15 @@
       "edit": "Modifier {{name}}",
       "delete": "Supprimer {{name}}"
     },
+    "actions": {
+      "menu": "Actions pour {{name}}",
+      "viewTransactions": "Voir les transactions",
+      "edit": "Modifier",
+      "delete": "Supprimer"
+    },
+    "card": {
+      "remaining": "Reste : {{amount}}"
+    },
     "delete": {
       "deleted": "Budget « {{name}} » supprimé",
       "title": "Supprimer le budget « {{name}} » ?",
@@ -787,7 +815,8 @@
     "unbudgeted": {
       "title": "Dépenses sans budget",
       "description": "Catégories non couvertes par un budget, dépenses de {{month}}.",
-      "create": "Créer un budget"
+      "create": "Créer un budget",
+      "createFor": "Créer un budget pour {{name}}"
     }
   },
   "fixedItemsUi": {
@@ -799,7 +828,8 @@
       "confirm": "Supprimer"
     },
     "deviation": {
-      "title": "Écart entre le montant réel et le montant attendu"
+      "title": "Écart entre le montant réel et le montant attendu",
+      "label": "Écart {{amount}} (réel − attendu)"
     },
     "earlierOverdue_one": "{{count}} échéance en retard sur les mois précédents",
     "earlierOverdue_other": "{{count}} échéances en retard sur les mois précédents",
@@ -850,7 +880,10 @@
       "noRule": "Aucune règle de rapprochement.",
       "rule": "Règle : {{field}} {{matchKind}}",
       "honored": "Échéances honorées",
-      "noTransactions": "Aucune transaction rattachée entre le {{start}} et le {{end}}."
+      "noTransactions": "Aucune transaction rattachée entre le {{start}} et le {{end}}.",
+      "deviationLegend": "Écart = montant réel − montant attendu.",
+      "edit": "Modifier",
+      "delete": "Supprimer"
     },
     "table": {
       "name": "Nom",
@@ -862,7 +895,6 @@
       "actions": "Actions",
       "next": "Prochaine le {{date}}",
       "noDue": "Aucune échéance",
-      "view": "Voir {{name}}",
       "edit": "Modifier {{name}}"
     }
   }

@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 export function StartupLoading() {
   const { t } = useTranslation()
   return (
-    <main className="flex min-h-svh flex-col items-center justify-center gap-4 p-6">
+    <main className="flex min-h-svh flex-col items-center justify-center gap-4 px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))]">
       <p className="text-sm text-muted-foreground">{t("boot.opening")}</p>
       <div className="w-full max-w-xs space-y-2">
         <Skeleton className="h-4 w-full" />
@@ -25,7 +25,7 @@ type StartupFailureProps = {
 export function StartupFailure({ message, onRetry }: StartupFailureProps) {
   const { t } = useTranslation()
   return (
-    <main className="flex min-h-svh items-center justify-center p-6">
+    <main className="flex min-h-svh items-start justify-center px-6 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:items-center">
       <div className="w-full max-w-md space-y-4">
         <Alert variant="destructive">
           <TriangleAlert />

@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar"
 import { navigationItems, settingsItem } from "./navigation"
 import SyncIndicator from "./sync/sync-indicator"
@@ -18,6 +19,10 @@ import { ThemeToggle } from "./theme-toggle"
 export function AppSidebar() {
   const matchRoute = useMatchRoute()
   const { t } = useTranslation()
+  const { isMobile, setOpenMobile } = useSidebar()
+  const closeMobileSidebar = () => setOpenMobile(false)
+  // Sur mobile, la sidebar occupe une entrée d'historique : la navigation la remplace pour que « retour » ramène à la page précédente.
+  const replaceOverlayEntry = isMobile
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -34,7 +39,12 @@ export function AppSidebar() {
                 return (
                   <SidebarMenuItem key={item.to}>
                     <SidebarMenuButton asChild isActive={isActive} tooltip={t(item.titleKey)}>
-                      <Link to={item.to} aria-current={isActive ? "page" : undefined}>
+                      <Link
+                        to={item.to}
+                        replace={replaceOverlayEntry}
+                        onClick={closeMobileSidebar}
+                        aria-current={isActive ? "page" : undefined}
+                      >
                         <item.icon />
                         <span>{t(item.titleKey)}</span>
                       </Link>
@@ -54,7 +64,7 @@ export function AppSidebar() {
               isActive={Boolean(matchRoute({ to: settingsItem.to, fuzzy: true }))}
               tooltip={t(settingsItem.titleKey)}
             >
-              <Link to={settingsItem.to}>
+              <Link to={settingsItem.to} replace={replaceOverlayEntry} onClick={closeMobileSidebar}>
                 <settingsItem.icon />
                 <span>{t(settingsItem.titleKey)}</span>
               </Link>

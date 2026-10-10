@@ -3,25 +3,26 @@ import type { ReactNode } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { formatPercent, relativeChange } from "@/lib/dashboard"
+import { cn } from "@/lib/utils"
 
 type StatTileProps = {
   label: string
   value: string
-  marker?: ReactNode
+  negative?: boolean
   footer: ReactNode
 }
 
-export function StatTile({ label, value, marker, footer }: StatTileProps) {
+export function StatTile({ label, value, negative = false, footer }: StatTileProps) {
   return (
-    <Card className="gap-1 py-4">
-      <CardHeader className="gap-1 px-4">
-        <CardDescription>{label}</CardDescription>
-        <CardTitle className="flex items-center gap-2 text-2xl tabular-nums">
+    <Card className="min-w-0 gap-1 py-3 sm:py-4">
+      <CardHeader className="gap-1 px-3 sm:px-4">
+        <CardDescription className="truncate">{label}</CardDescription>
+        <CardTitle className={cn("flex items-center gap-2 text-xl tabular-nums sm:text-2xl", negative && "text-destructive")}>
           <span className="truncate">{value}</span>
-          {marker}
+          {negative && <NegativeMarker />}
         </CardTitle>
       </CardHeader>
-      <CardContent className="px-4 text-xs text-muted-foreground">{footer}</CardContent>
+      <CardContent className="px-3 text-xs text-muted-foreground sm:px-4">{footer}</CardContent>
     </Card>
   )
 }
@@ -41,12 +42,11 @@ export function MonthDelta({ current, previous }: { current: number; previous: n
   )
 }
 
-export function NegativeMarker() {
+function NegativeMarker() {
   const { t } = useTranslation()
   return (
-    <span className="inline-flex items-center" title={t("dashboardPage.delta.negativeBalance")}>
-      <span className="size-2 rounded-full bg-destructive/70" aria-hidden />
-      <span className="sr-only">{t("dashboardPage.delta.negative")}</span>
+    <span role="img" aria-label={t("dashboardPage.delta.negativeBalance")} className="inline-flex shrink-0 items-center">
+      <span className="size-2 rounded-full bg-destructive/70" />
     </span>
   )
 }

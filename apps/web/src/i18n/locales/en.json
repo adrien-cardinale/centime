@@ -2,7 +2,9 @@
   "common": {
     "cancel": "Cancel",
     "never": "Never",
-    "copy": "Copy"
+    "copy": "Copy",
+    "fileSaved": "File saved",
+    "fileSaveFailed": "Could not save the file"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -98,7 +100,9 @@
       "title": "Local data",
       "description": "This device's database is encrypted and works offline.",
       "location": "Location",
-      "size": "Size"
+      "size": "Size",
+      "androidBackup": "On Android, your data stays on this device. Connect a sync server to back it up.",
+      "configureSync": "Set up sync"
     }
   },
   "syncState": {
@@ -235,8 +239,12 @@
       "scanning": "Scanning…",
       "hint": "From a device already set up: Settings → Connect another device.",
       "cameraDenied": "Camera access denied: allow it to scan a QR code",
-      "failed": "Scan interrupted"
-    }
+      "failed": "Scan interrupted",
+      "settingsTitle": "Allow the camera in settings?",
+      "settingsDescription": "Camera access was denied. Allow it in the device settings to scan a QR code.",
+      "openSettings": "Open settings"
+    },
+    "enterKeyManually": "Enter the key manually"
   },
   "periodNavigator": {
     "previous": "Previous month",
@@ -272,7 +280,7 @@
       "empty": "No expenses this month."
     },
     "incomeExpenses": {
-      "title": "Income and expenses, last 12 months",
+      "title": "Income and expenses, last {{count}} months",
       "description": "Booked transactions, excluding transfers."
     },
     "kpi": {
@@ -319,7 +327,11 @@
       "account": "Account",
       "date": "Date",
       "amount": "Amount",
-      "amountHint": "Negative amount for an expense, positive for income.",
+      "amountHint": "Enter the amount without a sign, with a comma or a dot.",
+      "amountPlaceholder": "25.40",
+      "direction": "Transaction type",
+      "expense": "Expense",
+      "income": "Income",
       "label": "Label",
       "labelPlaceholder": "Bakery payment",
       "merchant": "Merchant (optional)",
@@ -333,6 +345,7 @@
       "selected_one": "{{count}} selected",
       "selected_other": "{{count}} selected",
       "assignCategory": "Assign a category",
+      "transferActions": "Transfers",
       "clear": "Clear selection",
       "updated_one": "{{count}} transaction updated",
       "updated_other": "{{count}} transactions updated"
@@ -367,6 +380,8 @@
       "search": "Search",
       "searchPlaceholder": "Label or merchant",
       "toggle": "Filters",
+      "reset": "Reset",
+      "showResults": "Show results",
       "uncategorized": "Uncategorized",
       "theme": "Theme: {{name}}",
       "transfers": "Transfers",
@@ -402,12 +417,15 @@
     "description": "Import a CSV or camt.053 statement and check the preview before confirming.",
     "tabImport": "Import",
     "tabProfiles": "CSV profiles",
-    "fileTooLarge": "File too large (10 MB maximum)"
+    "fileTooLarge": "File too large (10 MB maximum)",
+    "unsupportedFile": "Unsupported format: choose a .csv or .xml file"
   },
   "importWorkspace": {
     "dropzone": {
       "prompt": "Drop a statement here or click to choose one",
-      "hint": "CSV or camt.053 (XML), 10 MB maximum"
+      "hint": "CSV or camt.053 (XML), 10 MB maximum",
+      "touchPrompt": "Tap to choose a statement",
+      "choose": "Choose a file"
     },
     "options": {
       "detectedFormat": "Detected format",
@@ -628,7 +646,8 @@
     },
     "colorPicker": {
       "color": "Color {{color}}"
-    }
+    },
+    "moreActions": "More actions"
   },
   "rules": {
     "empty": "No rules for this category.",
@@ -764,6 +783,15 @@
       "edit": "Edit {{name}}",
       "delete": "Delete {{name}}"
     },
+    "actions": {
+      "menu": "Actions for {{name}}",
+      "viewTransactions": "View transactions",
+      "edit": "Edit",
+      "delete": "Delete"
+    },
+    "card": {
+      "remaining": "Remaining: {{amount}}"
+    },
     "delete": {
       "deleted": "Budget \"{{name}}\" deleted",
       "title": "Delete budget \"{{name}}\"?",
@@ -787,7 +815,8 @@
     "unbudgeted": {
       "title": "Unbudgeted spending",
       "description": "Categories not covered by a budget, spending in {{month}}.",
-      "create": "Create a budget"
+      "create": "Create a budget",
+      "createFor": "Create a budget for {{name}}"
     }
   },
   "fixedItemsUi": {
@@ -799,7 +828,8 @@
       "confirm": "Delete"
     },
     "deviation": {
-      "title": "Difference between the actual and expected amounts"
+      "title": "Difference between the actual and expected amounts",
+      "label": "Difference {{amount}} (actual − expected)"
     },
     "earlierOverdue_one": "{{count}} overdue payment in previous months",
     "earlierOverdue_other": "{{count}} overdue payments in previous months",
@@ -850,7 +880,10 @@
       "noRule": "No matching rule.",
       "rule": "Rule: {{field}} {{matchKind}}",
       "honored": "Payments honored",
-      "noTransactions": "No transactions linked between {{start}} and {{end}}."
+      "noTransactions": "No transactions linked between {{start}} and {{end}}.",
+      "deviationLegend": "Difference = actual amount − expected amount.",
+      "edit": "Edit",
+      "delete": "Delete"
     },
     "table": {
       "name": "Name",
@@ -862,7 +895,6 @@
       "actions": "Actions",
       "next": "Next on {{date}}",
       "noDue": "No upcoming payment",
-      "view": "View {{name}}",
       "edit": "Edit {{name}}"
     }
   }

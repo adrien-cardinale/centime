@@ -25,13 +25,19 @@ export function UnbudgetedSpending({ categories, monthLabel, onCreate }: Unbudge
       <CardContent>
         <ul className="divide-y">
           {categories.map((category) => (
-            <li key={category.categoryId} className="flex items-center justify-between gap-4 py-2">
-              <CategoryBadge name={category.categoryName} color={category.categoryColor} />
-              <div className="flex items-center gap-3">
-                <span className="text-sm tabular-nums">{formatAmount(category.spent, BUDGET_CURRENCY)}</span>
-                <Button variant="outline" size="sm" onClick={() => onCreate(category.categoryId)}>
+            <li key={category.categoryId} className="flex flex-wrap items-center justify-between gap-2 py-2">
+              <CategoryBadge name={category.categoryName} color={category.categoryColor} className="min-w-0 shrink" />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <span className="text-sm whitespace-nowrap tabular-nums">{formatAmount(category.spent, BUDGET_CURRENCY)}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="min-w-10"
+                  aria-label={t("budgets.unbudgeted.createFor", { name: category.categoryName })}
+                  onClick={() => onCreate(category.categoryId)}
+                >
                   <Plus />
-                  {t("budgets.unbudgeted.create")}
+                  <span className="sr-only sm:not-sr-only">{t("budgets.unbudgeted.create")}</span>
                 </Button>
               </div>
             </li>

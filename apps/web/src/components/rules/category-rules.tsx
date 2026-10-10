@@ -62,7 +62,7 @@ function RuleItem({
   const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md py-1 text-sm">
-      <span className="max-w-72 truncate font-mono text-xs" title={rule.pattern}>
+      <span className="max-w-[60vw] font-mono text-sm break-all sm:max-w-72 sm:truncate sm:break-normal" title={rule.pattern}>
         {rule.pattern}
       </span>
       <Badge variant="outline">{ruleMatchKindLabels[rule.matchKind]}</Badge>

@@ -18,12 +18,12 @@ function money(amount: number): string {
 
 function PlanTile({ title, value, hint, className }: PlanTileProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardDescription>{title}</CardDescription>
-        <CardTitle className={cn("text-2xl tabular-nums", className)}>{money(value)}</CardTitle>
+    <Card className="min-w-0 gap-2 py-3 sm:gap-6 sm:py-6">
+      <CardHeader className="gap-1 px-3 sm:gap-2 sm:px-6">
+        <CardDescription className="truncate">{title}</CardDescription>
+        <CardTitle className={cn("truncate text-lg tabular-nums sm:text-2xl", className)}>{money(value)}</CardTitle>
       </CardHeader>
-      <CardContent className="text-xs text-muted-foreground">{hint}</CardContent>
+      <CardContent className="px-3 text-xs text-muted-foreground sm:px-6">{hint}</CardContent>
     </Card>
   )
 }
@@ -32,7 +32,7 @@ export function PlanSummary({ plan }: { plan: MonthPlan }) {
   const { t } = useTranslation()
   const { income, fixedExpenses, envelopes, remaining } = plan
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       <PlanTile title={t("budgets.planSummary.income")} value={income.expected} hint={t("budgets.planSummary.received", { amount: money(income.actual) })} />
       <PlanTile title={t("budgets.planSummary.fixedExpenses")} value={fixedExpenses.expected} hint={t("budgets.planSummary.paid", { amount: money(fixedExpenses.actual) })} />
       <PlanTile title={t("budgets.planSummary.envelopes")} value={envelopes.expected} hint={t("budgets.planSummary.spent", { amount: money(envelopes.actual) })} />

@@ -57,25 +57,28 @@ function ImportHistoryTable({ entries }: { entries: ImportHistoryEntry[] }) {
       <TableHeader>
         <TableRow>
           <TableHead className="pl-6">{t("importHistory.columns.file")}</TableHead>
-          <TableHead>{t("importHistory.columns.format")}</TableHead>
-          <TableHead>{t("importHistory.columns.date")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("importHistory.columns.format")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("importHistory.columns.date")}</TableHead>
           <TableHead className="text-right">{t("importHistory.columns.inserted")}</TableHead>
-          <TableHead className="text-right">{t("importHistory.columns.updated")}</TableHead>
-          <TableHead className="text-right">{t("importHistory.columns.skipped")}</TableHead>
+          <TableHead className="hidden text-right sm:table-cell">{t("importHistory.columns.updated")}</TableHead>
+          <TableHead className="hidden text-right sm:table-cell">{t("importHistory.columns.skipped")}</TableHead>
           <TableHead className="pr-6 text-right">{t("importHistory.columns.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {entries.map((entry) => (
           <TableRow key={entry.id}>
-            <TableCell className="max-w-72 truncate pl-6 font-medium" title={entry.fileName}>
-              {entry.fileName}
+            <TableCell className="pl-6">
+              <div className="max-w-40 truncate font-medium sm:max-w-72" title={entry.fileName}>
+                {entry.fileName}
+              </div>
+              <div className="text-xs text-muted-foreground tabular-nums sm:hidden">{formatDateTime(entry.importedAt)}</div>
             </TableCell>
-            <TableCell>{formatLabel(entry)}</TableCell>
-            <TableCell className="tabular-nums">{formatDateTime(entry.importedAt)}</TableCell>
+            <TableCell className="hidden sm:table-cell">{formatLabel(entry)}</TableCell>
+            <TableCell className="hidden tabular-nums sm:table-cell">{formatDateTime(entry.importedAt)}</TableCell>
             <TableCell className="text-right tabular-nums">{entry.insertedCount}</TableCell>
-            <TableCell className="text-right tabular-nums">{entry.updatedCount}</TableCell>
-            <TableCell className="text-right tabular-nums">{entry.skippedCount}</TableCell>
+            <TableCell className="hidden text-right tabular-nums sm:table-cell">{entry.updatedCount}</TableCell>
+            <TableCell className="hidden text-right tabular-nums sm:table-cell">{entry.skippedCount}</TableCell>
             <TableCell className="pr-6 text-right">
               <DeleteImportButton entry={entry} />
             </TableCell>

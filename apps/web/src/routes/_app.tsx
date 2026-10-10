@@ -21,13 +21,13 @@ function AppShell({ children }: { children: ReactNode }) {
       <AppSidebar />
       <SidebarInset>
         {/* pt/pb en env() : garde le contenu hors des barres système en affichage bord à bord (Android 15+). */}
-        <header className="sticky top-0 z-10 flex min-h-14 shrink-0 items-center gap-2 border-b bg-background px-4 pt-[env(safe-area-inset-top)]">
+        <header className="sticky top-0 z-10 flex min-h-[calc(3.5rem+env(safe-area-inset-top))] shrink-0 items-center gap-2 border-b bg-background px-4 pt-[env(safe-area-inset-top)]">
           <SidebarTrigger className="-ml-1" />
           <span aria-hidden="true" className="truncate text-sm font-medium text-muted-foreground">
             {title}
           </span>
         </header>
-        <main className="flex-1 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">{children}</main>
+        <div className="flex-1 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">{children}</div>
       </SidebarInset>
     </SidebarProvider>
   )

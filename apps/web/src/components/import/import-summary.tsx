@@ -23,7 +23,7 @@ export function ImportSummary({ summary }: { summary: ImportPreview["summary"] }
       {summaryItems(summary, t).map((item) => (
         <Card key={item.label} className="gap-1 py-4">
           <CardContent className="px-4">
-            <p className="text-xs text-muted-foreground">{item.label}</p>
+            <p className="text-sm text-muted-foreground">{item.label}</p>
             <p
               className={cn(
                 "text-2xl font-semibold tabular-nums",

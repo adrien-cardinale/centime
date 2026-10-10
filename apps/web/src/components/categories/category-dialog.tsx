@@ -8,6 +8,7 @@ import type { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -144,6 +145,11 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
               )}
             />
             <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>

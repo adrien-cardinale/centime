@@ -21,13 +21,17 @@ import {
 } from "@/components/ui/dialog"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { api, type Account } from "@/lib/api"
 import { todayIso } from "@/lib/budgets"
+import { parseAmountInput } from "@/lib/format"
 import { accountsQuery, invalidateTransactionData } from "@/lib/queries"
 
 type TransactionFormValues = z.input<typeof manualTransactionSchema>
 
 const NO_CATEGORY = "none"
+const DIRECTIONS = ["expense", "income"] as const
+type Direction = (typeof DIRECTIONS)[number]
 
 function soleAccountId(accounts: Account[]): string {
   return accounts.length === 1 ? (accounts[0]?.id ?? "") : ""
@@ -35,6 +39,12 @@ function soleAccountId(accounts: Account[]): string {
 
 function defaultValues(accountId: string): TransactionFormValues {
   return { accountId, bookingDate: todayIso(), rawLabel: "", merchant: "", amount: Number.NaN, categoryId: null }
+}
+
+function signedAmount(text: string, direction: Direction): number {
+  const amount = parseAmountInput(text)
+  if (amount === null) return Number.NaN
+  return direction === "expense" ? -Math.abs(amount) : Math.abs(amount)
 }
 
 export function CreateTransactionDialog() {
@@ -63,6 +73,7 @@ export function CreateTransactionDialog() {
 function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
   const { t } = useTranslation()
   const [amountText, setAmountText] = useState("")
+  const [direction, setDirection] = useState<Direction>("expense")
   const queryClient = useQueryClient()
   const { data: accounts = [] } = useQuery(accountsQuery)
   const form = useForm<TransactionFormValues, unknown, ManualTransaction>({
@@ -80,9 +91,10 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
     onError: (error) => toast.error(error.message),
   })
 
-  function updateAmount(text: string) {
+  function updateAmount(text: string, nextDirection: Direction) {
     setAmountText(text)
-    form.setValue("amount", text === "" ? Number.NaN : Number(text), { shouldValidate: form.formState.isSubmitted })
+    setDirection(nextDirection)
+    form.setValue("amount", signedAmount(text, nextDirection), { shouldValidate: form.formState.isSubmitted })
   }
 
   return (
@@ -101,7 +113,29 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
             </FormItem>
           )}
         />
+        <DirectionToggle value={direction} onChange={(next) => updateAmount(amountText, next)} />
         <div className="grid gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="amount"
+            render={() => (
+              <FormItem>
+                <FormLabel>{t("transactionsPage.create.amount")}</FormLabel>
+                <FormControl>
+                  <Input
+                    type="text"
+                    inputMode="decimal"
+                    autoComplete="off"
+                    placeholder={t("transactionsPage.create.amountPlaceholder")}
+                    value={amountText}
+                    onChange={(event) => updateAmount(event.target.value, direction)}
+                  />
+                </FormControl>
+                <FormDescription>{t("transactionsPage.create.amountHint")}</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="bookingDate"
@@ -111,27 +145,6 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
                 <FormControl>
                   <Input type="date" {...field} />
                 </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="amount"
-            render={() => (
-              <FormItem>
-                <FormLabel>{t("transactionsPage.create.amount")}</FormLabel>
-                <FormControl>
-                  <Input
-                    type="number"
-                    inputMode="decimal"
-                    step="0.01"
-                    placeholder="-25.40"
-                    value={amountText}
-                    onChange={(event) => updateAmount(event.target.value)}
-                  />
-                </FormControl>
-                <FormDescription>{t("transactionsPage.create.amountHint")}</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -187,5 +200,25 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
         </DialogFooter>
       </form>
     </Form>
+  )
+}
+
+function DirectionToggle({ value, onChange }: { value: Direction; onChange: (value: Direction) => void }) {
+  const { t } = useTranslation()
+  return (
+    <ToggleGroup
+      type="single"
+      variant="outline"
+      aria-label={t("transactionsPage.create.direction")}
+      value={value}
+      onValueChange={(next) => next !== "" && onChange(next as Direction)}
+      className="w-full"
+    >
+      {DIRECTIONS.map((direction) => (
+        <ToggleGroupItem key={direction} value={direction} className="flex-1">
+          {t(`transactionsPage.create.${direction}`)}
+        </ToggleGroupItem>
+      ))}
+    </ToggleGroup>
   )
 }

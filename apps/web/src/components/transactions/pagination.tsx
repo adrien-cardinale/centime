@@ -11,7 +11,7 @@ type PaginationProps = {
 export function Pagination({ page, pageCount, onPageChange }: PaginationProps) {
   const { t } = useTranslation()
   return (
-    <div className="flex items-center justify-between gap-4 border-t px-4 py-3 sm:px-6">
+    <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t px-4 py-3 sm:px-6">
       <p className="text-sm text-muted-foreground">
         {t("transactionsPage.pagination.pageOf", { page, pageCount })}
       </p>
@@ -27,10 +27,10 @@ export function Pagination({ page, pageCount, onPageChange }: PaginationProps) {
         </Button>
         <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
           <ChevronLeft />
-          {t("transactionsPage.pagination.previous")}
+          <span className="max-sm:sr-only">{t("transactionsPage.pagination.previous")}</span>
         </Button>
         <Button variant="outline" size="sm" disabled={page >= pageCount} onClick={() => onPageChange(page + 1)}>
-          {t("transactionsPage.pagination.next")}
+          <span className="max-sm:sr-only">{t("transactionsPage.pagination.next")}</span>
           <ChevronRight />
         </Button>
         <Button

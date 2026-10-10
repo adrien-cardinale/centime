@@ -6,7 +6,7 @@ export function LanguageSelect() {
   const { t, i18n } = useTranslation()
   return (
     <Select value={i18n.language} onValueChange={(language) => void setLanguage(language as Language)}>
-      <SelectTrigger className="w-48" aria-label={t("language.title")}>
+      <SelectTrigger className="w-full sm:w-48" aria-label={t("language.title")}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent>

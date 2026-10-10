@@ -1,19 +1,19 @@
-import { roundCents } from "@centime/core"
 import { Link } from "@tanstack/react-router"
-import { List, Pencil, Trash2 } from "lucide-react"
-import { Fragment, useState } from "react"
+import { List, Trash2 } from "lucide-react"
+import { Fragment, type MouseEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { BudgetOverviewItem, BudgetTotals, Theme } from "@/lib/api"
+import { useIsMobile } from "@/hooks/use-mobile"
+import type { BudgetOverviewItem, Theme } from "@/lib/api"
 import { BUDGET_CURRENCY, budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
-import i18n from "@/i18n"
-import { formatAmount } from "@/lib/format"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
+import { BudgetCardList } from "./budget-card-list"
+import { budgetDetails, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./budget-groups"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
 type BudgetsTableProps = {
@@ -22,36 +22,12 @@ type BudgetsTableProps = {
   onEdit: (budget: BudgetOverviewItem) => void
 }
 
-type ThemeBudgets = { theme: Theme | null; budgets: BudgetOverviewItem[]; totals: BudgetTotals }
-
-function money(amount: number): string {
-  return formatAmount(amount, BUDGET_CURRENCY)
+export function BudgetsTable(props: BudgetsTableProps) {
+  const isMobile = useIsMobile()
+  return isMobile ? <BudgetCardList {...props} /> : <DesktopBudgetsTable {...props} />
 }
 
-function signedMoney(amount: number): string {
-  return amount > 0 ? `+${money(amount)}` : money(amount)
-}
-
-function sumTotals(budgets: BudgetOverviewItem[]): BudgetTotals {
-  const sum = (pick: (budget: BudgetOverviewItem) => number) =>
-    roundCents(budgets.reduce((total, budget) => total + pick(budget), 0))
-  return {
-    available: sum((budget) => budget.status.available),
-    spent: sum((budget) => budget.status.spent),
-    remaining: sum((budget) => budget.status.remaining),
-  }
-}
-
-function groupByTheme(budgets: BudgetOverviewItem[], themes: Theme[]): ThemeBudgets[] {
-  const known = new Set(themes.map((theme) => theme.id))
-  const groups = [
-    ...themes.map((theme) => ({ theme, budgets: budgets.filter((budget) => budget.themeId === theme.id) })),
-    { theme: null, budgets: budgets.filter((budget) => budget.themeId === null || !known.has(budget.themeId)) },
-  ]
-  return groups.filter((group) => group.budgets.length > 0).map((group) => ({ ...group, totals: sumTotals(group.budgets) }))
-}
-
-export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
+function DesktopBudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
   const { t } = useTranslation()
   return (
     <Table>
@@ -69,22 +45,7 @@ export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
       <TableBody>
         {groupByTheme(budgets, themes).map((group) => (
           <Fragment key={group.theme?.id ?? "none"}>
-            <TableRow className="bg-muted/40 hover:bg-muted/40">
-              <TableCell colSpan={2} className="pl-6 font-semibold">
-                {group.theme?.name ?? t("budgets.table.noTheme")}
-              </TableCell>
-              <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
-                {money(group.totals.available)}
-              </TableCell>
-              <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
-                {money(group.totals.spent)}
-              </TableCell>
-              <TableCell />
-              <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
-                {money(group.totals.remaining)}
-              </TableCell>
-              <TableCell className="pr-6" />
-            </TableRow>
+            <ThemeRow group={group} />
             {group.budgets.map((budget) => (
               <BudgetRow key={budget.id} budget={budget} onEdit={onEdit} />
             ))}
@@ -95,27 +56,50 @@ export function BudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
   )
 }
 
-function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
-  return [
-    status.carry !== 0 && i18n.t("budgets.table.carry", { amount: signedMoney(status.carry) }),
-    status.pending > 0 && i18n.t("budgets.table.pending", { amount: money(status.pending) }),
-    status.projected !== null && status.projected !== 0 && i18n.t("budgets.table.projected", { amount: money(status.projected) }),
-  ].filter((detail) => detail !== false)
+function ThemeRow({ group }: { group: ThemeBudgets }) {
+  const { t } = useTranslation()
+  return (
+    <TableRow className="bg-muted/40 hover:bg-muted/40">
+      <TableCell colSpan={2} className="pl-6 font-semibold">
+        {group.theme?.name ?? t("budgets.table.noTheme")}
+      </TableCell>
+      <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
+        {money(group.totals.available)}
+      </TableCell>
+      <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
+        {money(group.totals.spent)}
+      </TableCell>
+      <TableCell />
+      <TableCell className="text-right text-xs text-muted-foreground tabular-nums">
+        {money(group.totals.remaining)}
+      </TableCell>
+      <TableCell className="pr-6" />
+    </TableRow>
+  )
 }
 
 function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (budget: BudgetOverviewItem) => void }) {
   const { t } = useTranslation()
-  const [confirmOpen, setConfirmOpen] = useState(false)
   const { status } = budget
-  const { range } = status
   const details = budgetDetails(status)
+  const edit = (event: MouseEvent) => {
+    event.stopPropagation()
+    onEdit(budget)
+  }
   return (
     <TableRow className="cursor-pointer" onClick={() => onEdit(budget)}>
       <TableCell className="max-w-56 pl-6">
-        <CategoryBadge name={budget.categoryName} color={budget.categoryColor} />
-        {details.length > 0 && <p className="mt-1 truncate text-xs text-muted-foreground">{details.join(" · ")}</p>}
+        <button
+          type="button"
+          onClick={edit}
+          aria-label={t("budgets.table.edit", { name: budget.categoryName })}
+          className="max-w-full rounded-md outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
+        >
+          <CategoryBadge name={budget.categoryName} color={budget.categoryColor} />
+        </button>
+        {details.length > 0 && <p className="mt-1 text-xs whitespace-normal text-muted-foreground">{details.join(" · ")}</p>}
       </TableCell>
-      <TableCell className="text-muted-foreground">{range.label}</TableCell>
+      <TableCell className="text-muted-foreground">{status.range.label}</TableCell>
       <TableCell className="text-right">
         <Amount amount={status.available} currency={BUDGET_CURRENCY} />
       </TableCell>
@@ -140,26 +124,31 @@ function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (bu
         </span>
       </TableCell>
       <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
-        <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" aria-label={t("budgets.table.viewTransactions", { name: budget.categoryName })} asChild>
-            <Link to="/transactions" search={{ categoryId: budget.categoryId, from: range.start, to: range.end }}>
-              <List />
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" aria-label={t("budgets.table.edit", { name: budget.categoryName })} onClick={() => onEdit(budget)}>
-            <Pencil />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("budgets.table.delete", { name: budget.categoryName })}
-            onClick={() => setConfirmOpen(true)}
-          >
-            <Trash2 />
-          </Button>
-          <DeleteBudgetDialog budget={budget} open={confirmOpen} onOpenChange={setConfirmOpen} />
-        </div>
+        <BudgetRowActions budget={budget} />
       </TableCell>
     </TableRow>
+  )
+}
+
+function BudgetRowActions({ budget }: { budget: BudgetOverviewItem }) {
+  const { t } = useTranslation()
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  return (
+    <div className="flex justify-end gap-1">
+      <Button variant="ghost" size="icon" aria-label={t("budgets.table.viewTransactions", { name: budget.categoryName })} asChild>
+        <Link to="/transactions" search={transactionsSearchOf(budget)}>
+          <List />
+        </Link>
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={t("budgets.table.delete", { name: budget.categoryName })}
+        onClick={() => setConfirmOpen(true)}
+      >
+        <Trash2 />
+      </Button>
+      <DeleteBudgetDialog budget={budget} open={confirmOpen} onOpenChange={setConfirmOpen} />
+    </div>
   )
 }

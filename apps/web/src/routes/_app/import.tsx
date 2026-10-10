@@ -12,6 +12,7 @@ import i18n from "@/i18n"
 import { accountsQuery, csvProfilesQuery, importsQuery } from "@/lib/queries"
 
 const MAX_FILE_BYTES = 10 * 1024 * 1024
+const SUPPORTED_EXTENSION = /\.(csv|xml)$/i
 
 export const Route = createFileRoute("/_app/import")({
   loader: ({ context }) =>
@@ -30,6 +31,10 @@ function ImportPage() {
   const [selected, setSelected] = useState<SelectedFile | null>(null)
 
   const selectFile = (file: File) => {
+    if (!SUPPORTED_EXTENSION.test(file.name)) {
+      toast.error(i18n.t("importPage.unsupportedFile"))
+      return
+    }
     if (file.size > MAX_FILE_BYTES) {
       toast.error(i18n.t("importPage.fileTooLarge"))
       return

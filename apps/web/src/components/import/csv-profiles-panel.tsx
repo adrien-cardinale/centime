@@ -65,23 +65,25 @@ function CsvProfilesTable({ profiles }: { profiles: CsvProfile[] }) {
       <TableHeader>
         <TableRow>
           <TableHead className="pl-6">{t("csvProfiles.panel.columns.name")}</TableHead>
-          <TableHead>{t("csvProfiles.panel.columns.type")}</TableHead>
-          <TableHead>{t("csvProfiles.panel.columns.encoding")}</TableHead>
-          <TableHead>{t("csvProfiles.panel.columns.delimiter")}</TableHead>
-          <TableHead>{t("csvProfiles.panel.columns.dateFormat")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("csvProfiles.panel.columns.type")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("csvProfiles.panel.columns.encoding")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("csvProfiles.panel.columns.delimiter")}</TableHead>
+          <TableHead className="hidden sm:table-cell">{t("csvProfiles.panel.columns.dateFormat")}</TableHead>
           <TableHead className="pr-6 text-right">{t("csvProfiles.panel.columns.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {profiles.map((profile) => (
           <TableRow key={profile.id}>
-            <TableCell className="pl-6 font-medium">{profile.name}</TableCell>
-            <TableCell>
+            <TableCell className="max-w-48 truncate pl-6 font-medium sm:max-w-none" title={profile.name}>
+              {profile.name}
+            </TableCell>
+            <TableCell className="hidden sm:table-cell">
               <Badge variant="secondary">{accountKindLabels[profile.accountKind]}</Badge>
             </TableCell>
-            <TableCell>{csvEncodingLabels[profile.encoding]}</TableCell>
-            <TableCell>{csvDelimiterLabels[profile.delimiter]}</TableCell>
-            <TableCell className="font-mono text-xs">{profile.dateFormat}</TableCell>
+            <TableCell className="hidden sm:table-cell">{csvEncodingLabels[profile.encoding]}</TableCell>
+            <TableCell className="hidden sm:table-cell">{csvDelimiterLabels[profile.delimiter]}</TableCell>
+            <TableCell className="hidden font-mono text-xs sm:table-cell">{profile.dateFormat}</TableCell>
             <TableCell className="pr-6">
               <div className="flex justify-end gap-1">
                 <CsvProfileDialog

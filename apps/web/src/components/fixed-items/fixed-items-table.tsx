@@ -1,17 +1,19 @@
 import type { PeriodRange } from "@centime/core"
-import { Eye, Pencil } from "lucide-react"
+import { Pencil } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import type { FixedItem, FixedItemOverview, OccurrenceReport } from "@/lib/api"
-import { dueDescription, FIXED_ITEM_CURRENCY, occurrenceIn } from "@/lib/fixed-items"
-import { formatDate } from "@/lib/format"
+import { useIsMobile } from "@/hooks/use-mobile"
+import type { FixedItem, FixedItemOverview } from "@/lib/api"
+import { dueDescription, FIXED_ITEM_CURRENCY } from "@/lib/fixed-items"
 import { Deviation } from "./deviation"
 import { DeleteFixedItemButton } from "./delete-fixed-item-button"
+import { FixedItemCards } from "./fixed-item-cards"
 import { FixedItemDialog } from "./fixed-item-dialog"
-import { OccurrenceStatusBadge } from "./occurrence-status-badge"
+import { MonthDue } from "./month-due"
+import { type MonthRow, monthRows } from "./month-rows"
 
 type FixedItemsTableProps = {
   items: FixedItem[]
@@ -21,31 +23,23 @@ type FixedItemsTableProps = {
   onView: (id: string) => void
 }
 
-type MonthRow = {
-  item: FixedItem
-  occurrence: OccurrenceReport | undefined
-  next: OccurrenceReport | null
-}
-
-function byDueDate(left: MonthRow, right: MonthRow): number {
-  if (left.occurrence && right.occurrence) return left.occurrence.dueDate.localeCompare(right.occurrence.dueDate)
-  return Number(right.occurrence !== undefined) - Number(left.occurrence !== undefined)
-}
-
-function monthRows(items: FixedItem[], overviews: Map<string, FixedItemOverview>, month: PeriodRange): MonthRow[] {
-  return items
-    .map((item) => {
-      const overview = overviews.get(item.id)
-      return { item, occurrence: occurrenceIn(overview?.occurrences ?? [], month), next: overview?.nextOccurrence ?? null }
-    })
-    .sort(byDueDate)
-}
-
 export function FixedItemsTable({ items, overviews, month, emptyMessage, onView }: FixedItemsTableProps) {
-  const { t } = useTranslation()
+  const isMobile = useIsMobile()
   if (items.length === 0) {
     return <p className="p-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>
   }
+  const rows = monthRows(items, overviews, month)
+  if (isMobile) return <FixedItemCards rows={rows} onView={onView} />
+  return <DesktopTable rows={rows} onView={onView} />
+}
+
+type RowsProps = {
+  rows: MonthRow[]
+  onView: (id: string) => void
+}
+
+function DesktopTable({ rows, onView }: RowsProps) {
+  const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
@@ -60,12 +54,16 @@ export function FixedItemsTable({ items, overviews, month, emptyMessage, onView 
         </TableRow>
       </TableHeader>
       <TableBody>
-        {monthRows(items, overviews, month).map((row) => (
+        {rows.map((row) => (
           <FixedItemRow key={row.item.id} row={row} onView={onView} />
         ))}
       </TableBody>
     </Table>
   )
+}
+
+function isActivationKey(key: string): boolean {
+  return key === "Enter" || key === " "
 }
 
 type FixedItemRowProps = {
@@ -75,9 +73,14 @@ type FixedItemRowProps = {
 
 function FixedItemRow({ row, onView }: FixedItemRowProps) {
   const { t } = useTranslation()
-  const { item, occurrence, next } = row
+  const { item, occurrence } = row
   return (
-    <TableRow className="cursor-pointer" onClick={() => onView(item.id)}>
+    <TableRow
+      tabIndex={0}
+      className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none"
+      onClick={() => onView(item.id)}
+      onKeyDown={(event) => event.target === event.currentTarget && isActivationKey(event.key) && onView(item.id)}
+    >
       <TableCell className="max-w-56 truncate pl-6 font-medium" title={item.name}>
         {item.name}
       </TableCell>
@@ -93,16 +96,7 @@ function FixedItemRow({ row, onView }: FixedItemRowProps) {
         <Amount amount={item.expectedAmount} currency={FIXED_ITEM_CURRENCY} />
       </TableCell>
       <TableCell>
-        {occurrence ? (
-          <div className="flex items-center gap-2">
-            <span className="tabular-nums">{formatDate(occurrence.dueDate)}</span>
-            <OccurrenceStatusBadge status={occurrence.status} />
-          </div>
-        ) : (
-          <span className="text-muted-foreground">
-            {next ? t("fixedItemsUi.table.next", { date: formatDate(next.dueDate) }) : t("fixedItemsUi.table.noDue")}
-          </span>
-        )}
+        <MonthDue row={row} />
       </TableCell>
       <TableCell className="text-right">
         {occurrence && occurrence.actualAmount !== null ? (
@@ -116,9 +110,6 @@ function FixedItemRow({ row, onView }: FixedItemRowProps) {
       </TableCell>
       <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
         <div className="flex justify-end gap-1">
-          <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.table.view", { name: item.name })} onClick={() => onView(item.id)}>
-            <Eye />
-          </Button>
           <FixedItemDialog
             item={item}
             trigger={

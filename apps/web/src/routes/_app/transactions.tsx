@@ -13,11 +13,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useDebouncedValue } from "@/hooks/use-debounced-value"
+import { useIsMobile } from "@/hooks/use-mobile"
 import type { TransactionsPage as TransactionsPageData } from "@/lib/api"
 import { isIsoDate } from "@/lib/budgets"
 import { accountsQuery, categoriesQuery, fixedItemsQuery, transactionsQuery } from "@/lib/queries"
+import { cn } from "@/lib/utils"
 
-const PAGE_SIZE = 50
+const DESKTOP_PAGE_SIZE = 50
+const MOBILE_PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
 type UrlFilterKey = "fixedItemId" | "categoryId" | "themeId" | "from" | "to"
 type LocalFilterValues = Omit<TransactionFilterValues, UrlFilterKey>
@@ -95,9 +98,11 @@ function TransactionsPage() {
   const { t } = useTranslation()
   const urlFilters = Route.useSearch()
   const navigate = Route.useNavigate()
+  const isMobile = useIsMobile()
+  const pageSize = isMobile ? MOBILE_PAGE_SIZE : DESKTOP_PAGE_SIZE
   const searchKey = searchKeyOf(urlFilters)
   const [localFilters, setLocalFilters] = useState(EMPTY_FILTERS)
-  const { page, setPage, selectedIds, setSelectedIds } = usePageState(searchKey)
+  const { page, setPage, selectedIds, setSelectedIds } = usePageState(`${searchKey}|${pageSize}`)
   const filters: TransactionFilterValues = {
     ...localFilters,
     fixedItemId: urlFilters.fixedItemId,
@@ -108,7 +113,7 @@ function TransactionsPage() {
   }
   const search = useDebouncedValue(filters.search, SEARCH_DEBOUNCE_MS)
   const queryFilters = { ...filters, search }
-  const { data, isPending, error } = useQuery(transactionsQuery({ ...queryFilters, page, pageSize: PAGE_SIZE }))
+  const { data, isPending, error } = useQuery(transactionsQuery({ ...queryFilters, page, pageSize }))
 
   const clearSelection = () => setSelectedIds(new Set())
 
@@ -120,9 +125,10 @@ function TransactionsPage() {
   }
 
   const changePage = (next: number) => setPage(next)
+  const hasSelection = selectedIds.size > 0
 
   return (
-    <div className="space-y-6">
+    <div className={cn("space-y-6", isMobile && hasSelection && "pb-16")}>
       <PageHeader
         title={t("nav.transactions")}
         description={t("transactionsPage.description")}
@@ -133,7 +139,7 @@ function TransactionsPage() {
         onChange={changeFilters}
         actions={<ExportButton filters={queryFilters} disabled={!data || data.total === 0} />}
       />
-      {selectedIds.size > 0 && <BulkActionsBar selectedIds={[...selectedIds]} onClear={clearSelection} />}
+      {hasSelection && <BulkActionsBar selectedIds={[...selectedIds]} onClear={clearSelection} />}
       <Card className="py-0">
         <CardContent className="px-0">
           {isPending && <TransactionsSkeleton />}

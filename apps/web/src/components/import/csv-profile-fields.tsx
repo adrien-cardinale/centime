@@ -104,11 +104,11 @@ export function ColumnField({ control, name, label, columns, optional = false }:
                   <SelectValue placeholder={optional ? t("csvProfiles.fields.none") : t("csvProfiles.fields.chooseColumn")} />
                 </SelectTrigger>
               </FormControl>
-              <SelectContent>
+              <SelectContent className="max-w-[calc(100vw-2rem)]">
                 {optional && <SelectItem value={NO_COLUMN}>{t("csvProfiles.fields.none")}</SelectItem>}
                 {columns.map((column) => (
                   <SelectItem key={column.name} value={column.name}>
-                    {column.name}
+                    <span className="min-w-0 truncate">{column.name}</span>
                     {column.sample && <span className="max-w-32 truncate text-muted-foreground">{column.sample}</span>}
                   </SelectItem>
                 ))}

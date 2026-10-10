@@ -81,23 +81,23 @@ function BudgetsPage() {
         title={t("budgetsPage.title")}
         description={t("budgetsPage.description")}
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
             <FixedItemDialog
               trigger={
-                <Button variant="outline">
+                <Button variant="outline" size="sm" className="grow sm:h-9 sm:grow-0 sm:px-4">
                   <Plus />
                   {t("budgetsPage.newFixedItem")}
                 </Button>
               }
             />
-            <Button onClick={() => openDialog({})}>
+            <Button size="sm" className="grow sm:h-9 sm:grow-0 sm:px-4" onClick={() => openDialog({})}>
               <Plus />
               {t("budgetsPage.newBudget")}
             </Button>
           </div>
         }
       />
-      <div className="sticky top-0 z-10 -mx-4 -mt-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-[5] -mx-4 -mt-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
         <PeriodNavigator date={date} onChange={changeDate} />
       </div>
       <LatestDataNotice month={month} onSelect={changeDate} />
@@ -237,18 +237,15 @@ function EmptyEnvelopes({ onCreate }: { onCreate: () => void }) {
 function PlanSkeleton() {
   return (
     <div className="space-y-6">
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
-        <Skeleton className="h-28" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+        <Skeleton className="h-24 sm:h-28" />
+        <Skeleton className="h-24 sm:h-28" />
+        <Skeleton className="h-24 sm:h-28" />
+        <Skeleton className="h-24 sm:h-28" />
       </div>
       <Skeleton className="h-48" />
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
-        <Skeleton className="h-64" />
-      </div>
+      <Skeleton className="h-64" />
+      <Skeleton className="h-64" />
     </div>
   )
 }

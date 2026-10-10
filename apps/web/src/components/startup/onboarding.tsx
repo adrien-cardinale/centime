@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { completeOnboarding } from "@/lib/crypto/onboarding"
 import { formatMasterKey, generateMasterKey, parseMasterKey } from "@/lib/crypto/master-key"
 import { isAndroid, isTauri } from "@/lib/runtime"
@@ -25,6 +26,11 @@ function ServerField({ value, onChange }: { value: string; onChange: (value: str
       <Label htmlFor="server-url">{t("boot.serverLabel")}</Label>
       <Input
         id="server-url"
+        type="url"
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         placeholder="https://centime.example.ch"
@@ -36,6 +42,9 @@ function ServerField({ value, onChange }: { value: string; onChange: (value: str
 }
 
 type StepProps = { onDone: () => void; onBack: () => void }
+
+const STEP_FOOTER_CLASS = "flex-col-reverse gap-2 sm:flex-row"
+const STEP_BUTTON_CLASS = "w-full sm:w-auto"
 
 function CreateKeyStep({ onDone, onBack }: StepProps) {
   const { t } = useTranslation()
@@ -79,10 +88,13 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
             {t("boot.warningDescription")}
           </AlertDescription>
         </Alert>
-        <div className="flex items-start gap-2 rounded-md border bg-muted/40 p-3">
-          <p className="flex-1 font-mono text-sm leading-relaxed break-all select-all">{phrase}</p>
-          <Button variant="outline" size="icon" onClick={() => void copy()} aria-label={t("boot.copyKey")}>
+        <div className="space-y-2">
+          <p className="rounded-md border bg-muted/40 p-3 font-mono text-sm leading-relaxed break-words select-all">
+            {phrase}
+          </p>
+          <Button variant="outline" className="w-full" onClick={() => void copy()} aria-label={t("boot.copyKey")}>
             <Copy />
+            {t("common.copy")}
           </Button>
         </div>
         <ServerField value={serverUrl} onChange={setServerUrlValue} />
@@ -91,11 +103,11 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
           <Label htmlFor="saved">{t("boot.savedConfirm")}</Label>
         </div>
       </CardContent>
-      <CardFooter className="gap-2">
-        <Button variant="outline" onClick={onBack} disabled={pending}>
+      <CardFooter className={STEP_FOOTER_CLASS}>
+        <Button variant="outline" className={STEP_BUTTON_CLASS} onClick={onBack} disabled={pending}>
           {t("boot.back")}
         </Button>
-        <Button onClick={() => void submit()} disabled={!saved || phrase === "" || pending}>
+        <Button className={STEP_BUTTON_CLASS} onClick={() => void submit()} disabled={!saved || phrase === "" || pending}>
           <Check />
           {t("boot.continue")}
         </Button>
@@ -109,6 +121,7 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
   const [phrase, setPhrase] = useState("")
   const [serverUrl, setServerUrlValue] = useState("")
   const [pending, setPending] = useState(false)
+  const isMobile = useIsMobile()
 
   const submit = async () => {
     const url = parseServerUrl(serverUrl)
@@ -134,18 +147,18 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
             onChange={(event) => setPhrase(event.target.value)}
             className="font-mono"
             rows={3}
-            autoFocus
+            autoFocus={!isMobile && !isAndroid()}
             spellCheck={false}
             autoCapitalize="characters"
           />
         </div>
         <ServerField value={serverUrl} onChange={setServerUrlValue} />
       </CardContent>
-      <CardFooter className="gap-2">
-        <Button variant="outline" onClick={onBack} disabled={pending}>
+      <CardFooter className={STEP_FOOTER_CLASS}>
+        <Button variant="outline" className={STEP_BUTTON_CLASS} onClick={onBack} disabled={pending}>
           {t("boot.back")}
         </Button>
-        <Button onClick={() => void submit()} disabled={phrase.trim() === "" || pending}>
+        <Button className={STEP_BUTTON_CLASS} onClick={() => void submit()} disabled={phrase.trim() === "" || pending}>
           <Check />
           {t("boot.restore")}
         </Button>
@@ -160,7 +173,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const back = () => setMode("choose")
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-muted/40 p-6">
+    <main className="flex min-h-svh items-start justify-center bg-muted/40 px-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-[max(1.5rem,env(safe-area-inset-bottom))] sm:items-center sm:px-6">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="text-xl">centime</CardTitle>
@@ -173,8 +186,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             {/* Sur Android, le QR code d'un appareil déjà configuré évite de saisir la clé à la main. */}
             {isAndroid() && (
               <>
-                <ScanLinkButton onDone={onDone} />
                 <p className="text-sm text-muted-foreground">{t("boot.scan.hint")}</p>
+                <ScanLinkButton onDone={onDone} />
               </>
             )}
             <Button variant={isAndroid() ? "outline" : "default"} onClick={() => setMode("create")}>
@@ -183,7 +196,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             </Button>
             <Button variant="outline" onClick={() => setMode("restore")}>
               <KeyRound />
-              {t("boot.haveKey")}
+              {isAndroid() ? t("boot.enterKeyManually") : t("boot.haveKey")}
             </Button>
           </CardContent>
         )}

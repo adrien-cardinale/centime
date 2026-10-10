@@ -19,7 +19,7 @@ export function SummaryCard({ title, to, isEmpty, emptyMessage, children }: Summ
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardAction>
-          <Button variant="link" size="sm" className="h-auto px-0" asChild>
+          <Button variant="link" size="sm" className="-mr-2 h-auto px-2" asChild>
             <Link to={to}>{t("dashboardPage.seeAll")}</Link>
           </Button>
         </CardAction>

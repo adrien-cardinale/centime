@@ -52,7 +52,7 @@ export function ImportOptions({
         <div className="space-y-2">
           <Label htmlFor="import-account">{t("importWorkspace.options.destinationAccount")}</Label>
           <AccountSelect id="import-account" value={accountId} onChange={onAccountChange} />
-          {!accountId && <p className="text-xs text-destructive">{t("importWorkspace.options.accountMissing")}</p>}
+          {!accountId && <p className="text-sm text-destructive">{t("importWorkspace.options.accountMissing")}</p>}
         </div>
       )}
     </div>
@@ -110,7 +110,7 @@ function ProfileSelect({ file, value, detected, onChange }: ProfileSelectProps) 
           }
         />
       </div>
-      {!detected && <p className="text-xs text-destructive">{t("importWorkspace.options.profileUnrecognized")}</p>}
+      {!detected && <p className="text-sm text-destructive">{t("importWorkspace.options.profileUnrecognized")}</p>}
     </div>
   )
 }

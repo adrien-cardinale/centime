@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { ChevronRight, Pencil, Plus, Trash2 } from "lucide-react"
+import { ChevronRight, MoreHorizontal, Pencil, Plus, RefreshCw, Trash2 } from "lucide-react"
 import { useState } from "react"
 import { toast } from "sonner"
 import {
@@ -15,10 +15,17 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { ApplyRulesButton } from "@/components/rules/apply-rules-button"
+import { ApplyRulesButton, ApplyRulesDialog } from "@/components/rules/apply-rules-button"
 import { RuleList } from "@/components/rules/category-rules"
+import { useIsMobile } from "@/hooks/use-mobile"
 import { api, type Category, type Rule, type Theme } from "@/lib/api"
 import i18n from "@/i18n"
 import { type CategoryGroup, groupCategoriesByTheme } from "@/lib/category-groups"
@@ -41,25 +48,7 @@ export function CategoriesPanel() {
         <p className="text-sm text-muted-foreground">
           {t("categories.intro")}
         </p>
-        <div className="flex flex-wrap gap-2">
-          <ApplyRulesButton />
-          <ThemeDialog
-            trigger={
-              <Button variant="outline">
-                <Plus />
-                {t("categories.newTheme")}
-              </Button>
-            }
-          />
-          <CategoryDialog
-            trigger={
-              <Button>
-                <Plus />
-                {t("categories.newCategory")}
-              </Button>
-            }
-          />
-        </div>
+        <CategoriesActions />
       </div>
       <Card className="py-0">
         <CardContent className="px-0">
@@ -69,6 +58,72 @@ export function CategoriesPanel() {
         </CardContent>
       </Card>
       {categories && <OtherRules rules={rules} categories={categories} />}
+    </div>
+  )
+}
+
+function NewCategoryButton({ className }: { className?: string }) {
+  const { t } = useTranslation()
+  return (
+    <CategoryDialog
+      trigger={
+        <Button className={className}>
+          <Plus />
+          {t("categories.newCategory")}
+        </Button>
+      }
+    />
+  )
+}
+
+function CategoriesActions() {
+  const { t } = useTranslation()
+  const isMobile = useIsMobile()
+  if (isMobile) return <MobileCategoriesActions />
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <ApplyRulesButton />
+      <ThemeDialog
+        trigger={
+          <Button variant="outline">
+            <Plus />
+            {t("categories.newTheme")}
+          </Button>
+        }
+      />
+      <NewCategoryButton />
+    </div>
+  )
+}
+
+function MobileCategoriesActions() {
+  const { t } = useTranslation()
+  const [applyOpen, setApplyOpen] = useState(false)
+  const [themeOpen, setThemeOpen] = useState(false)
+
+  return (
+    <div className="flex w-full gap-2">
+      <NewCategoryButton className="flex-1" />
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" size="icon" aria-label={t("categories.moreActions")}>
+            <MoreHorizontal />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onSelect={() => setApplyOpen(true)}>
+            <RefreshCw />
+            {t("rules.apply.button")}
+          </DropdownMenuItem>
+          <DropdownMenuItem onSelect={() => setThemeOpen(true)}>
+            <Plus />
+            {t("categories.newTheme")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      <ApplyRulesDialog open={applyOpen} onOpenChange={setApplyOpen} />
+      {themeOpen && <ThemeDialog open onOpenChange={setThemeOpen} />}
     </div>
   )
 }
@@ -120,7 +175,7 @@ function CategoriesTable({
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">{t("categories.columns.name")}</TableHead>
+          <TableHead className="pl-4 sm:pl-6">{t("categories.columns.name")}</TableHead>
           <TableHead className="text-right">{t("categories.columns.transactions")}</TableHead>
           <TableHead className="pr-6 text-right">{t("categories.columns.actions")}</TableHead>
         </TableRow>
@@ -150,10 +205,10 @@ function CategoryGroupRows({ group, rulesByCategory, categoriesById }: CategoryG
   return (
     <>
       <TableRow className="bg-muted/40 hover:bg-muted/40">
-        <TableCell className="pl-6 font-semibold">
+        <TableCell className="w-full max-w-0 pl-4 font-semibold sm:pl-6">
           <span className="flex items-center gap-2">
-            {group.theme && <ColorDot color={group.theme.color} className="size-3" />}
-            {group.theme?.name ?? t("categories.noTheme")}
+            {group.theme && <ColorDot color={group.theme.color} className="size-3 shrink-0" />}
+            <span className="truncate">{group.theme?.name ?? t("categories.noTheme")}</span>
           </span>
         </TableCell>
         <TableCell className="text-right text-muted-foreground tabular-nums">
@@ -201,19 +256,23 @@ function CategoryRows({
   return (
     <>
         <TableRow>
-          <TableCell className="pl-8 font-medium">
+          <TableCell className="w-full max-w-0 pl-4 font-medium sm:pl-8">
             <button
               type="button"
               aria-expanded={open}
               onClick={() => setOpen(!open)}
-              className="flex items-center gap-2 rounded-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+              className="flex min-h-11 w-full items-center gap-2 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
             >
-                <ChevronRight className={cn("size-4 text-muted-foreground transition-transform", open && "rotate-90")} />
-                <ColorDot color={category.color} className="size-3" />
-                {category.name}
-                <span className="text-xs font-normal text-muted-foreground">
-                  {rules.length === 0 ? "" : t("categories.ruleCount", { count: rules.length })}
-                </span>
+              <ChevronRight className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")} />
+              <ColorDot color={category.color} className="size-3 shrink-0" />
+              <span className="min-w-0">
+                <span className="block truncate">{category.name}</span>
+                {rules.length > 0 && (
+                  <span className="block text-xs font-normal text-muted-foreground">
+                    {t("categories.ruleCount", { count: rules.length })}
+                  </span>
+                )}
+              </span>
             </button>
           </TableCell>
           <TableCell className="text-right tabular-nums">{category.transactionCount}</TableCell>
@@ -233,7 +292,7 @@ function CategoryRows({
         </TableRow>
         {open && (
           <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={3} className="pr-6 pl-14">
+            <TableCell colSpan={3} className="pr-4 pl-4 whitespace-normal sm:pr-6 sm:pl-14">
               <RuleList rules={rules} categoriesById={categoriesById} categoryId={category.id} />
             </TableCell>
           </TableRow>

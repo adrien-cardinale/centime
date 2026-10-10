@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -111,7 +112,7 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
   return (
     <Dialog open={isOpen} onOpenChange={changeOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="max-h-[90dvh] overflow-y-auto sm:max-w-2xl">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>{rule ? t("rules.dialog.editTitle") : t("rules.dialog.newTitle")}</DialogTitle>
           <DialogDescription>
@@ -123,7 +124,12 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
             <MatcherFields control={form.control} />
             <TargetFields control={form.control} />
             <RuleTester tester={tester} getMatcher={() => form.getValues()} />
-            <DialogFooter>
+            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>
@@ -146,7 +152,14 @@ function MatcherFields({ control }: { control: RuleControl }) {
           <FormItem className="sm:col-span-2">
             <FormLabel>{t("rules.dialog.pattern")}</FormLabel>
             <FormControl>
-              <Input placeholder="Migros" className="font-mono" {...field} />
+              <Input
+                placeholder="Migros"
+                className="font-mono"
+                autoCapitalize="none"
+                autoCorrect="off"
+                spellCheck={false}
+                {...field}
+              />
             </FormControl>
             <FormDescription>{t("rules.dialog.patternHint")}</FormDescription>
             <FormMessage />
@@ -213,6 +226,7 @@ function TargetFields({ control }: { control: RuleControl }) {
             <FormControl>
               <Input
                 type="number"
+                inputMode="numeric"
                 step={1}
                 name={field.name}
                 ref={field.ref}

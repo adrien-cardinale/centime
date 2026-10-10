@@ -71,7 +71,12 @@ createRoot(rootElement).render(
           <AppBoot boot={boot}>
             <LocalizedRouter />
           </AppBoot>
-          <Toaster richColors position="top-right" />
+          <Toaster
+            richColors
+            position="top-right"
+            offset={{ top: "calc(env(safe-area-inset-top) + 24px)" }}
+            mobileOffset={{ top: "calc(env(safe-area-inset-top) + 0.5rem)" }}
+          />
         </TooltipProvider>
       </QueryClientProvider>
     </ThemeProvider>

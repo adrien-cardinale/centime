@@ -16,6 +16,7 @@ function signedDecimal(amount: number): string {
 export function Deviation({ report, className }: DeviationProps) {
   const { t } = useTranslation()
   if (report.deviation === null) return <span className={cn("text-muted-foreground", className)}>—</span>
+  const amount = signedDecimal(report.deviation)
   return (
     <span
       title={t("fixedItemsUi.deviation.title")}
@@ -25,7 +26,8 @@ export function Deviation({ report, className }: DeviationProps) {
         className,
       )}
     >
-      {signedDecimal(report.deviation)}
+      <span aria-hidden>{amount}</span>
+      <span className="sr-only">{t("fixedItemsUi.deviation.label", { amount })}</span>
     </span>
   )
 }

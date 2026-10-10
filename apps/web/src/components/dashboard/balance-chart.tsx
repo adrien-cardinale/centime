@@ -4,7 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { BalancePoint } from "@/lib/api"
-import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth } from "@/lib/dashboard"
+import { useIsMobile } from "@/hooks/use-mobile"
+import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth, visibleMonths } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
@@ -12,8 +13,10 @@ function chartConfigOf(label: string) {
   return { balance: { label, color: "var(--chart-neutral)" } } satisfies ChartConfig
 }
 
-export function BalanceChart({ series }: { series: BalancePoint[] }) {
+export function BalanceChart({ series: fullSeries }: { series: BalancePoint[] }) {
   const { t } = useTranslation()
+  const isMobile = useIsMobile()
+  const series = visibleMonths(fullSeries, isMobile)
   if (series.length === 0) return <EmptyBalance />
   const labels = new Map(series.map((point) => [point.month, point.label]))
   return (

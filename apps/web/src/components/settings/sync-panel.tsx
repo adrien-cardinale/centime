@@ -1,3 +1,4 @@
+import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSyncStore } from "@/lib/sync/sync-store"
@@ -9,10 +10,12 @@ import { SyncStatusCard } from "./sync-status-card"
 export default function SyncPanel() {
   const state = useSyncStore()
   const { t } = useTranslation()
+  const syncCardRef = useRef<HTMLDivElement>(null)
+  const scrollToSync = () => syncCardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
 
   return (
     <div className="space-y-4">
-      <Card>
+      <Card ref={syncCardRef} className="scroll-mt-4">
         <CardHeader>
           <CardTitle>{t("settings.sync.title")}</CardTitle>
           <CardDescription>
@@ -24,7 +27,7 @@ export default function SyncPanel() {
         <CardContent>{state.configured ? <SyncStatusCard state={state} /> : <SyncConnectForm />}</CardContent>
       </Card>
       <RecoveryKeyCard serverUrl={state.serverUrl} />
-      <LocalDataCard />
+      <LocalDataCard onConfigureSync={state.configured ? undefined : scrollToSync} />
     </div>
   )
 }

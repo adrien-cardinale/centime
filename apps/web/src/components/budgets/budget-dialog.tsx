@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch"
 import { api, type Budget } from "@/lib/api"
 import { defaultStartDate } from "@/lib/budgets"
+import { parseAmountInput } from "@/lib/format"
 import { periodicityLabels } from "@/lib/labels"
 import { budgetsQuery, invalidateBudgetData } from "@/lib/queries"
 
@@ -88,7 +89,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
 
   function updateAmount(text: string) {
     setAmountText(text)
-    form.setValue("amount", text === "" ? Number.NaN : Number(text), { shouldValidate: form.formState.isSubmitted })
+    form.setValue("amount", parseAmountInput(text) ?? Number.NaN, { shouldValidate: form.formState.isSubmitted })
   }
 
   function changePeriod(period: Periodicity) {
@@ -122,10 +123,9 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
                 <FormLabel>{t("budgets.dialog.amount")}</FormLabel>
                 <FormControl>
                   <Input
-                    type="number"
+                    type="text"
                     inputMode="decimal"
-                    min={0}
-                    step="0.01"
+                    autoComplete="off"
                     placeholder="0.00"
                     value={amountText}
                     onChange={(event) => updateAmount(event.target.value)}
@@ -177,15 +177,15 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
           control={form.control}
           name="rollover"
           render={({ field }) => (
-            <FormItem className="flex items-start justify-between gap-4 rounded-md border p-3">
+            <FormItem className="relative flex min-h-11 items-start justify-between gap-4 rounded-md border p-3">
               <div className="space-y-1">
-                <FormLabel>{t("budgets.dialog.rollover")}</FormLabel>
+                <FormLabel className="cursor-pointer after:absolute after:inset-0">{t("budgets.dialog.rollover")}</FormLabel>
                 <FormDescription>
                   {t("budgets.dialog.rolloverHint")}
                 </FormDescription>
               </div>
               <FormControl>
-                <Switch checked={field.value} onCheckedChange={field.onChange} />
+                <Switch className="relative" checked={field.value} onCheckedChange={field.onChange} />
               </FormControl>
             </FormItem>
           )}

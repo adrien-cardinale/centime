@@ -34,3 +34,13 @@ export function formatDateTime(isoDateTime: string): string {
 export function formatDecimal(amount: number): string {
   return numberFormatter({ minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount)
 }
+
+const AMOUNT_PATTERN = /^[+-]?(\d+\.?\d*|\.\d+)$/
+const AMOUNT_SEPARATORS = /[\s']/g
+
+export function parseAmountInput(text: string): number | null {
+  const normalized = text.replace(AMOUNT_SEPARATORS, "").replace(",", ".")
+  if (!AMOUNT_PATTERN.test(normalized)) return null
+  const amount = Number(normalized)
+  return Number.isFinite(amount) ? amount : null
+}

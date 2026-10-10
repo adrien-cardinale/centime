@@ -16,7 +16,7 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap gap-2">
+      <div className="grid max-w-sm grid-cols-6 justify-items-center gap-2 sm:gap-3">
         {CATEGORY_COLOR_PALETTE.map((color) => (
           <button
             key={color}
@@ -25,8 +25,8 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
             aria-pressed={selected === color}
             onClick={() => onChange(color)}
             className={cn(
-              "flex size-7 items-center justify-center rounded-full ring-offset-2 ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
-              selected === color && "ring-2 ring-foreground",
+              "flex aspect-square w-full max-w-9 items-center justify-center rounded-full ring-offset-2 pointer-coarse:max-w-11 ring-offset-background transition-shadow focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none",
+              selected === color && "ring-[3px] ring-foreground",
             )}
             style={{ backgroundColor: color }}
           >
@@ -36,7 +36,16 @@ export function ColorPicker({ value, onChange, id }: ColorPickerProps) {
       </div>
       <div className="flex items-center gap-2">
         <span aria-hidden className="size-9 shrink-0 rounded-md border" style={{ backgroundColor: value }} />
-        <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} className="font-mono" placeholder="#4a84c4" />
+        <Input
+          id={id}
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          className="font-mono"
+          placeholder="#4a84c4"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+        />
       </div>
     </div>
   )

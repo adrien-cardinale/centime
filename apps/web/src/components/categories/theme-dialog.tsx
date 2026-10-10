@@ -8,6 +8,7 @@ import type { z } from "zod"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -27,7 +28,9 @@ type ThemeFormValues = z.input<typeof themeInputSchema>
 
 type ThemeDialogProps = {
   theme?: Theme
-  trigger: ReactNode
+  trigger?: ReactNode
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 function formValuesFor(theme: Theme | undefined): ThemeFormValues {
@@ -39,9 +42,10 @@ function saveTheme(theme: Theme | undefined, input: ThemeInput) {
   return theme ? api.themes.update(theme.id, input) : api.themes.create(input)
 }
 
-export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
+export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogProps) {
   const { t } = useTranslation()
-  const [open, setOpen] = useState(false)
+  const [internalOpen, setInternalOpen] = useState(false)
+  const setOpen = onOpenChange ?? setInternalOpen
   const queryClient = useQueryClient()
   const form = useForm<ThemeFormValues, unknown, ThemeInput>({
     resolver: zodResolver(themeInputSchema),
@@ -64,8 +68,8 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={changeOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
+    <Dialog open={open ?? internalOpen} onOpenChange={changeOpen}>
+      {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{theme ? t("categories.themeDialog.editTitle") : t("categories.newTheme")}</DialogTitle>
@@ -100,6 +104,11 @@ export function ThemeDialog({ theme, trigger }: ThemeDialogProps) {
               )}
             />
             <DialogFooter>
+              <DialogClose asChild>
+                <Button type="button" variant="outline">
+                  {t("common.cancel")}
+                </Button>
+              </DialogClose>
               <Button type="submit" disabled={save.isPending}>
                 {save.isPending ? t("categories.form.saving") : t("categories.form.save")}
               </Button>

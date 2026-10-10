@@ -45,7 +45,16 @@ export function SyncConnectForm() {
             <FormItem>
               <FormLabel>{t("settings.sync.serverAddress")}</FormLabel>
               <FormControl>
-                <Input placeholder="https://centime.example.ch" autoComplete="url" {...field} />
+                <Input
+                  type="url"
+                  inputMode="url"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  placeholder="https://centime.example.ch"
+                  autoComplete="url"
+                  {...field}
+                />
               </FormControl>
               <FormDescription>{t("settings.sync.serverHint")}</FormDescription>
               <FormMessage />

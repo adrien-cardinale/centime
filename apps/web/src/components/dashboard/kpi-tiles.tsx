@@ -1,12 +1,12 @@
 import { useTranslation } from "react-i18next"
 import type { DashboardKpis } from "@/lib/api"
 import { money } from "@/lib/dashboard"
-import { MonthDelta, NegativeMarker, StatTile } from "./stat-tile"
+import { MonthDelta, StatTile } from "./stat-tile"
 
 export function KpiTiles({ kpis }: { kpis: DashboardKpis }) {
   const { t } = useTranslation()
   return (
-    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       <StatTile
         label={t("dashboardPage.balance.title")}
         value={kpis.bankBalance === null ? "—" : money(kpis.bankBalance)}
@@ -17,7 +17,7 @@ export function KpiTiles({ kpis }: { kpis: DashboardKpis }) {
       <StatTile
         label={t("dashboardPage.kpi.net")}
         value={money(kpis.net.current)}
-        marker={kpis.net.current < 0 && <NegativeMarker />}
+        negative={kpis.net.current < 0}
         footer={<MonthDelta {...kpis.net} />}
       />
     </div>

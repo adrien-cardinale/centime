@@ -75,7 +75,7 @@ export function UpdateCard() {
             <AlertTitle>{t("settings.updates.available", { version: update.version })}</AlertTitle>
             {update.notes && (
               <AlertDescription>
-                <span className="max-h-40 overflow-y-auto whitespace-pre-line text-sm">{update.notes}</span>
+                <div className="max-h-40 w-full overflow-y-auto text-sm whitespace-pre-line">{update.notes}</div>
               </AlertDescription>
             )}
           </Alert>

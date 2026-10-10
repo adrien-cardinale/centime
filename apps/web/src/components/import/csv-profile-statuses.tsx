@@ -19,12 +19,12 @@ export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) 
         <p className="text-sm text-muted-foreground">{t("csvProfiles.statuses.empty")}</p>
       )}
       {fields.map((entry, index) => (
-        <div key={entry.id} className="flex items-start gap-2">
+        <div key={entry.id} className="grid grid-cols-[1fr_auto] items-start gap-2 sm:flex">
           <FormField
             control={control}
             name={`statuses.${index}.value`}
             render={({ field }) => (
-              <FormItem className="flex-1">
+              <FormItem className="min-w-0 sm:flex-1">
                 <FormControl>
                   <Input placeholder={t("csvProfiles.statuses.value")} aria-label={t("csvProfiles.statuses.value")} {...field} />
                 </FormControl>
@@ -35,7 +35,7 @@ export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) 
             control={control}
             name={`statuses.${index}.status`}
             render={({ field }) => (
-              <FormItem className="w-44">
+              <FormItem className="col-span-2 row-start-2 w-full sm:w-44">
                 <Select value={field.value} onValueChange={field.onChange}>
                   <FormControl>
                     <SelectTrigger className="w-full" aria-label={t("csvProfiles.statuses.status")}>

@@ -120,7 +120,14 @@ export function CreateAccountDialog() {
                 <FormItem>
                   <FormLabel>{t("accounts.dialog.identifier")}</FormLabel>
                   <FormControl>
-                    <Input placeholder="CH93 0076 2011 6238 5295 7" {...field} />
+                    <Input
+                      placeholder="CH93 0076 2011 6238 5295 7"
+                      autoCapitalize="characters"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      autoComplete="off"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -133,7 +140,7 @@ export function CreateAccountDialog() {
                 <FormItem>
                   <FormLabel>{t("accounts.dialog.currency")}</FormLabel>
                   <FormControl>
-                    <Input maxLength={3} className="uppercase" {...field} />
+                    <Input maxLength={3} className="uppercase" autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="off" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

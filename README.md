@@ -17,7 +17,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
 - **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
 - **Updates**: Settings shows the installed version, then installs the new release (desktop) or downloads the APK (Android).
-- **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, following the filters of the Transactions page.
+- **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, following the filters of the Transactions page (saved in the app's Download folder on Android).
 
 ## Screenshots
 

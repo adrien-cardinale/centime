@@ -4,6 +4,22 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.2.1] - 2026-10-10
+
+### Changed
+
+- Mobile layout: budgets, fixed items, accounts and the import preview become card lists on small screens; filters, pickers and transaction bulk actions open in bottom sheets, and the bulk actions bar stays pinned at the bottom.
+- **New transaction** now asks for the amount without a sign and an **Expense** / **Income** toggle; a comma works as decimal separator.
+- Dashboard: points of attention and latest transactions are now clickable rows leading to the matching transactions; on small screens, spending by category is shown as a list and the charts cover the last 6 months.
+- Larger touch targets throughout: dialogs scroll on short screens, close buttons and controls are at least 44 px, and the sidebar closes after navigating.
+- Android: the back button closes open dialogs, sheets and menus instead of leaving the app.
+
+### Fixed
+
+- Android: CSV export now saves the file in the app's Download folder and shows its path.
+- Android: the content shrinks above the on-screen keyboard (Android 15), and the window opens on centime's dark background in dark mode.
+- Android: when camera access was denied, the QR code scan offers to open the device settings or to type the key by hand.
+
 ## [0.2.0] - 2026-10-10
 
 ### Added

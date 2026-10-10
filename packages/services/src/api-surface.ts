@@ -16,6 +16,7 @@ import { applyRules, createRule, deleteRule, listRules, testRule, updateRule } f
 import { createTheme, deleteTheme, listThemes, updateTheme } from "./themes"
 import { createTransaction } from "./transaction-create"
 import { exportTransactions } from "./transaction-export"
+import { splitTransaction, unsplitTransaction } from "./transaction-splits"
 import { bulkUpdateTransactions, updateTransaction } from "./transaction-updates"
 import { listTransactionPage } from "./transactions"
 
@@ -41,6 +42,8 @@ export const apiSurface = {
     create: createTransaction,
     update: updateTransaction,
     bulkUpdate: bulkUpdateTransactions,
+    split: splitTransaction,
+    unsplit: unsplitTransaction,
     export: exportTransactions,
   },
   themes: {

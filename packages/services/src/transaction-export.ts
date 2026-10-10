@@ -2,6 +2,7 @@ import { encodeCsv, type CsvCell, type IsoDate, type TransactionStatus } from "@
 import type { DbExecutor } from "@centime/db"
 import type { SQL } from "drizzle-orm"
 import { type Clock, systemClock, todayOf } from "./clock"
+import type { TransactionSplitItem } from "./transaction-splits"
 import { listTransactions, type TransactionFilter, transactionCondition, type TransactionListItem } from "./transactions"
 
 export const MAX_EXPORT_ROWS = 50_000
@@ -22,6 +23,7 @@ const HEADERS = [
   "Catégorie",
   "Poste fixe",
   "Transfert",
+  "Note",
 ]
 
 const STATUS_LABELS: Record<TransactionStatus, string> = {
@@ -29,25 +31,31 @@ const STATUS_LABELS: Record<TransactionStatus, string> = {
   pending: "En suspens",
 }
 
-function toCells(item: TransactionListItem): CsvCell[] {
+function toCells(item: TransactionListItem, split?: TransactionSplitItem): CsvCell[] {
   return [
     item.bookingDate,
     item.valueDate,
     item.accountName,
     item.rawLabel,
     item.merchant,
-    item.amount.toFixed(2),
+    (split?.amount ?? item.amount).toFixed(2),
     item.currency,
     STATUS_LABELS[item.status],
-    item.categoryName,
+    split ? split.categoryName : item.categoryName,
     item.fixedItemName,
     item.isTransfer ? "Oui" : "Non",
+    split?.note ?? null,
   ]
+}
+
+function toRows(item: TransactionListItem): CsvCell[][] {
+  if (!item.isSplit || item.splits.length === 0) return [toCells(item)]
+  return item.splits.map((split) => toCells(item, split))
 }
 
 export async function exportTransactionsCsv(db: DbExecutor, condition: SQL | undefined): Promise<string> {
   const items = await listTransactions(db, condition, { limit: MAX_EXPORT_ROWS, offset: 0 })
-  return BYTE_ORDER_MARK + encodeCsv([HEADERS, ...items.map(toCells)], DELIMITER)
+  return BYTE_ORDER_MARK + encodeCsv([HEADERS, ...items.flatMap(toRows)], DELIMITER)
 }
 
 export function exportFileName(today: IsoDate): string {

@@ -7,6 +7,7 @@ import type {
   RuleMatcherInput,
   RulePayload,
   ThemeInput,
+  TransactionSplitInput,
 } from "@centime/core"
 import type { accountInputSchema, apiSurface, applyRulesInputSchema } from "@centime/services"
 import type { z } from "zod"
@@ -41,6 +42,8 @@ export type Api = {
     export(filters: TransactionFilters): Promise<Blob>
     update(id: string, changes: TransactionChanges): Out<Surface["transactions"]["update"]>
     bulkUpdate(ids: string[], changes: TransactionChanges): Out<Surface["transactions"]["bulkUpdate"]>
+    split(input: TransactionSplitInput): Out<Surface["transactions"]["split"]>
+    unsplit(transactionId: string): Out<Surface["transactions"]["unsplit"]>
   }
   themes: {
     list(): Out<Surface["themes"]["list"]>

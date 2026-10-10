@@ -12,7 +12,7 @@ import {
   roundCents,
   UNCATEGORIZED_LABEL,
 } from "@centime/core"
-import { accounts, type DbExecutor, themes, transactions } from "@centime/db"
+import { accounts, type DbExecutor, themes, transactions, transactionSplits } from "@centime/db"
 import { and, asc, count, eq, gte, isNotNull, isNull, lte, type SQL, sql } from "drizzle-orm"
 import { budgetsOverview } from "./budgets"
 import { loadCategoryNodes } from "./categories"
@@ -88,7 +88,12 @@ async function countWhere(db: DbExecutor, condition: SQL | undefined): Promise<n
 function countUncategorized(db: DbExecutor): Promise<number> {
   return countWhere(
     db,
-    and(isNull(transactions.deletedAt), eq(transactions.isTransfer, false), isNull(transactions.categoryId)),
+    and(
+      isNull(transactions.deletedAt),
+      eq(transactions.isTransfer, false),
+      eq(transactions.isSplit, false),
+      isNull(transactions.categoryId),
+    ),
   )
 }
 
@@ -96,14 +101,37 @@ function countPending(db: DbExecutor): Promise<number> {
   return countWhere(db, and(isNull(transactions.deletedAt), eq(transactions.status, "pending")))
 }
 
-async function loadCategorySpending(db: DbExecutor, month: PeriodRange) {
-  // Dépenses nettes des remboursements, la même convention que les budgets (voir expenseOf dans budgets.ts).
+type CategorySpendingRow = { categoryId: string | null; amount: number }
+
+async function loadDirectSpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
   const rows = await db
     .select({ categoryId: transactions.categoryId, amount: sql<number>`sum(-${transactions.amount})` })
     .from(transactions)
-    .where(countedCondition(month.start, month.end))
+    .where(and(countedCondition(month.start, month.end), eq(transactions.isSplit, false)))
     .groupBy(transactions.categoryId)
   return rows.map((row) => ({ categoryId: row.categoryId, amount: Number(row.amount) }))
+}
+
+async function loadSplitSpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
+  const rows = await db
+    .select({ categoryId: transactionSplits.categoryId, amount: sql<number>`sum(-${transactionSplits.amount})` })
+    .from(transactionSplits)
+    .innerJoin(transactions, eq(transactionSplits.transactionId, transactions.id))
+    .where(
+      and(
+        countedCondition(month.start, month.end),
+        eq(transactions.isSplit, true),
+        isNull(transactionSplits.deletedAt),
+      ),
+    )
+    .groupBy(transactionSplits.categoryId)
+  return rows.map((row) => ({ categoryId: row.categoryId, amount: Number(row.amount) }))
+}
+
+// Dépenses nettes des remboursements, la même convention que les budgets (voir expenseOf dans budgets.ts).
+async function loadCategorySpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
+  const [direct, split] = await Promise.all([loadDirectSpending(db, month), loadSplitSpending(db, month)])
+  return [...direct, ...split]
 }
 
 function addTo(totals: Map<string | null, number>, key: string | null, amount: number): void {

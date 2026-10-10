@@ -112,9 +112,18 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     categoryId: reference,
     fixedItemId: reference,
     isTransfer: z.boolean(),
+    isSplit: z.boolean().default(false),
     importId: reference,
     sourceRef: z.string().nullable(),
     fingerprint: z.string().min(1),
     balanceAfter: z.number().nullable(),
+  }),
+  transaction_splits: z.object({
+    ...syncFields,
+    transactionId: z.uuid(),
+    categoryId: reference,
+    amount: z.number(),
+    note: z.string().nullable(),
+    position: z.number().int(),
   }),
 }

@@ -20,6 +20,7 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm"
 import { assignmentFor, type Categorizer, loadCategorizer } from "./categorize"
 import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound, ServiceError } from "./errors"
+import { discardSplits } from "./transaction-splits"
 
 export type ImportSource = {
   bytes: Uint8Array
@@ -297,13 +298,15 @@ async function insertNewTransactions(db: DbExecutor, rows: AnalyzedRow[], import
   for (const rowChunk of chunk(unseen, INSERT_CHUNK_SIZE)) {
     await db.insert(transactions).values(rowChunk.map((row) => toNewTransaction(row, importId, categorize)))
   }
+  const restoredIds = rows.flatMap((row) => (row.existingId === null ? [] : [row.existingId]))
   for (const row of rows) {
     if (row.existingId === null) continue
     await db
       .update(transactions)
-      .set({ ...toNewTransaction(row, importId, categorize), deletedAt: null })
+      .set({ ...toNewTransaction(row, importId, categorize), isSplit: false, deletedAt: null })
       .where(eq(transactions.id, row.existingId))
   }
+  await discardSplits(db, restoredIds)
 }
 
 async function promotePendingTransactions(db: DbExecutor, rows: AnalyzedRow[]): Promise<void> {

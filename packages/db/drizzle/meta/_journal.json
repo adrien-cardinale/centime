@@ -50,6 +50,13 @@
       "when": 1791389388670,
       "tag": "0006_drop_category_parent",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "6",
+      "when": 1791632254910,
+      "tag": "0007_transaction_splits",
+      "breakpoints": true
     }
   ]
 }

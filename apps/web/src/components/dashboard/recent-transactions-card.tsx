@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { CategoryBadge } from "@/components/categories/category-badge"
+import { Badge } from "@/components/ui/badge"
 import type { TransactionItem } from "@/lib/api"
 import { formatDate } from "@/lib/format"
 import { SummaryCard } from "./summary-card"
@@ -27,11 +28,7 @@ export function RecentTransactionsCard({ transactions }: { transactions: Transac
               <span className="truncate">{transaction.merchant ?? transaction.rawLabel}</span>
               <Amount amount={transaction.amount} currency={transaction.currency} className="text-right" />
               <span className="col-start-2 min-w-0">
-                {transaction.categoryName && transaction.categoryColor ? (
-                  <CategoryBadge name={transaction.categoryName} color={transaction.categoryColor} />
-                ) : (
-                  <span className="text-xs text-muted-foreground">{t("dashboardPage.recent.uncategorized")}</span>
-                )}
+                <RecentCategory transaction={transaction} />
               </span>
             </Link>
           </li>
@@ -39,4 +36,13 @@ export function RecentTransactionsCard({ transactions }: { transactions: Transac
       </ul>
     </SummaryCard>
   )
+}
+
+function RecentCategory({ transaction }: { transaction: TransactionItem }) {
+  const { t } = useTranslation()
+  if (transaction.isSplit) return <Badge variant="outline">{t("transactionsPage.split.badge")}</Badge>
+  if (transaction.categoryName && transaction.categoryColor) {
+    return <CategoryBadge name={transaction.categoryName} color={transaction.categoryColor} />
+  }
+  return <span className="text-xs text-muted-foreground">{t("dashboardPage.recent.uncategorized")}</span>
 }

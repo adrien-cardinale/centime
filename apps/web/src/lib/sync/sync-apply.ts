@@ -1,4 +1,4 @@
-import { type DbExecutor, settings, type SyncRow, type SyncTableEntry, transactions } from "@centime/db"
+import { type DbExecutor, settings, type SyncRow, type SyncTableEntry, transactions, transactionSplits } from "@centime/db"
 import type { PushedRow } from "@centime/services"
 import { and, eq, getTableColumns, ne, sql } from "@centime/db/orm"
 import type { SQLiteColumn } from "@centime/db/orm"
@@ -43,11 +43,21 @@ async function reassignTransactions(db: DbExecutor, fromAccountId: string, toAcc
   await db.update(transactions).set({ accountId: toAccountId }).where(eq(transactions.accountId, fromAccountId))
 }
 
+async function reassignSplits(db: DbExecutor, fromTransactionId: string, toTransactionId: string): Promise<void> {
+  await db
+    .update(transactionSplits)
+    .set({ transactionId: toTransactionId })
+    .where(eq(transactionSplits.transactionId, fromTransactionId))
+}
+
+function keepsAlias(entry: SyncTableEntry): boolean {
+  return entry.name === "accounts" || entry.name === "transactions"
+}
+
 async function removeLoser(db: DbExecutor, entry: SyncTableEntry, loserId: string, winnerId: string): Promise<void> {
-  if (entry.name === "accounts") {
-    await reassignTransactions(db, loserId, winnerId)
-    await writeAlias(db, loserId, winnerId)
-  }
+  if (entry.name === "accounts") await reassignTransactions(db, loserId, winnerId)
+  if (entry.name === "transactions") await reassignSplits(db, loserId, winnerId)
+  if (keepsAlias(entry)) await writeAlias(db, loserId, winnerId)
   await db.delete(entry.table).where(eq(entry.table.id, loserId))
 }
 
@@ -72,7 +82,7 @@ async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: Inc
     for (const collision of collisions) {
       const incomingLoses = collision.syncVersion !== null && collision.id < row.id
       if (incomingLoses) {
-        if (entry.name === "accounts") await writeAlias(db, row.id, collision.id)
+        if (keepsAlias(entry)) await writeAlias(db, row.id, collision.id)
         return "skip"
       }
       if (collision.syncVersion === null && Date.parse(collision.updatedAt) > Date.parse(winner.updatedAt)) {
@@ -84,11 +94,20 @@ async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: Inc
   return winner
 }
 
-async function remapReferences(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow> {
-  if (entry.name !== "transactions") return row
-  const transaction = row as PushedRow<"transactions">
+async function remapTransaction(db: DbExecutor, transaction: PushedRow<"transactions">): Promise<IncomingRow> {
   const alias = await readAlias(db, transaction.accountId)
-  return alias === null ? row : ({ ...transaction, accountId: alias } as IncomingRow)
+  return alias === null ? transaction : ({ ...transaction, accountId: alias } as IncomingRow)
+}
+
+async function remapSplit(db: DbExecutor, split: PushedRow<"transaction_splits">): Promise<IncomingRow> {
+  const alias = await readAlias(db, split.transactionId)
+  return alias === null ? split : ({ ...split, transactionId: alias } as IncomingRow)
+}
+
+async function remapReferences(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow> {
+  if (entry.name === "transactions") return remapTransaction(db, row as PushedRow<"transactions">)
+  if (entry.name === "transaction_splits") return remapSplit(db, row as PushedRow<"transaction_splits">)
+  return row
 }
 
 async function writeIncoming(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow, exists: boolean): Promise<void> {

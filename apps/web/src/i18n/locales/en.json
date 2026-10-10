@@ -436,6 +436,28 @@
       "selectAll": "Select all",
       "selectOne": "Select transaction",
       "transfer": "Transfer"
+    },
+    "split": {
+      "action": "Split…",
+      "title": "Split transaction",
+      "description": "Spread the amount over several categories. The lines must add up to the total amount.",
+      "category": "Category {{index}}",
+      "amount": "Amount",
+      "note": "Note",
+      "notePlaceholder": "Note (optional)",
+      "addLine": "Add a line",
+      "removeLine": "Remove line",
+      "remaining": "Left to allocate: {{amount}}",
+      "exceeded": "Over by: {{amount}}",
+      "fillLast": "Put the rest on the last line",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Transaction split",
+      "unsplit": "Undo split",
+      "removed": "Split removed",
+      "badge": "Split",
+      "edit": "Edit split",
+      "uncategorized": "Uncategorized"
     }
   },
   "syncErrors": {

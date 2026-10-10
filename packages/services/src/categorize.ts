@@ -1,6 +1,6 @@
 import { applyCompiledRules, type CompiledRule, compileRules, type RuleOutcome, type RuleSubject } from "@centime/core"
 import { type DbExecutor, rules, transactions } from "@centime/db"
-import { and, inArray, isNull } from "drizzle-orm"
+import { and, eq, inArray, isNull } from "drizzle-orm"
 
 export type Categorizer = (subject: RuleSubject) => RuleOutcome | null
 export type FixedItemLinker = (subject: RuleSubject) => string | null
@@ -125,7 +125,13 @@ async function writeAssignment(db: DbExecutor, assignment: Assignment, ids: stri
     await db
       .update(transactions)
       .set(assignment)
-      .where(and(inArray(transactions.id, ids.slice(start, start + UPDATE_CHUNK_SIZE)), isNull(transactions.deletedAt)))
+      .where(
+        and(
+          inArray(transactions.id, ids.slice(start, start + UPDATE_CHUNK_SIZE)),
+          isNull(transactions.deletedAt),
+          eq(transactions.isSplit, false),
+        ),
+      )
   }
 }
 
@@ -151,5 +157,5 @@ export async function loadCategorizableTransactions(db: DbExecutor): Promise<Cat
       isTransfer: transactions.isTransfer,
     })
     .from(transactions)
-    .where(isNull(transactions.deletedAt))
+    .where(and(isNull(transactions.deletedAt), eq(transactions.isSplit, false)))
 }

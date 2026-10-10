@@ -1,4 +1,4 @@
-import { accounts, createProxyDb, type Db, runMigrations, transactions } from "@centime/db"
+import { accounts, createProxyDb, type Db, runMigrations, transactions, transactionSplits } from "@centime/db"
 import { eq } from "@centime/db/orm"
 import initSqlJs from "sql.js"
 import { beforeEach, describe, expect, it } from "bun:test"
@@ -294,6 +294,23 @@ describe("synchronize", () => {
 
     await sync(deviceA)
     expect((await findTransaction(deviceA, remoteTransactionId))?.merchant).toBe("Boulangerie")
+  })
+
+  it("moves the splits of a merged duplicate onto the winning transaction", async () => {
+    const remoteAccountId = await insertAccount(deviceA, "CH01")
+    const remoteTransactionId = await insertTransaction(deviceA, remoteAccountId, "fp-shared")
+    await sync(deviceA)
+    const localAccountId = await insertAccount(deviceB, "CH01")
+    const localId = await insertTransaction(deviceB, localAccountId, "fp-shared")
+    await deviceB.insert(transactionSplits).values([
+      { transactionId: localId, amount: -10, position: 0 },
+      { transactionId: localId, amount: -2.5, position: 1 },
+    ])
+
+    await sync(deviceB)
+
+    const splits = await deviceB.select().from(transactionSplits)
+    expect(splits.map((split) => split.transactionId)).toEqual([remoteTransactionId, remoteTransactionId])
   })
 
   it("reports an unreachable server as a network error", async () => {

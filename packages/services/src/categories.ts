@@ -1,6 +1,16 @@
 import type { CategoryInput } from "@centime/core"
-import { budgets, categories, type Db, type DbExecutor, fixedItems, rules, themes, transactions } from "@centime/db"
-import { and, count, eq, isNull } from "drizzle-orm"
+import {
+  budgets,
+  categories,
+  type Db,
+  type DbExecutor,
+  fixedItems,
+  rules,
+  themes,
+  transactions,
+  transactionSplits,
+} from "@centime/db"
+import { and, eq, isNull, sql } from "drizzle-orm"
 import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound, ServiceError } from "./errors"
 
@@ -27,6 +37,21 @@ export async function isActiveCategory(db: DbExecutor, id: string | null | undef
   return row !== undefined
 }
 
+const directTransactionCount = sql<number>`(select count(*) from ${transactions} where ${and(
+  eq(transactions.categoryId, categories.id),
+  isNull(transactions.deletedAt),
+  eq(transactions.isSplit, false),
+)})`
+
+const splitTransactionCount = sql<number>`(select count(distinct ${transactionSplits.transactionId}) from ${transactionSplits}
+  inner join ${transactions} on ${eq(transactions.id, transactionSplits.transactionId)}
+  where ${and(
+    eq(transactionSplits.categoryId, categories.id),
+    isNull(transactionSplits.deletedAt),
+    isNull(transactions.deletedAt),
+    eq(transactions.isSplit, true),
+  )})`
+
 export async function listCategories(db: Db) {
   const rows = await db
     .select({
@@ -35,12 +60,10 @@ export async function listCategories(db: Db) {
       color: categories.color,
       icon: categories.icon,
       themeId: categories.themeId,
-      transactionCount: count(transactions.id),
+      transactionCount: sql<number>`${directTransactionCount} + ${splitTransactionCount}`.mapWith(Number),
     })
     .from(categories)
-    .leftJoin(transactions, and(eq(transactions.categoryId, categories.id), isNull(transactions.deletedAt)))
     .where(isNull(categories.deletedAt))
-    .groupBy(categories.id)
   return rows.sort((left, right) => left.name.localeCompare(right.name, "fr"))
 }
 
@@ -70,6 +93,7 @@ export async function updateCategory(db: Db, { id, ...input }: CategoryUpdate) {
 
 async function detachCategory(db: DbExecutor, id: string, deletedAt: string): Promise<void> {
   await db.update(transactions).set({ categoryId: null }).where(eq(transactions.categoryId, id))
+  await db.update(transactionSplits).set({ categoryId: null }).where(eq(transactionSplits.categoryId, id))
   await db.update(rules).set({ categoryId: null }).where(eq(rules.categoryId, id))
   await db.update(fixedItems).set({ categoryId: null }).where(eq(fixedItems.categoryId, id))
   await db

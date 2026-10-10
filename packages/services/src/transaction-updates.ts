@@ -2,6 +2,7 @@ import { categories, type Db, type DbExecutor, fixedItems, transactions } from "
 import { and, eq, inArray, isNull } from "drizzle-orm"
 import { z } from "zod"
 import { notFound, ServiceError } from "./errors"
+import { discardSplits } from "./transaction-splits"
 
 const MAX_BULK_IDS = 500
 const NOTHING_TO_UPDATE = "Aucune modification demandée"
@@ -64,11 +65,16 @@ async function checkChanges(db: DbExecutor, changes: TransactionChanges): Promis
   return inheritedCategoryOf(db, changes.fixedItemId)
 }
 
+function dropsSplit(changes: TransactionChanges): boolean {
+  return changes.categoryId !== undefined || Boolean(changes.fixedItemId) || changes.isTransfer === true
+}
+
 function toUpdate(changes: TransactionChanges) {
   return {
     ...(changes.categoryId !== undefined && { categoryId: changes.categoryId }),
     ...(changes.isTransfer !== undefined && { isTransfer: changes.isTransfer }),
     ...(changes.fixedItemId !== undefined && { fixedItemId: changes.fixedItemId }),
+    ...(dropsSplit(changes) && { isSplit: false }),
   }
 }
 
@@ -87,6 +93,7 @@ async function applyChanges(db: Db, ids: string[], changes: TransactionChanges) 
       .set(toUpdate(changes))
       .where(and(inArray(transactions.id, ids), isNull(transactions.deletedAt)))
       .returning({ id: transactions.id })
+    if (dropsSplit(changes)) await discardSplits(tx, updated.map((row) => row.id))
     if (inheritedCategoryId !== null && changes.categoryId === undefined) {
       await inheritFixedItemCategory(tx, ids, inheritedCategoryId)
     }

@@ -4,6 +4,12 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [Unreleased]
+
+### Added
+
+- Split a transaction over several categories. On the **Transactions** page, the row menu offers **Split…**: each line has a category, an amount and an optional note, and the lines must add up to the transaction amount. A split transaction shows a **Split** badge with its lines in the category column; click it to edit the split or **Undo split**. The dashboard, budgets, category filters, category counts and the CSV export (one row per line, with a new **Note** column) count each line in its own category. Rules leave split transactions untouched, and choosing a category, a fixed item or a transfer for a split transaction removes its split.
+
 ## [0.3.0] - 2026-10-10
 
 ### Added

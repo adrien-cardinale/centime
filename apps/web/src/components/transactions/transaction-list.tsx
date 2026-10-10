@@ -16,6 +16,7 @@ type TransactionListProps = {
   onToggleOne: (id: string, checked: boolean) => void
   onToggleAll: (checked: boolean) => void
   onCreateRule: (transaction: TransactionItem) => void
+  onSplit: (transaction: TransactionItem) => void
   linkingId: string | null
   onLinkingChange: (id: string | null) => void
 }
@@ -26,6 +27,7 @@ export function TransactionList({
   onToggleOne,
   onToggleAll,
   onCreateRule,
+  onSplit,
   linkingId,
   onLinkingChange,
 }: TransactionListProps) {
@@ -67,7 +69,7 @@ export function TransactionList({
               {formatDate(item.bookingDate)} · {item.accountName}
             </p>
             <div className="flex flex-wrap items-center gap-2">
-              <CategoryCell transaction={item} onCreateRule={onCreateRule} />
+              <CategoryCell transaction={item} onCreateRule={onCreateRule} onSplit={onSplit} />
               <FixedItemCell
                 transaction={item}
                 open={linkingId === item.id}
@@ -85,6 +87,7 @@ export function TransactionList({
             transaction={item}
             onCreateRule={onCreateRule}
             onLinkFixedItem={(transaction) => onLinkingChange(transaction.id)}
+            onSplit={onSplit}
           />
         </li>
       ))}

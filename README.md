@@ -12,12 +12,13 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Import**: CSV statements (configurable provider profiles) and camt.053 (XML), duplicate detection, update of pending transactions.
 - **Manual entry**: add from the Transactions page an operation missing from the statements (account, date, label, merchant, amount, category).
 - **Categories and rules**: categories grouped by theme (transactions are filed under categories), "contains" or regex rules on the label, the merchant or the provider category, applied at import time or on demand.
+- **Split transactions**: spread one transaction over several categories with partial amounts that add up to the total; dashboard, budgets, filters and export count each part in its own category.
 - **Fixed items**: recurring expenses and income (monthly, quarterly, yearly), automatic transaction matching, upcoming and overdue items.
 - **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
 - **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
 - **Updates**: Settings shows the installed version, then installs the new release (desktop) or downloads the APK (Android).
-- **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, following the filters of the Transactions page (saved in the app's Download folder on Android).
+- **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, one row per part for split transactions, following the filters of the Transactions page (saved in the app's Download folder on Android).
 
 ## Screenshots
 

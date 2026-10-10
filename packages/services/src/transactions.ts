@@ -1,6 +1,7 @@
 import type { IsoDate } from "@centime/core"
-import { accounts, categories, type DbExecutor, fixedItems, transactions } from "@centime/db"
+import { accounts, categories, type DbExecutor, fixedItems, transactions, transactionSplits } from "@centime/db"
 import { and, count, desc, eq, gte, inArray, isNull, lte, or, type SQL, sql } from "drizzle-orm"
+import { loadTransactionSplits } from "./transaction-splits"
 
 export const UNCATEGORIZED = "none"
 export const WITHOUT_FIXED_ITEM = "none"
@@ -36,14 +37,31 @@ function searchCondition(search: string): SQL | undefined {
   )
 }
 
-function categoryCondition(categoryId: string): SQL {
-  return categoryId === UNCATEGORIZED ? isNull(transactions.categoryId) : eq(transactions.categoryId, categoryId)
+function hasSplitMatching(splitCategory: SQL): SQL {
+  return sql`exists (select 1 from ${transactionSplits} where ${and(
+    eq(transactionSplits.transactionId, transactions.id),
+    isNull(transactionSplits.deletedAt),
+    splitCategory,
+  )})`
 }
 
-function themeCondition(themeId: string): SQL {
-  return inArray(
-    transactions.categoryId,
-    sql`(select ${categories.id} from ${categories} where ${categories.themeId} = ${themeId} and ${categories.deletedAt} is null)`,
+function categoryCondition(categoryId: string): SQL | undefined {
+  if (categoryId === UNCATEGORIZED) return and(isNull(transactions.categoryId), eq(transactions.isSplit, false))
+  return or(
+    eq(transactions.categoryId, categoryId),
+    and(eq(transactions.isSplit, true), hasSplitMatching(eq(transactionSplits.categoryId, categoryId))),
+  )
+}
+
+function themeCategoryIds(themeId: string): SQL {
+  return sql`(select ${categories.id} from ${categories} where ${categories.themeId} = ${themeId} and ${categories.deletedAt} is null)`
+}
+
+function themeCondition(themeId: string): SQL | undefined {
+  const categoryIds = themeCategoryIds(themeId)
+  return or(
+    inArray(transactions.categoryId, categoryIds),
+    and(eq(transactions.isSplit, true), hasSplitMatching(inArray(transactionSplits.categoryId, categoryIds))),
   )
 }
 
@@ -65,7 +83,7 @@ export async function transactionCondition(db: DbExecutor, filter: TransactionFi
   )
 }
 
-export function listTransactions(db: DbExecutor, condition: SQL | undefined, window: PageWindow) {
+function selectTransactions(db: DbExecutor, condition: SQL | undefined, window: PageWindow) {
   return db
     .select({
       id: transactions.id,
@@ -85,6 +103,7 @@ export function listTransactions(db: DbExecutor, condition: SQL | undefined, win
       fixedItemId: transactions.fixedItemId,
       fixedItemName: fixedItems.name,
       isTransfer: transactions.isTransfer,
+      isSplit: transactions.isSplit,
       balanceAfter: transactions.balanceAfter,
     })
     .from(transactions)
@@ -95,6 +114,13 @@ export function listTransactions(db: DbExecutor, condition: SQL | undefined, win
     .orderBy(desc(transactions.bookingDate), desc(transactions.createdAt), desc(transactions.id))
     .limit(window.limit)
     .offset(window.offset)
+}
+
+export async function listTransactions(db: DbExecutor, condition: SQL | undefined, window: PageWindow) {
+  const rows = await selectTransactions(db, condition, window)
+  const splitIds = rows.filter((row) => row.isSplit).map((row) => row.id)
+  const splits = await loadTransactionSplits(db, splitIds)
+  return rows.map((row) => ({ ...row, splits: splits.get(row.id) ?? [] }))
 }
 
 export async function countTransactions(db: DbExecutor, condition: SQL | undefined): Promise<number> {

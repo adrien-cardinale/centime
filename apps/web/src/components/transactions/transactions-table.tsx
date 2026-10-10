@@ -12,6 +12,7 @@ import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { CategoryCell } from "./category-cell"
 import { FixedItemCell } from "./fixed-item-cell"
+import { SplitTransactionDialog } from "./split-transaction-dialog"
 import { TransactionList } from "./transaction-list"
 import { TransactionRowActions } from "./transaction-row-actions"
 
@@ -41,6 +42,7 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
   const isMobile = useIsMobile()
   const [ruleSource, setRuleSource] = useState<TransactionItem | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
+  const [splitting, setSplitting] = useState<TransactionItem | null>(null)
 
   const toggleAll = (checked: boolean) => onSelectionChange(new Set(checked ? items.map((item) => item.id) : []))
   const toggleOne = (id: string, checked: boolean) => {
@@ -59,17 +61,16 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
           onToggleOne={toggleOne}
           onToggleAll={toggleAll}
           onCreateRule={setRuleSource}
+          onSplit={setSplitting}
           linkingId={linkingId}
           onLinkingChange={setLinkingId}
         />
-        {ruleSource && (
-          <RuleDialog
-            applyAfterCreate
-            open
-            initialValues={ruleValuesFrom(ruleSource)}
-            onOpenChange={(open) => !open && setRuleSource(null)}
-          />
-        )}
+        <RowOverlays
+          ruleSource={ruleSource}
+          onRuleClose={() => setRuleSource(null)}
+          splitting={splitting}
+          onSplitClose={() => setSplitting(null)}
+        />
       </>
     )
   }
@@ -131,7 +132,7 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
               </TableCell>
               <TableCell className="hidden lg:table-cell">{item.merchant ?? "—"}</TableCell>
               <TableCell>
-                <CategoryCell transaction={item} onCreateRule={setRuleSource} />
+                <CategoryCell transaction={item} onCreateRule={setRuleSource} onSplit={setSplitting} />
               </TableCell>
               <TableCell className="px-0">
                 <FixedItemCell
@@ -153,20 +154,42 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
                   transaction={item}
                   onCreateRule={setRuleSource}
                   onLinkFixedItem={(transaction) => setLinkingId(transaction.id)}
+                  onSplit={setSplitting}
                 />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      <RowOverlays
+        ruleSource={ruleSource}
+        onRuleClose={() => setRuleSource(null)}
+        splitting={splitting}
+        onSplitClose={() => setSplitting(null)}
+      />
+    </>
+  )
+}
+
+type RowOverlaysProps = {
+  ruleSource: TransactionItem | null
+  onRuleClose: () => void
+  splitting: TransactionItem | null
+  onSplitClose: () => void
+}
+
+function RowOverlays({ ruleSource, onRuleClose, splitting, onSplitClose }: RowOverlaysProps) {
+  return (
+    <>
       {ruleSource && (
         <RuleDialog
           applyAfterCreate
           open
           initialValues={ruleValuesFrom(ruleSource)}
-          onOpenChange={(open) => !open && setRuleSource(null)}
+          onOpenChange={(open) => !open && onRuleClose()}
         />
       )}
+      {splitting && <SplitTransactionDialog key={splitting.id} transaction={splitting} onClose={onSplitClose} />}
     </>
   )
 }

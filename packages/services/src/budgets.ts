@@ -13,7 +13,7 @@ import {
   previousPeriods,
   roundCents,
 } from "@centime/core"
-import { budgets, categories, type DbExecutor, transactions } from "@centime/db"
+import { budgets, categories, type DbExecutor, transactions, transactionSplits } from "@centime/db"
 import { and, eq, gte, isNotNull, isNull, lte, ne } from "drizzle-orm"
 import { type CategoryNode, loadCategoryNodes } from "./categories"
 import { type Clock, nowIso, systemClock, todayOf } from "./clock"
@@ -141,8 +141,25 @@ export async function deleteBudget(db: DbExecutor, { id }: { id: string }, clock
   return { id }
 }
 
-async function loadEligibleTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleTransaction[]> {
-  const rows = await db
+type EligibleRow = Omit<EligibleTransaction, "categoryId"> & { categoryId: string | null }
+
+function withCategory(rows: EligibleRow[]): EligibleTransaction[] {
+  return rows.flatMap(({ categoryId, ...row }) => (categoryId === null ? [] : [{ ...row, categoryId }]))
+}
+
+function eligibleCondition(from: IsoDate, to: IsoDate, isSplit: boolean) {
+  return and(
+    isNull(transactions.deletedAt),
+    eq(transactions.isTransfer, false),
+    eq(transactions.isSplit, isSplit),
+    isNull(transactions.fixedItemId),
+    gte(transactions.bookingDate, from),
+    lte(transactions.bookingDate, to),
+  )
+}
+
+function loadDirectTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleRow[]> {
+  return db
     .select({
       categoryId: transactions.categoryId,
       bookingDate: transactions.bookingDate,
@@ -150,17 +167,31 @@ async function loadEligibleTransactions(db: DbExecutor, from: IsoDate, to: IsoDa
       status: transactions.status,
     })
     .from(transactions)
+    .where(and(eligibleCondition(from, to, false), isNotNull(transactions.categoryId)))
+}
+
+function loadSplitLines(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleRow[]> {
+  return db
+    .select({
+      categoryId: transactionSplits.categoryId,
+      bookingDate: transactions.bookingDate,
+      amount: transactionSplits.amount,
+      status: transactions.status,
+    })
+    .from(transactionSplits)
+    .innerJoin(transactions, eq(transactionSplits.transactionId, transactions.id))
     .where(
       and(
-        isNull(transactions.deletedAt),
-        eq(transactions.isTransfer, false),
-        isNull(transactions.fixedItemId),
-        isNotNull(transactions.categoryId),
-        gte(transactions.bookingDate, from),
-        lte(transactions.bookingDate, to),
+        eligibleCondition(from, to, true),
+        isNull(transactionSplits.deletedAt),
+        isNotNull(transactionSplits.categoryId),
       ),
     )
-  return rows.flatMap(({ categoryId, ...row }) => (categoryId === null ? [] : [{ ...row, categoryId }]))
+}
+
+async function loadEligibleTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleTransaction[]> {
+  const [direct, split] = await Promise.all([loadDirectTransactions(db, from, to), loadSplitLines(db, from, to)])
+  return withCategory([...direct, ...split])
 }
 
 function budgetedCategoryMap(nodes: CategoryNode[], budgeted: ReadonlySet<string>): Map<string, string> {

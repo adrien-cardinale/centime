@@ -7,6 +7,8 @@ import {
   ruleMatcherSchema,
   rulePayloadSchema,
   themeInputSchema,
+  transactionSplitSchema,
+  transactionUnsplitSchema,
 } from "@centime/core"
 import type { Db } from "@centime/db"
 import {
@@ -121,6 +123,9 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
         ),
       bulkUpdate: (ids, changes) =>
         call((db) => surface.transactions.bulkUpdate(db, parseInput(bulkTransactionUpdateSchema, { ids, ...changes }))),
+      split: (input) => call((db) => surface.transactions.split(db, parseInput(transactionSplitSchema, input))),
+      unsplit: (transactionId) =>
+        call((db) => surface.transactions.unsplit(db, parseInput(transactionUnsplitSchema, { transactionId }))),
     },
     themes: {
       list: () => call((db) => surface.themes.list(db)),

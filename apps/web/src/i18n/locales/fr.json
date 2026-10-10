@@ -436,6 +436,28 @@
       "selectAll": "Tout sélectionner",
       "selectOne": "Sélectionner la transaction",
       "transfer": "Transfert"
+    },
+    "split": {
+      "action": "Fractionner…",
+      "title": "Fractionner la transaction",
+      "description": "Répartissez le montant sur plusieurs catégories. La somme des lignes doit égaler le montant total.",
+      "category": "Catégorie {{index}}",
+      "amount": "Montant",
+      "note": "Note",
+      "notePlaceholder": "Note (optionnelle)",
+      "addLine": "Ajouter une ligne",
+      "removeLine": "Supprimer la ligne",
+      "remaining": "Reste à répartir : {{amount}}",
+      "exceeded": "Dépassement : {{amount}}",
+      "fillLast": "Reporter sur la dernière ligne",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saved": "Transaction fractionnée",
+      "unsplit": "Annuler le fractionnement",
+      "removed": "Fractionnement annulé",
+      "badge": "Fractionnée",
+      "edit": "Modifier le fractionnement",
+      "uncategorized": "Non catégorisé"
     }
   },
   "syncErrors": {

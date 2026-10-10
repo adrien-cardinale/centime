@@ -112,6 +112,7 @@ export const transactions = sqliteTable(
     categoryId: text("category_id").references(() => categories.id),
     fixedItemId: text("fixed_item_id").references(() => fixedItems.id),
     isTransfer: integer("is_transfer", { mode: "boolean" }).notNull().default(false),
+    isSplit: integer("is_split", { mode: "boolean" }).notNull().default(false),
     importId: text("import_id").references(() => imports.id),
     sourceRef: text("source_ref"),
     fingerprint: text("fingerprint").notNull(),
@@ -123,6 +124,25 @@ export const transactions = sqliteTable(
     index("transactions_category_id_idx").on(table.categoryId),
     uniqueIndex("transactions_fingerprint_idx").on(table.fingerprint),
     syncVersionIndex("transactions", table),
+  ],
+)
+
+export const transactionSplits = sqliteTable(
+  "transaction_splits",
+  {
+    ...syncColumns,
+    transactionId: text("transaction_id")
+      .notNull()
+      .references(() => transactions.id),
+    categoryId: text("category_id").references(() => categories.id),
+    amount: real("amount").notNull(),
+    note: text("note"),
+    position: integer("position").notNull().default(0),
+  },
+  (table) => [
+    index("transaction_splits_transaction_id_idx").on(table.transactionId),
+    index("transaction_splits_category_id_idx").on(table.categoryId),
+    syncVersionIndex("transaction_splits", table),
   ],
 )
 
@@ -186,6 +206,8 @@ export type CategoryRow = typeof categories.$inferSelect
 export type NewCategoryRow = typeof categories.$inferInsert
 export type TransactionRow = typeof transactions.$inferSelect
 export type NewTransactionRow = typeof transactions.$inferInsert
+export type TransactionSplitRow = typeof transactionSplits.$inferSelect
+export type NewTransactionSplitRow = typeof transactionSplits.$inferInsert
 export type ImportRow = typeof imports.$inferSelect
 export type NewImportRow = typeof imports.$inferInsert
 export type CsvProfileRow = typeof csvProfiles.$inferSelect

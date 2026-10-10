@@ -1,3 +1,4 @@
+import type { TransactionSplitInput } from "@centime/core"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { toast } from "sonner"
 import i18n from "@/i18n"
@@ -23,6 +24,32 @@ export function useBulkUpdateTransactions(onDone?: () => void) {
     onSuccess: async ({ updated }) => {
       await invalidateTransactionData(queryClient)
       toast.success(i18n.t("transactionsPage.bulk.updated", { count: updated }))
+      onDone?.()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useSplitTransaction(onDone?: () => void) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (input: TransactionSplitInput) => api.transactions.split(input),
+    onSuccess: async () => {
+      await invalidateTransactionData(queryClient)
+      toast.success(i18n.t("transactionsPage.split.saved"))
+      onDone?.()
+    },
+    onError: (error) => toast.error(error.message),
+  })
+}
+
+export function useUnsplitTransaction(onDone?: () => void) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (transactionId: string) => api.transactions.unsplit(transactionId),
+    onSuccess: async () => {
+      await invalidateTransactionData(queryClient)
+      toast.success(i18n.t("transactionsPage.split.removed"))
       onDone?.()
     },
     onError: (error) => toast.error(error.message),

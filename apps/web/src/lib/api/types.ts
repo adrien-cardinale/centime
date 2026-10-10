@@ -4,6 +4,9 @@ import type {
   CsvProfileInput,
   FixedItemPayload,
   ManualTransactionInput,
+  ReceiptCreateInput,
+  receiptFilterSchema,
+  ReceiptUpdateInput,
   RuleMatcherInput,
   RulePayload,
   ThemeInput,
@@ -12,12 +15,13 @@ import type {
 import type { accountInputSchema, apiSurface, applyRulesInputSchema } from "@centime/services"
 import type { z } from "zod"
 import type { TransactionFilters, TransactionPageFilters } from "./filters"
-import type { ImportUpload, TransactionChanges } from "./inputs"
+import type { ImportUpload, ReceiptCandidateOptions, ReceiptFileUpload, TransactionChanges } from "./inputs"
 
 type Surface = typeof apiSurface
 type Out<Call extends (...args: never[]) => Promise<unknown>> = Promise<Awaited<ReturnType<Call>>>
 type AccountInput = z.input<typeof accountInputSchema>
 type ApplyScopeInput = z.input<typeof applyRulesInputSchema>["scope"]
+export type ReceiptFilterInput = z.input<typeof receiptFilterSchema>
 
 export type Api = {
   accounts: {
@@ -44,6 +48,19 @@ export type Api = {
     bulkUpdate(ids: string[], changes: TransactionChanges): Out<Surface["transactions"]["bulkUpdate"]>
     split(input: TransactionSplitInput): Out<Surface["transactions"]["split"]>
     unsplit(transactionId: string): Out<Surface["transactions"]["unsplit"]>
+  }
+  receipts: {
+    list(filter?: ReceiptFilterInput): Out<Surface["receipts"]["list"]>
+    get(id: string): Out<Surface["receipts"]["get"]>
+    create(input: ReceiptCreateInput): Out<Surface["receipts"]["create"]>
+    createFromFile(upload: ReceiptFileUpload): Out<Surface["receipts"]["create"]>
+    update(id: string, patch: ReceiptUpdateInput): Out<Surface["receipts"]["update"]>
+    remove(id: string): Out<Surface["receipts"]["remove"]>
+    link(id: string, transactionId: string): Out<Surface["receipts"]["link"]>
+    unlink(id: string): Out<Surface["receipts"]["unlink"]>
+    candidates(id: string, options?: ReceiptCandidateOptions): Out<Surface["receipts"]["candidates"]>
+    matchPending(accountId: string): Out<Surface["receipts"]["matchPending"]>
+    applyLines(id: string): Out<Surface["receipts"]["applyLines"]>
   }
   themes: {
     list(): Out<Surface["themes"]["list"]>
@@ -97,6 +114,8 @@ export type ImportOutcome = Result<Api["imports"]["commit"]>
 export type ImportHistoryEntry = Result<Api["imports"]["list"]>[number]
 export type TransactionsPage = Result<Api["transactions"]["list"]>
 export type TransactionItem = TransactionsPage["items"][number]
+export type Receipt = Result<Api["receipts"]["get"]>
+export type ReceiptCandidate = Result<Api["receipts"]["candidates"]>[number]
 export type Theme = Result<Api["themes"]["list"]>[number]
 export type Category = Result<Api["categories"]["list"]>[number]
 export type Rule = Result<Api["rules"]["list"]>[number]

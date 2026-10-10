@@ -14,7 +14,7 @@
 <a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
 <nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
 <button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
-<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html" aria-current="page">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html" aria-current="page">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
 <main class="prose"><h1>Self-hosting</h1>
 <p>The server is a small Hono API on Bun that stores encrypted blobs in SQLite and serves the web build. It holds no business data and no business logic.</p>
 <h2>Docker Compose</h2>
@@ -33,7 +33,7 @@ bun run start</code></pre>
 <tr><td><code>DATABASE_PATH</code></td><td><code>./data/relay.db</code></td><td>Relay SQLite file</td></tr>
 <tr><td><code>ALLOW_SIGNUP</code></td><td><code>true</code></td><td>Whether unknown user ids can create an account. Set to <code>false</code> once you have created yours.</td></tr>
 <tr><td><code>STATIC_DIR</code></td><td>empty</td><td>Override for the web build folder</td></tr>
-<tr><td><code>MAX_USER_BYTES</code></td><td><code>536870912</code></td><td>Storage quota per user id in bytes (512&nbsp;MiB). <code>0</code> disables the quota.</td></tr>
+<tr><td><code>MAX_USER_BYTES</code></td><td><code>536870912</code></td><td>Storage quota per user id in bytes, log and files together (512&nbsp;MiB). <code>0</code> disables the quota.</td></tr>
 <tr><td><code>RATE_LIMIT_PER_MINUTE</code></td><td><code>300</code></td><td>Maximum API requests per minute and per client. <code>0</code> disables the limit.</td></tr>
 <tr><td><code>ALLOWED_ORIGINS</code></td><td>empty</td><td>Comma-separated origins of a web app hosted elsewhere (for example <code>https://you.github.io</code>) allowed to reach the relay. Leave empty when the relay serves the web app itself.</td></tr>
 </tbody></table>

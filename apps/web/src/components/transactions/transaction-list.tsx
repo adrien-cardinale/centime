@@ -2,7 +2,8 @@ import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import type { TransactionItem } from "@/lib/api"
+import { ReceiptBadgeButton } from "@/components/receipts/receipt-badge-button"
+import type { Receipt, TransactionItem } from "@/lib/api"
 import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
@@ -17,6 +18,9 @@ type TransactionListProps = {
   onToggleAll: (checked: boolean) => void
   onCreateRule: (transaction: TransactionItem) => void
   onSplit: (transaction: TransactionItem) => void
+  onAttachReceipt: (transaction: TransactionItem) => void
+  receiptsByTransaction: ReadonlyMap<string, Receipt>
+  onOpenReceipt: (receipt: Receipt) => void
   linkingId: string | null
   onLinkingChange: (id: string | null) => void
 }
@@ -28,6 +32,9 @@ export function TransactionList({
   onToggleAll,
   onCreateRule,
   onSplit,
+  onAttachReceipt,
+  receiptsByTransaction,
+  onOpenReceipt,
   linkingId,
   onLinkingChange,
 }: TransactionListProps) {
@@ -81,6 +88,7 @@ export function TransactionList({
                   {t("transactionsPage.table.transfer")}
                 </Badge>
               )}
+              <ReceiptBadgeButton receipt={receiptsByTransaction.get(item.id)} onOpen={onOpenReceipt} />
             </div>
           </div>
           <TransactionRowActions
@@ -88,6 +96,7 @@ export function TransactionList({
             onCreateRule={onCreateRule}
             onLinkFixedItem={(transaction) => onLinkingChange(transaction.id)}
             onSplit={onSplit}
+            onAttachReceipt={onAttachReceipt}
           />
         </li>
       ))}

@@ -14,16 +14,22 @@
 <a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
 <nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
 <button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
-<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html" aria-current="page">Relay API</a></li></ul></aside>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html" aria-current="page">Relay API</a></li></ul></aside>
 <main class="prose"><h1>Relay API</h1>
-<p>All routes live under <code>/api</code>. Bodies are JSON; <code>data</code> is the base64 of a sealed blob (8 MiB max per entry, 9 MiB per request).</p>
+<p>All routes live under <code>/api</code>. Log bodies are JSON; <code>data</code> is the base64 of a sealed blob (8 MiB max per entry, 9 MiB per request). File bodies are the raw sealed bytes (<code>application/octet-stream</code>, 8 MiB max per file). Every route except <code>/api/health</code> needs <code>Authorization: Bearer &lt;userId&gt;.&lt;secret&gt;</code>. Errors are JSON: <code>{ "error": "…" }</code>.</p>
 <table><thead><tr><th>Route</th><th>Description</th></tr></thead><tbody>
 <tr><td><code>GET /api/health</code></td><td>Returns <code>{ "status": "ok" }</code>.</td></tr>
 <tr><td><code>POST /api/log</code></td><td>Appends <code>{ "data" }</code> to the user's log and returns <code>{ "seq" }</code> (201). The first append from an unknown user id creates the account (403 if signups are closed). Later appends need the matching secret (401 otherwise).</td></tr>
 <tr><td><code>GET /api/log?since=&lt;seq&gt;&amp;limit=&lt;n&gt;</code></td><td>Returns <code>{ entries: [{ seq, data }], cursor, hasMore }</code>. <code>limit</code> defaults to 200, capped at 500; a page is also capped at 8 MiB. Call again with the returned <code>cursor</code> while <code>hasMore</code> is true.</td></tr>
-<tr><td><code>DELETE /api/account</code></td><td>Deletes the user and the whole log (204).</td></tr>
+<tr><td><code>PUT /api/blob/&lt;id&gt;</code></td><td>Stores the request body as the file <code>&lt;id&gt;</code> (a UUID, 400 otherwise). Returns 201 on creation and 204 on replacement. Creates the account like <code>POST /api/log</code> (403 if signups are closed). 413 if the file exceeds 8 MiB or the quota.</td></tr>
+<tr><td><code>GET /api/blob/&lt;id&gt;</code></td><td>Returns the file bytes as <code>application/octet-stream</code>. 404 if the file does not exist.</td></tr>
+<tr><td><code>DELETE /api/blob/&lt;id&gt;</code></td><td>Deletes the file (204, even if it does not exist).</td></tr>
+<tr><td><code>GET /api/blob</code></td><td>Returns <code>{ ids: [...] }</code>, the ids of the user's files, sorted.</td></tr>
+<tr><td><code>DELETE /api/account</code></td><td>Deletes the user, the whole log and every file (204).</td></tr>
 </tbody></table>
 <p>The log is append-only: entries are numbered per user with a gapless sequence, stored in SQLite (WAL mode).</p>
+<p>Files hold encrypted attachments such as receipt photos. The server never reads them. The log and the files share the same per-user quota (<code>MAX_USER_BYTES</code>, 512 MiB by default). Replacing a file counts only its new size.</p>
+<p>The apps name each file after its receipt id. After each log sync, they upload the files the relay lacks, download the ones they lack and delete the files of deleted receipts, at most 20 transfers per sync.</p>
 <h2>Development</h2>
 <table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody>
 <tr><td><code>bun run build</code></td><td>Type-check core, db and services, then build the web UI</td></tr>

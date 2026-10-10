@@ -37,3 +37,9 @@ export async function idbSet(key: string, value: Uint8Array): Promise<void> {
 export async function idbDelete(key: string): Promise<void> {
   await run("readwrite", (store) => store.delete(key))
 }
+
+export async function idbKeysWithPrefix(prefix: string): Promise<string[]> {
+  const range = IDBKeyRange.bound(prefix, `${prefix}\uffff`)
+  const keys = await run("readonly", (store) => store.getAllKeys(range))
+  return keys.filter((key): key is string => typeof key === "string")
+}

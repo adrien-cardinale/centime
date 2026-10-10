@@ -3,13 +3,14 @@ import { cors } from "hono/cors"
 import { HTTPException } from "hono/http-exception"
 import { rateLimit } from "./rate-limit"
 import { createAccountRoutes } from "./routes/account"
+import { createBlobRoutes } from "./routes/blob"
 import { healthRoutes } from "./routes/health"
 import { createLogRoutes } from "./routes/log"
 import type { Store } from "./store"
 
 export type AppDeps = { store: Store; rateLimitPerMinute?: number; allowedOrigins?: string[] }
 
-const CORS_METHODS = ["GET", "POST", "DELETE"]
+const CORS_METHODS = ["GET", "POST", "PUT", "DELETE"]
 const CORS_HEADERS = ["Authorization", "Content-Type"]
 
 function corsFor(allowedOrigins: string[]): MiddlewareHandler {
@@ -30,5 +31,6 @@ export function createApi({ store, rateLimitPerMinute = 0, allowedOrigins = [] }
     .use(rateLimit(rateLimitPerMinute))
     .route("/health", healthRoutes)
     .route("/log", createLogRoutes({ store }))
+    .route("/blob", createBlobRoutes({ store }))
     .route("/account", createAccountRoutes(store))
 }

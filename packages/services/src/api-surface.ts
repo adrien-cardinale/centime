@@ -12,6 +12,18 @@ import {
   updateFixedItem,
 } from "./fixed-items"
 import { commitImport, deleteImport, listImports, previewImport } from "./imports"
+import {
+  applyReceiptLinesAsSplits,
+  createReceipt,
+  deleteReceipt,
+  findReceiptCandidates,
+  getReceipt,
+  linkReceipt,
+  listReceipts,
+  matchPendingReceipts,
+  unlinkReceipt,
+  updateReceipt,
+} from "./receipts"
 import { applyRules, createRule, deleteRule, listRules, testRule, updateRule } from "./rules"
 import { createTheme, deleteTheme, listThemes, updateTheme } from "./themes"
 import { createTransaction } from "./transaction-create"
@@ -45,6 +57,18 @@ export const apiSurface = {
     split: splitTransaction,
     unsplit: unsplitTransaction,
     export: exportTransactions,
+  },
+  receipts: {
+    list: listReceipts,
+    get: getReceipt,
+    create: createReceipt,
+    update: updateReceipt,
+    remove: deleteReceipt,
+    link: linkReceipt,
+    unlink: unlinkReceipt,
+    candidates: findReceiptCandidates,
+    matchPending: matchPendingReceipts,
+    applyLines: applyReceiptLinesAsSplits,
   },
   themes: {
     list: listThemes,

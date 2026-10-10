@@ -2,12 +2,16 @@ import { suggestRulePattern } from "@centime/core"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
+import { ReceiptBadgeButton } from "@/components/receipts/receipt-badge-button"
+import { ReceiptDialog } from "@/components/receipts/receipt-dialog"
+import { ReceiptSheet } from "@/components/receipts/receipt-sheet"
+import { useLinkedReceipts } from "@/components/receipts/use-linked-receipts"
 import { RuleDialog, type RuleFormValues } from "@/components/rules/rule-dialog"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
-import type { TransactionItem } from "@/lib/api"
+import type { Receipt, TransactionItem } from "@/lib/api"
 import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { CategoryCell } from "./category-cell"
@@ -43,6 +47,22 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
   const [ruleSource, setRuleSource] = useState<TransactionItem | null>(null)
   const [linkingId, setLinkingId] = useState<string | null>(null)
   const [splitting, setSplitting] = useState<TransactionItem | null>(null)
+  const [attaching, setAttaching] = useState<TransactionItem | null>(null)
+  const [openedReceiptId, setOpenedReceiptId] = useState<string | null>(null)
+  const receiptsByTransaction = useLinkedReceipts()
+  const openReceipt = (receipt: Receipt) => setOpenedReceiptId(receipt.id)
+  const overlays = (
+    <RowOverlays
+      ruleSource={ruleSource}
+      onRuleClose={() => setRuleSource(null)}
+      splitting={splitting}
+      onSplitClose={() => setSplitting(null)}
+      attaching={attaching}
+      onAttachClose={() => setAttaching(null)}
+      openedReceiptId={openedReceiptId}
+      onReceiptClose={() => setOpenedReceiptId(null)}
+    />
+  )
 
   const toggleAll = (checked: boolean) => onSelectionChange(new Set(checked ? items.map((item) => item.id) : []))
   const toggleOne = (id: string, checked: boolean) => {
@@ -62,15 +82,13 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
           onToggleAll={toggleAll}
           onCreateRule={setRuleSource}
           onSplit={setSplitting}
+          onAttachReceipt={setAttaching}
+          receiptsByTransaction={receiptsByTransaction}
+          onOpenReceipt={openReceipt}
           linkingId={linkingId}
           onLinkingChange={setLinkingId}
         />
-        <RowOverlays
-          ruleSource={ruleSource}
-          onRuleClose={() => setRuleSource(null)}
-          splitting={splitting}
-          onSplitClose={() => setSplitting(null)}
-        />
+        {overlays}
       </>
     )
   }
@@ -117,6 +135,7 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
               <TableCell className="max-w-96" title={item.rawLabel}>
                 <div className="flex items-center gap-2">
                   <span className="truncate">{item.rawLabel}</span>
+                  <ReceiptBadgeButton receipt={receiptsByTransaction.get(item.id)} onOpen={openReceipt} />
                   {item.status === "pending" && (
                     <Badge variant="outline" className="md:hidden">
                       {transactionStatusLabels[item.status]}
@@ -155,18 +174,14 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
                   onCreateRule={setRuleSource}
                   onLinkFixedItem={(transaction) => setLinkingId(transaction.id)}
                   onSplit={setSplitting}
+                  onAttachReceipt={setAttaching}
                 />
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
-      <RowOverlays
-        ruleSource={ruleSource}
-        onRuleClose={() => setRuleSource(null)}
-        splitting={splitting}
-        onSplitClose={() => setSplitting(null)}
-      />
+      {overlays}
     </>
   )
 }
@@ -176,9 +191,22 @@ type RowOverlaysProps = {
   onRuleClose: () => void
   splitting: TransactionItem | null
   onSplitClose: () => void
+  attaching: TransactionItem | null
+  onAttachClose: () => void
+  openedReceiptId: string | null
+  onReceiptClose: () => void
 }
 
-function RowOverlays({ ruleSource, onRuleClose, splitting, onSplitClose }: RowOverlaysProps) {
+function RowOverlays({
+  ruleSource,
+  onRuleClose,
+  splitting,
+  onSplitClose,
+  attaching,
+  onAttachClose,
+  openedReceiptId,
+  onReceiptClose,
+}: RowOverlaysProps) {
   return (
     <>
       {ruleSource && (
@@ -190,6 +218,15 @@ function RowOverlays({ ruleSource, onRuleClose, splitting, onSplitClose }: RowOv
         />
       )}
       {splitting && <SplitTransactionDialog key={splitting.id} transaction={splitting} onClose={onSplitClose} />}
+      {attaching && (
+        <ReceiptDialog
+          key={attaching.id}
+          open
+          transaction={attaching}
+          onOpenChange={(open) => !open && onAttachClose()}
+        />
+      )}
+      <ReceiptSheet receiptId={openedReceiptId} onOpenChange={(open) => !open && onReceiptClose()} />
     </>
   )
 }

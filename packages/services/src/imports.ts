@@ -20,6 +20,7 @@ import { and, desc, eq, inArray, isNull } from "drizzle-orm"
 import { assignmentFor, type Categorizer, loadCategorizer } from "./categorize"
 import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound, ServiceError } from "./errors"
+import { detachReceipts, matchPendingReceipts } from "./receipts"
 import { discardSplits } from "./transaction-splits"
 
 export type ImportSource = {
@@ -349,17 +350,30 @@ async function recordImport(db: DbExecutor, source: ImportSource, analysis: Impo
   }
 }
 
+function importedAccountIds(rows: AnalyzedRow[]): string[] {
+  const touched = rows.filter((row) => row.state !== "duplicate")
+  return [...new Set(touched.flatMap((row) => (row.accountId === null ? [] : [row.accountId])))]
+}
+
+async function matchReceiptsQuietly(db: DbExecutor, accountIds: string[]): Promise<void> {
+  for (const accountId of accountIds) {
+    await matchPendingReceipts(db, { accountId }).catch(() => [])
+  }
+}
+
 export async function commitImport(db: Db, source: ImportSource): Promise<ImportOutcome> {
-  return db.transaction(async (tx) => {
+  const { outcome, accountIds } = await db.transaction(async (tx) => {
     const preliminary = await analyzeImport(tx, source)
     assertImportable(preliminary, source)
     const accountsCreated = await createMissingAccounts(tx, preliminary)
     const analysis = accountsCreated > 0 ? await analyzeImport(tx, source) : preliminary
-    const outcome = await recordImport(tx, source, analysis)
-    await insertNewTransactions(tx, analysis.rows.filter((row) => row.state === "new"), outcome.importId)
+    const recorded = await recordImport(tx, source, analysis)
+    await insertNewTransactions(tx, analysis.rows.filter((row) => row.state === "new"), recorded.importId)
     await promotePendingTransactions(tx, analysis.rows.filter((row) => row.state === "pendingToBooked"))
-    return { ...outcome, accountsCreated }
+    return { outcome: { ...recorded, accountsCreated }, accountIds: importedAccountIds(analysis.rows) }
   })
+  await matchReceiptsQuietly(db, accountIds)
+  return outcome
 }
 
 export async function previewImport(db: DbExecutor, source: ImportSource): Promise<ImportPreview> {
@@ -380,6 +394,7 @@ export async function deleteImport(db: Db, { id }: { id: string }, clock: Clock 
       .set({ deletedAt })
       .where(and(eq(transactions.importId, id), isNull(transactions.deletedAt)))
       .returning({ id: transactions.id })
+    await detachReceipts(tx, removed.map((row) => row.id))
     return { id: deleted.id, deletedTransactions: removed.length }
   })
 }

@@ -1,4 +1,12 @@
-import { ACCOUNT_KINDS, IMPORT_FORMATS, PERIODICITIES, RULE_FIELDS, RULE_MATCH_KINDS, TRANSACTION_STATUSES } from "@centime/core"
+import {
+  ACCOUNT_KINDS,
+  IMPORT_FORMATS,
+  PERIODICITIES,
+  RECEIPT_STATUSES,
+  RULE_FIELDS,
+  RULE_MATCH_KINDS,
+  TRANSACTION_STATUSES,
+} from "@centime/core"
 import { sql } from "drizzle-orm"
 import { type AnySQLiteColumn, index, integer, real, sqliteTable, text, uniqueIndex } from "drizzle-orm/sqlite-core"
 
@@ -146,6 +154,33 @@ export const transactionSplits = sqliteTable(
   ],
 )
 
+export const receipts = sqliteTable(
+  "receipts",
+  {
+    ...syncColumns,
+    accountId: text("account_id")
+      .notNull()
+      .references(() => accounts.id),
+    transactionId: text("transaction_id").references(() => transactions.id),
+    capturedAt: text("captured_at").notNull(),
+    mime: text("mime").notNull(),
+    size: integer("size").notNull(),
+    sha256: text("sha256").notNull(),
+    merchant: text("merchant"),
+    total: real("total"),
+    receiptDate: text("receipt_date"),
+    note: text("note"),
+    linesJson: text("lines_json"),
+    status: text("status", { enum: RECEIPT_STATUSES }).notNull(),
+  },
+  (table) => [
+    index("receipts_account_id_idx").on(table.accountId),
+    index("receipts_transaction_id_idx").on(table.transactionId),
+    index("receipts_status_idx").on(table.status),
+    syncVersionIndex("receipts", table),
+  ],
+)
+
 export const rules = sqliteTable(
   "rules",
   {
@@ -208,6 +243,8 @@ export type TransactionRow = typeof transactions.$inferSelect
 export type NewTransactionRow = typeof transactions.$inferInsert
 export type TransactionSplitRow = typeof transactionSplits.$inferSelect
 export type NewTransactionSplitRow = typeof transactionSplits.$inferInsert
+export type ReceiptRow = typeof receipts.$inferSelect
+export type NewReceiptRow = typeof receipts.$inferInsert
 export type ImportRow = typeof imports.$inferSelect
 export type NewImportRow = typeof imports.$inferInsert
 export type CsvProfileRow = typeof csvProfiles.$inferSelect

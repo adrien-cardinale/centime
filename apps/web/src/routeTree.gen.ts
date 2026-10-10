@@ -15,6 +15,7 @@ import { Route as AppAccountsRouteImport } from './routes/_app/accounts'
 import { Route as AppBudgetsRouteImport } from './routes/_app/budgets'
 import { Route as AppCategoriesRouteImport } from './routes/_app/categories'
 import { Route as AppImportRouteImport } from './routes/_app/import'
+import { Route as AppReceiptsRouteImport } from './routes/_app/receipts'
 import { Route as AppSettingsRouteImport } from './routes/_app/settings'
 import { Route as AppTransactionsRouteImport } from './routes/_app/transactions'
 
@@ -47,6 +48,11 @@ const AppImportRoute = AppImportRouteImport.update({
   path: '/import',
   getParentRoute: () => AppRoute,
 } as any)
+const AppReceiptsRoute = AppReceiptsRouteImport.update({
+  id: '/receipts',
+  path: '/receipts',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppSettingsRoute = AppSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -64,6 +70,7 @@ export interface FileRoutesByFullPath {
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/import': typeof AppImportRoute
+  '/receipts': typeof AppReceiptsRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
 }
@@ -72,6 +79,7 @@ export interface FileRoutesByTo {
   '/budgets': typeof AppBudgetsRoute
   '/categories': typeof AppCategoriesRoute
   '/import': typeof AppImportRoute
+  '/receipts': typeof AppReceiptsRoute
   '/settings': typeof AppSettingsRoute
   '/transactions': typeof AppTransactionsRoute
   '/': typeof AppIndexRoute
@@ -83,6 +91,7 @@ export interface FileRoutesById {
   '/_app/budgets': typeof AppBudgetsRoute
   '/_app/categories': typeof AppCategoriesRoute
   '/_app/import': typeof AppImportRoute
+  '/_app/receipts': typeof AppReceiptsRoute
   '/_app/settings': typeof AppSettingsRoute
   '/_app/transactions': typeof AppTransactionsRoute
   '/_app/': typeof AppIndexRoute
@@ -95,6 +104,7 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/categories'
     | '/import'
+    | '/receipts'
     | '/settings'
     | '/transactions'
   fileRoutesByTo: FileRoutesByTo
@@ -103,6 +113,7 @@ export interface FileRouteTypes {
     | '/budgets'
     | '/categories'
     | '/import'
+    | '/receipts'
     | '/settings'
     | '/transactions'
     | '/'
@@ -113,6 +124,7 @@ export interface FileRouteTypes {
     | '/_app/budgets'
     | '/_app/categories'
     | '/_app/import'
+    | '/_app/receipts'
     | '/_app/settings'
     | '/_app/transactions'
     | '/_app/'
@@ -166,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppImportRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/receipts': {
+      id: '/_app/receipts'
+      path: '/receipts'
+      fullPath: '/receipts'
+      preLoaderRoute: typeof AppReceiptsRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/settings': {
       id: '/_app/settings'
       path: '/settings'
@@ -188,6 +207,7 @@ interface AppRouteChildren {
   AppBudgetsRoute: typeof AppBudgetsRoute
   AppCategoriesRoute: typeof AppCategoriesRoute
   AppImportRoute: typeof AppImportRoute
+  AppReceiptsRoute: typeof AppReceiptsRoute
   AppSettingsRoute: typeof AppSettingsRoute
   AppTransactionsRoute: typeof AppTransactionsRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -198,6 +218,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppBudgetsRoute: AppBudgetsRoute,
   AppCategoriesRoute: AppCategoriesRoute,
   AppImportRoute: AppImportRoute,
+  AppReceiptsRoute: AppReceiptsRoute,
   AppSettingsRoute: AppSettingsRoute,
   AppTransactionsRoute: AppTransactionsRoute,
   AppIndexRoute: AppIndexRoute,

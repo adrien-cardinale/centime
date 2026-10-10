@@ -6,9 +6,19 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import { isAndroid } from "@/lib/runtime"
 import { cn } from "@/lib/utils"
 
+export type DropzoneLabels = {
+  prompt: string
+  touchPrompt: string
+  hint: string
+  choose: string
+}
+
 type FileDropzoneProps = {
   file: File | null
   onFileSelected: (file: File) => void
+  accept?: string
+  capture?: "environment" | "user"
+  labels?: DropzoneLabels
 }
 
 const ACCEPTED_TYPES = [
@@ -25,9 +35,21 @@ const ACCEPTED_TYPES = [
 const ZONE_CLASS =
   "flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed p-6 text-center sm:p-10"
 
-export function FileDropzone({ file, onFileSelected }: FileDropzoneProps) {
+function useDefaultLabels(): DropzoneLabels {
+  const { t } = useTranslation()
+  return {
+    prompt: t("importWorkspace.dropzone.prompt"),
+    touchPrompt: t("importWorkspace.dropzone.touchPrompt"),
+    hint: t("importWorkspace.dropzone.hint"),
+    choose: t("importWorkspace.dropzone.choose"),
+  }
+}
+
+export function FileDropzone({ file, onFileSelected, accept = ACCEPTED_TYPES, capture, labels }: FileDropzoneProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const isTouch = useIsMobile() || isAndroid()
+  const defaultLabels = useDefaultLabels()
+  const texts = labels ?? defaultLabels
   const openPicker = () => inputRef.current?.click()
 
   const selectFirst = (files: FileList | null) => {
@@ -38,14 +60,15 @@ export function FileDropzone({ file, onFileSelected }: FileDropzoneProps) {
   return (
     <>
       {isTouch ? (
-        <TouchPicker file={file} onOpenPicker={openPicker} />
+        <TouchPicker file={file} labels={texts} onOpenPicker={openPicker} />
       ) : (
-        <DropTarget file={file} onOpenPicker={openPicker} onFilesDropped={selectFirst} />
+        <DropTarget file={file} labels={texts} onOpenPicker={openPicker} onFilesDropped={selectFirst} />
       )}
       <input
         ref={inputRef}
         type="file"
-        accept={ACCEPTED_TYPES}
+        accept={accept}
+        capture={isTouch ? capture : undefined}
         className="hidden"
         onChange={(event) => {
           selectFirst(event.target.files)
@@ -62,18 +85,18 @@ function FileName({ file, fallback }: { file: File | null; fallback: string }) {
 
 type TouchPickerProps = {
   file: File | null
+  labels: DropzoneLabels
   onOpenPicker: () => void
 }
 
-function TouchPicker({ file, onOpenPicker }: TouchPickerProps) {
-  const { t } = useTranslation()
+function TouchPicker({ file, labels, onOpenPicker }: TouchPickerProps) {
   return (
     <div className={cn(ZONE_CLASS, "border-muted-foreground/25")}>
       <FileUp className="size-8 text-muted-foreground" />
-      <FileName file={file} fallback={t("importWorkspace.dropzone.touchPrompt")} />
-      <p className="text-sm text-muted-foreground">{t("importWorkspace.dropzone.hint")}</p>
+      <FileName file={file} fallback={labels.touchPrompt} />
+      <p className="text-sm text-muted-foreground">{labels.hint}</p>
       <Button type="button" size="lg" className="mt-2" onClick={onOpenPicker}>
-        {t("importWorkspace.dropzone.choose")}
+        {labels.choose}
       </Button>
     </div>
   )
@@ -83,8 +106,7 @@ type DropTargetProps = TouchPickerProps & {
   onFilesDropped: (files: FileList | null) => void
 }
 
-function DropTarget({ file, onOpenPicker, onFilesDropped }: DropTargetProps) {
-  const { t } = useTranslation()
+function DropTarget({ file, labels, onOpenPicker, onFilesDropped }: DropTargetProps) {
   const [isDragging, setIsDragging] = useState(false)
 
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -120,8 +142,8 @@ function DropTarget({ file, onOpenPicker, onFilesDropped }: DropTargetProps) {
       )}
     >
       <FileUp className="size-8 text-muted-foreground" />
-      <FileName file={file} fallback={t("importWorkspace.dropzone.prompt")} />
-      <p className="text-sm text-muted-foreground">{t("importWorkspace.dropzone.hint")}</p>
+      <FileName file={file} fallback={labels.prompt} />
+      <p className="text-sm text-muted-foreground">{labels.hint}</p>
     </div>
   )
 }

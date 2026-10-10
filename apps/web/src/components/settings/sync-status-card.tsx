@@ -57,6 +57,13 @@ export function SyncStatusCard({ state }: { state: SyncState }) {
           <AlertDescription>{state.lastError}</AlertDescription>
         </Alert>
       )}
+      {!state.lastError && state.lastBlobError && (
+        <Alert variant="destructive">
+          <TriangleAlert />
+          <AlertTitle>{t("settings.sync.receiptImagesFailed")}</AlertTitle>
+          <AlertDescription>{state.lastBlobError}</AlertDescription>
+        </Alert>
+      )}
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => void synchronizeNow()} disabled={syncing}>
           <RefreshCw className={syncing ? "animate-spin" : undefined} />

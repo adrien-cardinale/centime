@@ -9,6 +9,7 @@
   "nav": {
     "dashboard": "Tableau de bord",
     "transactions": "Transactions",
+    "receipts": "Tickets",
     "import": "Import",
     "budget": "Budget",
     "categories": "Catégories",
@@ -61,6 +62,7 @@
       "lastSync": "Dernière synchronisation",
       "localChanges": "Modifications locales",
       "lastSyncFailed": "Dernière synchronisation en échec",
+      "receiptImagesFailed": "Images des tickets non synchronisées",
       "syncing": "Synchronisation…",
       "syncNow": "Synchroniser maintenant",
       "report": "Synchronisation terminée : {{pulled}} reçue(s), {{pushed}} envoyée(s)",
@@ -460,13 +462,147 @@
       "uncategorized": "Non catégorisé"
     }
   },
+  "receipts": {
+    "title": "Tickets",
+    "description": "Photographiez vos tickets de caisse et liez-les à vos transactions.",
+    "add": "Ajouter un ticket",
+    "attach": "Joindre un ticket",
+    "viewReceipt": "Voir le ticket",
+    "untitled": "Ticket",
+    "tabs": {
+      "pending": "À lier",
+      "linked": "Liés",
+      "ignored": "Ignorés"
+    },
+    "status": {
+      "pending": "À lier",
+      "linked": "Lié",
+      "ignored": "Ignoré"
+    },
+    "empty": {
+      "pending": "Prenez en photo un ticket de caisse et notez son total. centime cherche ensuite la transaction qui correspond.",
+      "linked": "Aucun ticket lié.",
+      "ignored": "Aucun ticket ignoré."
+    },
+    "autoMatch": {
+      "action": "Lier automatiquement",
+      "running": "Recherche…",
+      "done_one": "{{count}} ticket lié",
+      "done_other": "{{count}} tickets liés"
+    },
+    "dialog": {
+      "title": "Ajouter un ticket",
+      "attachTitle": "Joindre un ticket",
+      "description": "Photo, détails, puis transaction."
+    },
+    "photo": {
+      "prompt": "Déposez une photo ou un PDF ici, ou cliquez pour choisir",
+      "touchPrompt": "Prenez le ticket en photo",
+      "hint": "Photo ou PDF, 7 Mo au maximum.",
+      "choose": "Prendre une photo",
+      "retake": "Reprendre",
+      "pickFile": "Choisir une image ou un PDF",
+      "size": "Taille : {{size}}",
+      "failed": "Lecture du fichier impossible"
+    },
+    "image": {
+      "alt": "Photo du ticket",
+      "pdf": "Ticket au format PDF",
+      "openPdf": "Ouvrir le PDF",
+      "missing": "Image absente sur cet appareil.",
+      "zoomIn": "Agrandir l'image",
+      "zoomOut": "Ajuster l'image"
+    },
+    "details": {
+      "account": "Compte",
+      "merchant": "Commerçant",
+      "merchantPlaceholder": "Migros",
+      "total": "Total",
+      "date": "Date du ticket",
+      "note": "Note",
+      "amountPlaceholder": "25,40",
+      "lines": "Lignes",
+      "noLines": "Aucune ligne. Ajoutez-en pour répartir la dépense par catégorie.",
+      "addLine": "Ajouter une ligne",
+      "removeLine": "Supprimer la ligne",
+      "lineLabel": "Article",
+      "lineAmount": "Montant",
+      "lineCategory": "Catégorie",
+      "noCategory": "Sans catégorie",
+      "linesSum": "Somme des lignes : {{amount}}",
+      "useSumAsTotal": "Utiliser comme total",
+      "linesMatch": "Les lignes correspondent au total.",
+      "linesMismatch": "Les lignes font {{lines}}, le total est {{total}}.",
+      "invalidAmount": "Montant invalide"
+    },
+    "ocr": {
+      "read": "Lire le ticket",
+      "reading": "Lecture du ticket… {{percent}} %",
+      "cancel": "Arrêter la lecture",
+      "prefilled": "Champs pré-remplis, vérifiez les montants.",
+      "uncertain": "Lecture incertaine, vérifiez ce champ.",
+      "failed": "Lecture du ticket impossible. Remplissez les champs à la main.",
+      "noText": "Aucun texte lisible sur la photo.",
+      "nothingFound": "Rien à pré-remplir : les champs sont déjà remplis ou le ticket est illisible."
+    },
+    "link": {
+      "link": "Lier",
+      "level": {
+        "veryLikely": "Très probable",
+        "likely": "Probable",
+        "possible": "Possible"
+      },
+      "needsTotal": "Indiquez le total du ticket pour trouver la transaction.",
+      "noCandidates": "Aucune transaction ne correspond pour l'instant.",
+      "searchOther": "Chercher une autre transaction",
+      "showCandidates": "Voir les suggestions",
+      "searchPlaceholder": "Libellé ou montant",
+      "noResults": "Aucune transaction trouvée."
+    },
+    "split": {
+      "description": "Le ticket couvre plusieurs catégories. Vous pouvez répartir la transaction selon ses lignes.",
+      "apply": "Répartir la transaction selon le ticket",
+      "applying": "Répartition…",
+      "skip": "Pas maintenant"
+    },
+    "actions": {
+      "continue": "Continuer",
+      "back": "Retour",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "later": "Plus tard",
+      "ignore": "Ignorer",
+      "restore": "Remettre à lier",
+      "edit": "Modifier",
+      "link": "Lier",
+      "unlink": "Délier",
+      "split": "Répartir",
+      "delete": "Supprimer"
+    },
+    "delete": {
+      "title": "Supprimer ce ticket ?",
+      "description": "La photo et les détails du ticket seront effacés. La transaction reste intacte.",
+      "confirm": "Supprimer"
+    },
+    "toast": {
+      "saved": "Ticket enregistré",
+      "updated": "Ticket modifié",
+      "linked": "Ticket lié à la transaction",
+      "unlinked": "Ticket délié",
+      "ignored": "Ticket ignoré",
+      "deleted": "Ticket supprimé",
+      "splitApplied": "Transaction répartie selon le ticket"
+    }
+  },
   "syncErrors": {
     "unauthorized": "Accès refusé par le serveur : la clé ne correspond pas à ce compte",
     "unreadableEntry": "Une entrée du serveur est illisible : la clé ne correspond pas ou les données ont été altérées",
     "network": "Serveur injoignable : vérifie la connexion réseau et l'adresse du serveur",
     "invalidResponse": "Réponse du serveur invalide",
     "serverStatus": "Erreur du serveur ({{status}})",
-    "unexpected": "Erreur de synchronisation inattendue"
+    "unexpected": "Erreur de synchronisation inattendue",
+    "blobTooLarge": "Une image de ticket dépasse 8 Mo : elle reste sur cet appareil",
+    "blobCorrupted": "Une image de ticket reçue du serveur est illisible : elle est ignorée"
   },
   "importPage": {
     "title": "Import",

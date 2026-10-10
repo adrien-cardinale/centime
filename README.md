@@ -13,6 +13,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Manual entry**: add from the Transactions page an operation missing from the statements (account, date, label, merchant, amount, category).
 - **Categories and rules**: categories grouped by theme (transactions are filed under categories), "contains" or regex rules on the label, the merchant or the provider category, applied at import time or on demand.
 - **Split transactions**: spread one transaction over several categories with partial amounts that add up to the total; dashboard, budgets, filters and export count each part in its own category.
+- **Receipts**: photograph till receipts (or attach a PDF), enter the merchant, total and lines, link them to a transaction with suggested matches, and split the transaction by category from the receipt lines. Images are encrypted and stored on the device.
 - **Fixed items**: recurring expenses and income (monthly, quarterly, yearly), automatic transaction matching, upcoming and overdue items.
 - **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
@@ -104,16 +105,20 @@ Because the server cannot read or merge data, conflict resolution happens on the
 
 ## Relay API
 
-All routes live under `/api`. Bodies are JSON; `data` is base64 of a sealed blob (8 MiB max per entry, 9 MiB max per request).
+All routes live under `/api`. Log bodies are JSON; `data` is base64 of a sealed blob (8 MiB max per entry, 9 MiB max per request). File bodies are the raw sealed bytes (`application/octet-stream`, 8 MiB max per file). Errors are JSON: `{ "error": "…" }`.
 
 | Route | Description |
 | --- | --- |
 | `GET /api/health` | Returns `{ "status": "ok" }` |
 | `POST /api/log` | Appends `{ "data" }` to the user's log and returns `{ "seq" }` (201). The first append from an unknown user id creates the account (403 if signups are closed); later appends need the matching secret (401 otherwise) |
 | `GET /api/log?since=<seq>&limit=<n>` | Returns `{ entries: [{ seq, data }], cursor, hasMore }` for entries after `since`. `limit` defaults to 200 and is capped at 500; a page is also capped at 8 MiB. Call again with the returned `cursor` while `hasMore` is `true` |
-| `DELETE /api/account` | Deletes the user and the whole log (204) |
+| `PUT /api/blob/<id>` | Stores the request body as the file `<id>` (a UUID, 400 otherwise). Returns 201 on creation and 204 on replacement. Creates the account like `POST /api/log` (403 if signups are closed); 413 if the file exceeds 8 MiB or the quota |
+| `GET /api/blob/<id>` | Returns the file bytes as `application/octet-stream`; 404 if the file does not exist |
+| `DELETE /api/blob/<id>` | Deletes the file (204, even if it does not exist) |
+| `GET /api/blob` | Returns `{ ids: [...] }`, the ids of the user's files, sorted |
+| `DELETE /api/account` | Deletes the user, the whole log and every file (204) |
 
-The log is append-only: entries are numbered per user with a gapless sequence (`seq`), stored in SQLite (WAL mode).
+The log is append-only: entries are numbered per user with a gapless sequence (`seq`), stored in SQLite (WAL mode). Files hold encrypted attachments such as receipt photos; the log and the files share the same per-user quota (`MAX_USER_BYTES`).
 
 ## Synchronization
 

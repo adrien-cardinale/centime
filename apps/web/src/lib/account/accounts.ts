@@ -2,6 +2,7 @@ import { removeAccountDirectory } from "@/lib/local-db/account-paths"
 import { createKeyStore } from "@/lib/local-db/key-store"
 import { createDatabaseStore } from "@/lib/local-db/persistence"
 import { createSerialQueue } from "@/lib/local-db/serial-queue"
+import { removeAccountReceiptImages } from "@/lib/receipts/receipt-store"
 import { isTauri } from "@/lib/runtime"
 import {
   type AccountIndex,
@@ -78,6 +79,7 @@ async function removeAccountFiles(id: string): Promise<void> {
   if (isTauri()) return removeAccountDirectory(id)
   await (await createKeyStore(id)).clear()
   await (await createDatabaseStore(id)).remove()
+  await removeAccountReceiptImages(id)
 }
 
 export async function removeAccount(id: string): Promise<void> {

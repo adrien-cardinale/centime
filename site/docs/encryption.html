@@ -14,7 +14,7 @@
 <a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
 <nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
 <button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
-<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html" aria-current="page">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html" aria-current="page">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
 <main class="prose"><h1>Encryption and sync</h1>
 <h2>Key model</h2>
 <ul><li><strong>Master key</strong>: 32 random bytes generated on the client and shown as a recovery key (Crockford base32 in groups of four, with a 2-byte checksum to catch typos). It never leaves the device.</li>
@@ -34,6 +34,8 @@
 <li><strong>Conflicts</strong>: the most recent <code>updatedAt</code> wins. For duplicates created offline on two devices, the smallest id wins everywhere and the loser is aliased.</li>
 <li>An entry that fails to decrypt aborts the sync: wrong key, or tampered data.</li></ol>
 <p>Sync runs at startup, every 5 minutes, 5 seconds after each change, and on demand from the sidebar.</p>
+<h2>Receipt images</h2>
+<p>Receipt images are sealed with the same AES-256-GCM key as the database and the log, in the same self-contained format. After each log sync, the device uploads the sealed bytes as they are to <code>/api/blob/&lt;receipt id&gt;</code>, and the other devices download them unchanged. The relay sees only ciphertext, its size and the receipt id; the file type and the fingerprint stay in the encrypted log.</p>
 <h2>Threat model in short</h2>
 <p>A compromised or curious server sees ciphertext, sizes and timing, not your transactions. A stolen device or application folder exposes the key and data on it, hence the advice to use disk encryption.</p>
 <nav class="pager"><a href="desktop.html">← Desktop app</a><a href="api.html">Relay API →</a></nav></main></div>

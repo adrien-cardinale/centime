@@ -57,7 +57,7 @@ type SyncContext = { db: Db; config: SyncConfig; exclusive: Exclusive }
 
 const REQUEST_TIMEOUT_MS = 15_000
 
-const runDirectly: Exclusive = (task) => task()
+export const runDirectly: Exclusive = (task) => task()
 
 export function normalizeServerUrl(serverUrl: string): string {
   return serverUrl.trim().replace(/\/+$/, "")
@@ -71,7 +71,7 @@ async function errorMessageOf(response: Response): Promise<string> {
   return i18n.t("syncErrors.serverStatus", { status: response.status })
 }
 
-async function send(config: SyncConfig, path: string, init: RequestInit): Promise<Response> {
+export async function send(config: SyncConfig, path: string, init: RequestInit): Promise<Response> {
   try {
     return await config.fetch(`${normalizeServerUrl(config.serverUrl)}${path}`, {
       ...init,
@@ -82,12 +82,12 @@ async function send(config: SyncConfig, path: string, init: RequestInit): Promis
   }
 }
 
-function authorizationOf(config: SyncConfig): string {
+export function authorizationOf(config: SyncConfig): string {
   const { userId, secret } = config.vault.credentials
   return `Bearer ${userId}.${secret}`
 }
 
-async function ensureOk(response: Response): Promise<void> {
+export async function ensureOk(response: Response): Promise<void> {
   if (response.status === 401) throw new SyncError(i18n.t("syncErrors.unauthorized"), "unauthorized")
   if (!response.ok) throw new SyncError(await errorMessageOf(response), "server")
 }

@@ -57,6 +57,13 @@
       "when": 1791632254910,
       "tag": "0007_transaction_splits",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "6",
+      "when": 1791635621169,
+      "tag": "0008_receipts",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Receipts — Centime docs</title>
+<meta name="description" content="Receipts">
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html" aria-current="page">Receipts</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Receipts</h1>
+<p>Centime keeps a photo of your till receipts next to the transactions they explain. A receipt can also split a transaction over several categories, line by line.</p>
+<h2>Capturing a receipt</h2>
+<p>Open <strong>Receipts</strong> and choose <strong>Add a receipt</strong>. On a phone, the camera opens directly; on a computer, drop a photo or a PDF, or pick a file. Photos are straightened, reduced to 1600 pixels on their longest side and saved as JPEG, which keeps them light. PDF receipts are kept as they are. <strong>Retake</strong> replaces the photo before going further.</p>
+<p>From the Transactions page, <strong>Attach a receipt</strong> in a transaction's menu does the same for that transaction: the receipt is linked to it straight away.</p>
+<h2>Details</h2>
+<p>Enter the merchant, the total and the date printed on the receipt. A note is optional. To split the expense, add <strong>lines</strong>: a label, an amount and a category for each item. Amounts are typed without a sign. Centime shows the sum of the lines and warns when it differs from the total.</p>
+<h2>Linking to a transaction</h2>
+<p>Once saved, centime suggests the transactions of the same account whose amount and date are close to the receipt's. Each suggestion is rated <strong>Very likely</strong>, <strong>Likely</strong> or <strong>Possible</strong>, and <strong>Link</strong> attaches the receipt. <strong>Search for another transaction</strong> looks by label or amount when the right one is not suggested.</p>
+<p><strong>Later</strong> keeps the receipt in the <em>To link</em> tab, for instance when the bank statement is not imported yet. <strong>Link automatically</strong> in that tab then links every receipt that has a single clear match. <strong>Ignore</strong> files away a receipt that no transaction will ever match.</p>
+<p>In the transaction list, a small receipt icon marks the linked transactions and opens the receipt.</p>
+<h2>Splitting by the receipt</h2>
+<p>When the lines of a linked receipt cover at least two categories, <strong>Split the transaction by the receipt</strong> turns them into a split: the lines are grouped by category and their labels become the notes. The lines must add up exactly to the transaction amount; otherwise centime says so and nothing changes. The split can then be edited like any other.</p>
+<h2>Where the images are stored</h2>
+<p>Receipt images never leave your device unencrypted. They are encrypted with your account key and stored locally: in the app's data folder on desktop and Android, in the browser's storage on the web.</p>
+<h2>Sync between devices</h2>
+<p>The details and lines of a receipt travel in the encrypted log, like the rest of your data. The image travels apart:</p>
+<ol><li>After each sync, the device uploads to the relay the images it holds and the relay lacks. It sends the encrypted file as stored, so the relay only ever sees an opaque file named after the receipt id.</li>
+<li>On the next sync of your other devices, each one downloads the images it lacks, checks them against the fingerprint saved with the receipt and stores them as they are, still encrypted.</li>
+<li>Opening a receipt whose image is not on the device yet fetches it from the relay straight away.</li>
+<li>Deleting a receipt deletes its image on the relay and on the other devices at their next sync.</li></ol>
+<p>A sync transfers at most 20 images; the next one continues. Images count toward the same storage quota as the log on the relay. Without a relay, images stay on the device that captured them.</p>
+<p>Deleting a receipt erases its image and its details; the transaction stays as it is. Removing an account from a device also removes its receipt images from that device.</p>
+<h2>Limits</h2>
+<ul><li>Files up to 7 MB, so that the encrypted file fits the relay's 8 MiB limit; photos are much smaller once reduced.</li>
+<li>Up to 200 lines per receipt.</li>
+<li>A receipt belongs to one account and links to one transaction of that account.</li>
+<li>Text recognition runs on the device (tesseract.js), for photos only. It pre-fills the merchant, total, date and lines: check them before saving.</li></ul>
+<nav class="pager"><a href="importing.html">← Importing transactions</a><a href="budgets.html">Categories, fixed items and budgets →</a></nav></main></div>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="../site.js"></script>
+</body></html>

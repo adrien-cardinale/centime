@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { ArrowLeftRight, MoreHorizontal, Repeat, Split, Wand2 } from "lucide-react"
+import { ArrowLeftRight, MoreHorizontal, Receipt, Repeat, Split, Wand2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import {
@@ -16,6 +16,7 @@ type TransactionRowActionsProps = {
   onCreateRule: (transaction: TransactionItem) => void
   onLinkFixedItem: (transaction: TransactionItem) => void
   onSplit: (transaction: TransactionItem) => void
+  onAttachReceipt: (transaction: TransactionItem) => void
 }
 
 export function TransactionRowActions({
@@ -23,6 +24,7 @@ export function TransactionRowActions({
   onCreateRule,
   onLinkFixedItem,
   onSplit,
+  onAttachReceipt,
 }: TransactionRowActionsProps) {
   const { t } = useTranslation()
   const update = useUpdateTransaction()
@@ -59,6 +61,13 @@ export function TransactionRowActions({
           }}>
           <Split />
           {t("transactionsPage.split.action")}
+        </DropdownMenuItem>
+        <DropdownMenuItem onSelect={() => {
+            opensOverlay.current = true
+            onAttachReceipt(transaction)
+          }}>
+          <Receipt />
+          {t("receipts.attach")}
         </DropdownMenuItem>
         <DropdownMenuItem onSelect={() => {
             opensOverlay.current = true

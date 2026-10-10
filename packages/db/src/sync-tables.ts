@@ -1,5 +1,17 @@
 import type { SQLiteTable } from "drizzle-orm/sqlite-core"
-import { accounts, budgets, categories, csvProfiles, fixedItems, imports, rules, themes, transactions, transactionSplits } from "./schema"
+import {
+  accounts,
+  budgets,
+  categories,
+  csvProfiles,
+  fixedItems,
+  imports,
+  receipts,
+  rules,
+  themes,
+  transactions,
+  transactionSplits,
+} from "./schema"
 
 type SyncTableDefinition<Name extends string, Table extends SQLiteTable> = {
   name: Name
@@ -26,6 +38,7 @@ export const SYNC_TABLES = [
   syncTable("budgets", budgets),
   syncTable("transactions", transactions, ["fingerprint"]),
   syncTable("transaction_splits", transactionSplits),
+  syncTable("receipts", receipts),
 ] as const
 
 export type SyncTableEntry = (typeof SYNC_TABLES)[number]

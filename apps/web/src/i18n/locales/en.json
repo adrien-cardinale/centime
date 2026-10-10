@@ -9,6 +9,7 @@
   "nav": {
     "dashboard": "Dashboard",
     "transactions": "Transactions",
+    "receipts": "Receipts",
     "import": "Import",
     "budget": "Budget",
     "categories": "Categories",
@@ -61,6 +62,7 @@
       "lastSync": "Last sync",
       "localChanges": "Local changes",
       "lastSyncFailed": "Last sync failed",
+      "receiptImagesFailed": "Receipt images not synchronized",
       "syncing": "Syncing…",
       "syncNow": "Sync now",
       "report": "Sync complete: {{pulled}} received, {{pushed}} sent",
@@ -460,13 +462,147 @@
       "uncategorized": "Uncategorized"
     }
   },
+  "receipts": {
+    "title": "Receipts",
+    "description": "Take photos of your receipts and link them to your transactions.",
+    "add": "Add a receipt",
+    "attach": "Attach a receipt",
+    "viewReceipt": "View receipt",
+    "untitled": "Receipt",
+    "tabs": {
+      "pending": "To link",
+      "linked": "Linked",
+      "ignored": "Ignored"
+    },
+    "status": {
+      "pending": "To link",
+      "linked": "Linked",
+      "ignored": "Ignored"
+    },
+    "empty": {
+      "pending": "Take a photo of a receipt and enter its total. centime then looks for the matching transaction.",
+      "linked": "No linked receipts.",
+      "ignored": "No ignored receipts."
+    },
+    "autoMatch": {
+      "action": "Link automatically",
+      "running": "Searching…",
+      "done_one": "{{count}} receipt linked",
+      "done_other": "{{count}} receipts linked"
+    },
+    "dialog": {
+      "title": "Add a receipt",
+      "attachTitle": "Attach a receipt",
+      "description": "Photo, details, then transaction."
+    },
+    "photo": {
+      "prompt": "Drop a photo or a PDF here, or click to choose",
+      "touchPrompt": "Take a photo of the receipt",
+      "hint": "Photo or PDF, 7 MB at most.",
+      "choose": "Take a photo",
+      "retake": "Retake",
+      "pickFile": "Choose an image or a PDF",
+      "size": "Size: {{size}}",
+      "failed": "Cannot read the file"
+    },
+    "image": {
+      "alt": "Receipt photo",
+      "pdf": "PDF receipt",
+      "openPdf": "Open the PDF",
+      "missing": "Image not available on this device.",
+      "zoomIn": "Enlarge the image",
+      "zoomOut": "Fit the image"
+    },
+    "details": {
+      "account": "Account",
+      "merchant": "Merchant",
+      "merchantPlaceholder": "Migros",
+      "total": "Total",
+      "date": "Receipt date",
+      "note": "Note",
+      "amountPlaceholder": "25.40",
+      "lines": "Lines",
+      "noLines": "No lines. Add some to split the expense by category.",
+      "addLine": "Add a line",
+      "removeLine": "Remove the line",
+      "lineLabel": "Item",
+      "lineAmount": "Amount",
+      "lineCategory": "Category",
+      "noCategory": "No category",
+      "linesSum": "Sum of lines: {{amount}}",
+      "useSumAsTotal": "Use as total",
+      "linesMatch": "The lines match the total.",
+      "linesMismatch": "The lines add up to {{lines}}, the total is {{total}}.",
+      "invalidAmount": "Invalid amount"
+    },
+    "ocr": {
+      "read": "Read the receipt",
+      "reading": "Reading the receipt… {{percent}}%",
+      "cancel": "Stop reading",
+      "prefilled": "Fields pre-filled, check the amounts.",
+      "uncertain": "Uncertain reading, check this field.",
+      "failed": "Could not read the receipt. Fill in the fields by hand.",
+      "noText": "No readable text on the photo.",
+      "nothingFound": "Nothing to pre-fill: the fields are already filled or the receipt is unreadable."
+    },
+    "link": {
+      "link": "Link",
+      "level": {
+        "veryLikely": "Very likely",
+        "likely": "Likely",
+        "possible": "Possible"
+      },
+      "needsTotal": "Enter the receipt total to find the transaction.",
+      "noCandidates": "No matching transaction yet.",
+      "searchOther": "Search for another transaction",
+      "showCandidates": "Show suggestions",
+      "searchPlaceholder": "Label or amount",
+      "noResults": "No transaction found."
+    },
+    "split": {
+      "description": "The receipt covers several categories. You can split the transaction by its lines.",
+      "apply": "Split the transaction by the receipt",
+      "applying": "Splitting…",
+      "skip": "Not now"
+    },
+    "actions": {
+      "continue": "Continue",
+      "back": "Back",
+      "save": "Save",
+      "saving": "Saving…",
+      "later": "Later",
+      "ignore": "Ignore",
+      "restore": "Mark as to link",
+      "edit": "Edit",
+      "link": "Link",
+      "unlink": "Unlink",
+      "split": "Split",
+      "delete": "Delete"
+    },
+    "delete": {
+      "title": "Delete this receipt?",
+      "description": "The photo and the receipt details will be erased. The transaction stays as it is.",
+      "confirm": "Delete"
+    },
+    "toast": {
+      "saved": "Receipt saved",
+      "updated": "Receipt updated",
+      "linked": "Receipt linked to the transaction",
+      "unlinked": "Receipt unlinked",
+      "ignored": "Receipt ignored",
+      "deleted": "Receipt deleted",
+      "splitApplied": "Transaction split by the receipt"
+    }
+  },
   "syncErrors": {
     "unauthorized": "Access denied by the server: the key does not match this account",
     "unreadableEntry": "A server entry is unreadable: the key does not match or the data has been tampered with",
     "network": "Server unreachable: check your network connection and the server address",
     "invalidResponse": "Invalid server response",
     "serverStatus": "Server error ({{status}})",
-    "unexpected": "Unexpected synchronization error"
+    "unexpected": "Unexpected synchronization error",
+    "blobTooLarge": "A receipt image exceeds 8 MB: it stays on this device",
+    "blobCorrupted": "A receipt image received from the server is unreadable: it was skipped"
   },
   "importPage": {
     "title": "Import",

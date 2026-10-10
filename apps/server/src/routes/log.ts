@@ -8,10 +8,10 @@ const DEFAULT_LIMIT = 200
 const MAX_LIMIT = 500
 const BASE64_PATTERN = /^[A-Za-z0-9+/]+={0,2}$/
 
-const UNAUTHORIZED = "Identifiants invalides"
-const SIGNUP_CLOSED = "Les inscriptions sont fermées sur ce serveur"
-const QUOTA_EXCEEDED = "Quota de stockage atteint sur ce serveur"
-const INVALID_BODY = "Corps de requête invalide"
+export const UNAUTHORIZED = "Identifiants invalides"
+export const SIGNUP_CLOSED = "Les inscriptions sont fermées sur ce serveur"
+export const QUOTA_EXCEEDED = "Quota de stockage atteint sur ce serveur"
+export const INVALID_BODY = "Corps de requête invalide"
 const INVALID_QUERY = "Paramètres de requête invalides"
 
 const bodySchema = z.object({ data: z.string().min(1).max(MAX_DATA_LENGTH).regex(BASE64_PATTERN) })

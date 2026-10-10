@@ -14,6 +14,7 @@ export type ImportFormat = "csv" | "camt053"
 export type RuleMatchKind = "contains" | "regex"
 export type RuleField = "raw_label" | "merchant" | "provider_category"
 export type Periodicity = "monthly" | "quarterly" | "yearly"
+export type ReceiptStatus = "pending" | "linked" | "ignored"
 
 export const ACCOUNT_KINDS = ["bank", "card"] as const satisfies readonly AccountKind[]
 export const TRANSACTION_STATUSES = ["booked", "pending"] as const satisfies readonly TransactionStatus[]
@@ -21,6 +22,7 @@ export const IMPORT_FORMATS = ["csv", "camt053"] as const satisfies readonly Imp
 export const RULE_MATCH_KINDS = ["contains", "regex"] as const satisfies readonly RuleMatchKind[]
 export const RULE_FIELDS = ["raw_label", "merchant", "provider_category"] as const satisfies readonly RuleField[]
 export const PERIODICITIES = ["monthly", "quarterly", "yearly"] as const satisfies readonly Periodicity[]
+export const RECEIPT_STATUSES = ["pending", "linked", "ignored"] as const satisfies readonly ReceiptStatus[]
 
 export type Account = SyncColumns & {
   name: string

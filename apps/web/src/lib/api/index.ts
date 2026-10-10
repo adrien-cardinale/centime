@@ -10,7 +10,7 @@ export {
   UNCATEGORIZED_FILTER,
   WITHOUT_FIXED_ITEM_FILTER,
 } from "./filters"
-export type { ImportUpload, TransactionChanges } from "./inputs"
+export type { ImportUpload, ReceiptCandidateOptions, ReceiptFileUpload, TransactionChanges } from "./inputs"
 export type * from "./types"
 
 type Domain = keyof Api

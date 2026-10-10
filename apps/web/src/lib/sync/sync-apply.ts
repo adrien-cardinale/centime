@@ -1,4 +1,12 @@
-import { type DbExecutor, settings, type SyncRow, type SyncTableEntry, transactions, transactionSplits } from "@centime/db"
+import {
+  type DbExecutor,
+  receipts,
+  settings,
+  type SyncRow,
+  type SyncTableEntry,
+  transactions,
+  transactionSplits,
+} from "@centime/db"
 import type { PushedRow } from "@centime/services"
 import { and, eq, getTableColumns, ne, sql } from "@centime/db/orm"
 import type { SQLiteColumn } from "@centime/db/orm"
@@ -43,6 +51,17 @@ async function reassignTransactions(db: DbExecutor, fromAccountId: string, toAcc
   await db.update(transactions).set({ accountId: toAccountId }).where(eq(transactions.accountId, fromAccountId))
 }
 
+async function reassignAccountReceipts(db: DbExecutor, fromAccountId: string, toAccountId: string): Promise<void> {
+  await db.update(receipts).set({ accountId: toAccountId }).where(eq(receipts.accountId, fromAccountId))
+}
+
+async function reassignTransactionReceipts(db: DbExecutor, fromTransactionId: string, toTransactionId: string) {
+  await db
+    .update(receipts)
+    .set({ transactionId: toTransactionId })
+    .where(eq(receipts.transactionId, fromTransactionId))
+}
+
 async function reassignSplits(db: DbExecutor, fromTransactionId: string, toTransactionId: string): Promise<void> {
   await db
     .update(transactionSplits)
@@ -55,8 +74,14 @@ function keepsAlias(entry: SyncTableEntry): boolean {
 }
 
 async function removeLoser(db: DbExecutor, entry: SyncTableEntry, loserId: string, winnerId: string): Promise<void> {
-  if (entry.name === "accounts") await reassignTransactions(db, loserId, winnerId)
-  if (entry.name === "transactions") await reassignSplits(db, loserId, winnerId)
+  if (entry.name === "accounts") {
+    await reassignTransactions(db, loserId, winnerId)
+    await reassignAccountReceipts(db, loserId, winnerId)
+  }
+  if (entry.name === "transactions") {
+    await reassignSplits(db, loserId, winnerId)
+    await reassignTransactionReceipts(db, loserId, winnerId)
+  }
   if (keepsAlias(entry)) await writeAlias(db, loserId, winnerId)
   await db.delete(entry.table).where(eq(entry.table.id, loserId))
 }
@@ -104,7 +129,18 @@ async function remapSplit(db: DbExecutor, split: PushedRow<"transaction_splits">
   return alias === null ? split : ({ ...split, transactionId: alias } as IncomingRow)
 }
 
+async function remapReceipt(db: DbExecutor, receipt: PushedRow<"receipts">): Promise<IncomingRow> {
+  const accountAlias = await readAlias(db, receipt.accountId)
+  const transactionAlias = receipt.transactionId === null ? null : await readAlias(db, receipt.transactionId)
+  return {
+    ...receipt,
+    accountId: accountAlias ?? receipt.accountId,
+    transactionId: transactionAlias ?? receipt.transactionId,
+  } as IncomingRow
+}
+
 async function remapReferences(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow> {
+  if (entry.name === "receipts") return remapReceipt(db, row as PushedRow<"receipts">)
   if (entry.name === "transactions") return remapTransaction(db, row as PushedRow<"transactions">)
   if (entry.name === "transaction_splits") return remapSplit(db, row as PushedRow<"transaction_splits">)
   return row

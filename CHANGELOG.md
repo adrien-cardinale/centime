@@ -9,6 +9,14 @@ The section matching the released version is attached automatically as the GitHu
 ### Added
 
 - Split a transaction over several categories. On the **Transactions** page, the row menu offers **Split…**: each line has a category, an amount and an optional note, and the lines must add up to the transaction amount. A split transaction shows a **Split** badge with its lines in the category column; click it to edit the split or **Undo split**. The dashboard, budgets, category filters, category counts and the CSV export (one row per line, with a new **Note** column) count each line in its own category. Rules leave split transactions untouched, and choosing a category, a fixed item or a transfer for a split transaction removes its split.
+- Receipts. The new **Receipts** page captures a receipt with the camera, a photo or a PDF (up to 7 MB); photos are straightened and reduced to 1600 pixels. Each receipt records the merchant, the total, the date, a note and optional line items with a category. Centime suggests the matching transactions of the same account, rated by likelihood; **Link automatically** links every receipt with a single clear match, and **Attach a receipt** in a transaction's menu links one directly. A linked receipt whose lines cover several categories can split the transaction line by line. A small icon marks the transactions with a receipt.
+- Receipts: text recognition on the device (tesseract.js) pre-fills the merchant, total, date and lines of a photographed receipt.
+- Receipt images are encrypted on the device and synchronized through the relay as opaque files: after each sync, a device uploads the images the relay lacks and downloads the ones it lacks (20 per sync at most), and deleting a receipt deletes its image everywhere. Opening a receipt whose image is not on the device yet fetches it at once. **Settings › Sync** shows when images could not be synchronized.
+- Relay: new `/api/blob` routes store encrypted files (`PUT`, `GET`, `DELETE /api/blob/<id>`, 8 MiB max per file, and `GET /api/blob` to list them). `DELETE /api/account` also deletes the files.
+
+### Changed
+
+- Relay: the `MAX_USER_BYTES` quota now covers the files as well as the log.
 
 ## [0.3.0] - 2026-10-10
 

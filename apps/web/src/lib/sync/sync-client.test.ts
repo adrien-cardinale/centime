@@ -1,4 +1,4 @@
-import { accounts, createProxyDb, type Db, runMigrations, transactions, transactionSplits } from "@centime/db"
+import { accounts, createProxyDb, type Db, receipts, runMigrations, transactions, transactionSplits } from "@centime/db"
 import { eq } from "@centime/db/orm"
 import initSqlJs from "sql.js"
 import { beforeEach, describe, expect, it } from "bun:test"
@@ -81,6 +81,23 @@ async function insertTransaction(db: Db, accountId: string, fingerprint: string,
     .returning({ id: transactions.id })
   if (!transaction) throw new Error("Transaction non créée")
   return transaction.id
+}
+
+async function insertReceipt(db: Db, accountId: string, transactionId: string | null): Promise<string> {
+  const [receipt] = await db
+    .insert(receipts)
+    .values({
+      accountId,
+      transactionId,
+      capturedAt: "2026-01-15T10:00:00.000Z",
+      mime: "image/jpeg",
+      size: 1024,
+      sha256: "a".repeat(64),
+      status: transactionId === null ? "pending" : "linked",
+    })
+    .returning({ id: receipts.id })
+  if (!receipt) throw new Error("Ticket non créé")
+  return receipt.id
 }
 
 async function findTransaction(db: Db, id: string) {
@@ -311,6 +328,55 @@ describe("synchronize", () => {
 
     const splits = await deviceB.select().from(transactionSplits)
     expect(splits.map((split) => split.transactionId)).toEqual([remoteTransactionId, remoteTransactionId])
+  })
+
+  it("moves the receipts of a merged duplicate onto the winning account and transaction", async () => {
+    const remoteAccountId = await insertAccount(deviceA, "CH01")
+    const remoteTransactionId = await insertTransaction(deviceA, remoteAccountId, "fp-shared")
+    await sync(deviceA)
+    const localAccountId = await insertAccount(deviceB, "CH01")
+    const localId = await insertTransaction(deviceB, localAccountId, "fp-shared")
+    const receiptId = await insertReceipt(deviceB, localAccountId, localId)
+
+    await sync(deviceB)
+
+    const [receipt] = await deviceB.select().from(receipts).where(eq(receipts.id, receiptId))
+    expect(receipt?.accountId).toBe(remoteAccountId)
+    expect(receipt?.transactionId).toBe(remoteTransactionId)
+  })
+
+  it("remaps an incoming receipt that still points to a merged duplicate", async () => {
+    const remoteAccountId = await insertAccount(deviceA, "CH01")
+    const remoteTransactionId = await insertTransaction(deviceA, remoteAccountId, "fp-shared")
+    await sync(deviceA)
+    const localAccountId = await insertAccount(deviceB, "CH01")
+    const localId = await insertTransaction(deviceB, localAccountId, "fp-shared")
+    await sync(deviceB)
+    const receipt = {
+      id: crypto.randomUUID(),
+      accountId: localAccountId,
+      transactionId: localId,
+      capturedAt: "2026-01-15T10:00:00.000Z",
+      mime: "image/jpeg",
+      size: 1024,
+      sha256: "b".repeat(64),
+      merchant: null,
+      total: 12.5,
+      receiptDate: "2026-01-15",
+      note: null,
+      linesJson: null,
+      status: "linked",
+      createdAt: "2026-01-15T10:00:00.000Z",
+      updatedAt: "2026-01-15T10:00:00.000Z",
+      deletedAt: null,
+    }
+    relay.entries.push(await vault.encryptText(JSON.stringify({ v: 1, changes: { receipts: [receipt] } })))
+
+    await sync(deviceB)
+
+    const [stored] = await deviceB.select().from(receipts).where(eq(receipts.id, receipt.id))
+    expect(stored?.accountId).toBe(remoteAccountId)
+    expect(stored?.transactionId).toBe(remoteTransactionId)
   })
 
   it("reports an unreachable server as a network error", async () => {

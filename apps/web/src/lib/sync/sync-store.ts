@@ -6,8 +6,23 @@ import { getVault } from "@/lib/crypto/current-vault"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
 import { countPendingChanges, markAllChangesPending } from "@/lib/local-db/local-data"
 import { onMutationSettled } from "@/lib/queries"
+import {
+  deleteReceiptImage,
+  listReceiptImageIds,
+  readSealedReceiptImage,
+  writeSealedReceiptImage,
+} from "@/lib/receipts/receipt-store"
 import { isStaticBuild, isTauri } from "@/lib/runtime"
-import { deleteAccount, type FetchLike, normalizeServerUrl, SyncError, type SyncReport, synchronize } from "./sync-client"
+import { type BlobStore, downloadBlob, isBlobId, synchronizeBlobs } from "./blob-sync"
+import {
+  deleteAccount,
+  type FetchLike,
+  normalizeServerUrl,
+  type SyncConfig,
+  SyncError,
+  type SyncReport,
+  synchronize,
+} from "./sync-client"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
 const SYNC_INTERVAL_MS = 5 * 60 * 1000
@@ -22,6 +37,8 @@ export type SyncState = {
   lastAt: string | null
   lastError: string | null
   dirtyCount: number
+  blobsPending: number
+  lastBlobError: string | null
 }
 
 export type SyncOutcome = { ok: true; report: SyncReport } | { ok: false; message: string }
@@ -35,12 +52,22 @@ let state: SyncState = {
   lastAt: null,
   lastError: null,
   dirtyCount: 0,
+  blobsPending: 0,
+  lastBlobError: null,
 }
 const listeners = new Set<() => void>()
 let running: Promise<SyncOutcome> | null = null
 let queryClient: QueryClient | null = null
 let mutationTimer: ReturnType<typeof setTimeout> | null = null
 let started = false
+const unavailableImageIds = new Set<string>()
+
+const receiptBlobStore: BlobStore = {
+  listIds: listReceiptImageIds,
+  read: readSealedReceiptImage,
+  write: writeSealedReceiptImage,
+  remove: deleteReceiptImage,
+}
 
 function setState(changes: Partial<SyncState>): void {
   state = { ...state, ...changes }
@@ -83,18 +110,30 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : i18n.t("syncErrors.unexpected")
 }
 
+function syncConfigFor(serverUrl: string): SyncConfig {
+  const database = getLocalDatabase()
+  return {
+    serverUrl,
+    vault: getVault(),
+    fetch: fetchFromRuntime,
+    exclusive: (task) => database.run(() => task()),
+  }
+}
+
+async function synchronizeReceiptImages(config: SyncConfig): Promise<void> {
+  const report = await synchronizeBlobs(getLocalDatabase().db, config, receiptBlobStore)
+  setState({ blobsPending: report.pending, lastBlobError: report.error })
+}
+
 async function runSynchronization(): Promise<SyncOutcome> {
   const database = getLocalDatabase()
   const { serverUrl } = await database.run(readSyncSettings)
   if (serverUrl === null) return { ok: false, message: i18n.t("syncState.notConfigured") }
   setState({ status: "syncing" })
   try {
-    const report = await synchronize(database.db, {
-      serverUrl,
-      vault: getVault(),
-      fetch: fetchFromRuntime,
-      exclusive: (task) => database.run(() => task()),
-    })
+    const config = syncConfigFor(serverUrl)
+    const report = await synchronize(database.db, config)
+    await synchronizeReceiptImages(config)
     await queryClient?.invalidateQueries()
     setState({ status: "idle" })
     return { ok: true, report }
@@ -103,6 +142,27 @@ async function runSynchronization(): Promise<SyncOutcome> {
     return { ok: false, message: messageOf(error) }
   } finally {
     await refreshSyncState().catch(() => undefined)
+  }
+}
+
+async function fetchReceiptImage(serverUrl: string, id: string): Promise<boolean> {
+  const sealed = await downloadBlob(syncConfigFor(serverUrl), id)
+  if (sealed === null) return false
+  await writeSealedReceiptImage(id, sealed)
+  return true
+}
+
+export async function fetchMissingReceiptImage(id: string): Promise<boolean> {
+  const { serverUrl } = state
+  if (serverUrl === null || !isBlobId(id) || unavailableImageIds.has(id)) return false
+  unavailableImageIds.add(id)
+  try {
+    const fetched = await fetchReceiptImage(serverUrl, id)
+    if (fetched) unavailableImageIds.delete(id)
+    return fetched
+  } catch (error) {
+    console.error("Téléchargement de l'image du ticket impossible", error)
+    return false
   }
 }
 

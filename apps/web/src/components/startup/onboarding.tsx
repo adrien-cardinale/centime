@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { completeOnboarding } from "@/lib/crypto/onboarding"
 import { formatMasterKey, generateMasterKey, parseMasterKey } from "@/lib/crypto/master-key"
-import { isAndroid, isTauri } from "@/lib/runtime"
+import { isAndroid, isStaticBuild, isTauri } from "@/lib/runtime"
 import { parseServerUrl } from "@/lib/sync/server-url"
 import { ScanLinkButton } from "./scan-link-button"
 
@@ -20,7 +20,7 @@ type Mode = "choose" | "create" | "restore"
 
 function ServerField({ value, onChange }: { value: string; onChange: (value: string) => void }) {
   const { t } = useTranslation()
-  if (!isTauri()) return null
+  if (!isTauri() && !isStaticBuild()) return null
   return (
     <div className="space-y-2">
       <Label htmlFor="server-url">{t("boot.serverLabel")}</Label>

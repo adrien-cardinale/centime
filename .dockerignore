@@ -1,6 +1,7 @@
 **/node_modules
 **/dist
 **/dist-desktop
+**/dist-static
 data
 .env
 .git

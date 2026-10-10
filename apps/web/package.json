@@ -8,6 +8,7 @@
     "dev:desktop": "vite --mode desktop --port 5174",
     "build": "vite build",
     "build:desktop": "vite build --mode desktop --outDir dist-desktop",
+    "build:static": "vite build --mode static --outDir dist-static",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.test.json",
     "test": "bun test"
   },

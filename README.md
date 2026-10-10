@@ -46,7 +46,21 @@ bun install
 cp .env.example .env
 ```
 
-All server variables have defaults; edit `.env` only to change them.
+All server variables have defaults; edit `.env` only to change them. `ALLOWED_ORIGINS` (comma-separated, for example `https://you.github.io`) lets a web UI hosted on another origin reach the relay; leave it empty when the relay serves the UI itself.
+
+### Static hosting (GitHub Pages)
+
+The web UI also runs as a plain static site, without the relay:
+
+```sh
+BASE_PATH=/centime/app/ bun run --cwd apps/web build:static
+```
+
+`BASE_PATH` is the path the app is served under (default `/`). The output goes to `apps/web/dist-static`, with a `404.html` copy of `index.html` so deep links work. The `Deploy site` workflow publishes it under `app/` next to the marketing site.
+
+Synchronization is optional: enter a relay address at first launch or later in **Settings › Synchronization**. That relay must list the static site origin in `ALLOWED_ORIGINS`.
+
+Without a relay, the data lives only in the browser's IndexedDB, which the browser may clear (storage pressure, site data cleanup, private mode). Configure a relay, or export your transactions regularly.
 
 ## Development
 
@@ -225,7 +239,7 @@ The master key is stored on the device, next to the database (`master.key`) in t
 ### Connecting synchronization
 
 1. On first launch the app asks for a key: **create a new one** (and save the displayed recovery key somewhere safe) or **enter an existing one** to join your data on another device.
-2. On the desktop app, enter the server address on that screen, or later in **Settings › Synchronization**. In the browser the server is the one that served the page, so synchronization starts automatically.
+2. On the desktop app, enter the server address on that screen, or later in **Settings › Synchronization**. In the browser the server is the one that served the page, so synchronization starts automatically. The static build (GitHub Pages) asks for the address like the desktop app.
 3. The app derives its credentials from the key and runs a first synchronization. **Settings** also lets you display the recovery key again.
 
 #### Pairing the Android app with a QR code

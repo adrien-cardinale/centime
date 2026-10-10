@@ -6,7 +6,7 @@ import { getVault } from "@/lib/crypto/current-vault"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
 import { countPendingChanges, markAllChangesPending } from "@/lib/local-db/local-data"
 import { onMutationSettled } from "@/lib/queries"
-import { isTauri } from "@/lib/runtime"
+import { isStaticBuild, isTauri } from "@/lib/runtime"
 import { type FetchLike, normalizeServerUrl, SyncError, type SyncReport, synchronize } from "./sync-client"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
@@ -143,6 +143,10 @@ function scheduleAfterMutation(): void {
   }, MUTATION_DELAY_MS)
 }
 
+function servedByRelay(): boolean {
+  return !isTauri() && !isStaticBuild()
+}
+
 export function startSyncScheduler(client: QueryClient): void {
   queryClient = client
   if (started) return
@@ -153,7 +157,7 @@ export function startSyncScheduler(client: QueryClient): void {
   }, SYNC_INTERVAL_MS)
   void refreshSyncState()
     .then(async () => {
-      if (!state.configured && !isTauri()) await configure(window.location.origin)
+      if (!state.configured && servedByRelay()) await configure(window.location.origin)
       else if (state.configured) await syncNow()
     })
     .catch(() => undefined)

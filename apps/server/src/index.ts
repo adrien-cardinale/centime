@@ -30,7 +30,7 @@ function start(): void {
   )
   app.use(secureHeaders())
   app.use(bodyLimit({ maxSize: MAX_BODY_BYTES, onError: (c) => c.json({ error: BODY_TOO_LARGE }, 413) }))
-  app.route("/", createApi({ store, rateLimitPerMinute: config.rateLimitPerMinute }))
+  app.route("/", createApi({ store, rateLimitPerMinute: config.rateLimitPerMinute, allowedOrigins: config.allowedOrigins }))
   mountSpa(app, config.staticDir)
 
   const server = Bun.serve({ port: config.port, fetch: app.fetch, idleTimeout: 120 })

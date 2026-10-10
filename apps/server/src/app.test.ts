@@ -237,6 +237,39 @@ describe("limitation de débit", () => {
   })
 })
 
+describe("CORS", () => {
+  const ALLOWED_ORIGIN = "https://example.github.io"
+
+  function preflight(origin: string) {
+    return api.request("/api/log", {
+      method: "OPTIONS",
+      headers: {
+        Origin: origin,
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "Authorization, Content-Type",
+      },
+    })
+  }
+
+  test("autorise une origine listée", async () => {
+    api = createApi({ store, allowedOrigins: [ALLOWED_ORIGIN] })
+    const response = await preflight(ALLOWED_ORIGIN)
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe(ALLOWED_ORIGIN)
+    expect(response.headers.get("Access-Control-Allow-Headers")).toBe("Authorization,Content-Type")
+  })
+
+  test("ignore une origine non listée", async () => {
+    api = createApi({ store, allowedOrigins: [ALLOWED_ORIGIN] })
+    const response = await preflight("https://autre.example")
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull()
+  })
+
+  test("n'envoie aucun en-tête CORS sans origine configurée", async () => {
+    const response = await preflight(ALLOWED_ORIGIN)
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBeNull()
+  })
+})
+
 describe("routes inconnues", () => {
   test("renvoient une erreur JSON", async () => {
     const response = await api.request("/api/budgets")

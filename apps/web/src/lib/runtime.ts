@@ -6,6 +6,10 @@ export function isTauri(): boolean {
   return typeof window !== "undefined" && "__TAURI_INTERNALS__" in window
 }
 
+export function isStaticBuild(): boolean {
+  return import.meta.env.MODE === "static"
+}
+
 /** Application packagée tournant sur Android : le navigateur mobile ne compte pas, les plugins Tauri y manquent. */
 export function isAndroid(): boolean {
   return isTauri() && platform() === "android"

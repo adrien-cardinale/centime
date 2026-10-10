@@ -9,6 +9,7 @@ export type Config = {
   isProduction: boolean
   maxUserBytes: number | undefined
   rateLimitPerMinute: number
+  allowedOrigins: string[]
 }
 
 const DEFAULT_RATE_LIMIT_PER_MINUTE = 300
@@ -44,6 +45,22 @@ function parseNonNegativeInt(name: string, value: string | undefined): number | 
   return parsed
 }
 
+function parseOrigins(value: string | undefined): string[] {
+  if (value === undefined) return []
+  return value
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter((origin) => origin !== "")
+    .map(parseOrigin)
+}
+
+function parseOrigin(value: string): string {
+  try {
+    const { origin } = new URL(value)
+    if (origin !== "null") return origin
+  } catch {}
+  throw new ConfigError(`ALLOWED_ORIGINS contient une origine invalide : ${value}`)
+}
 
 export function loadConfig(): Config {
   const staticDir = optionalEnv("STATIC_DIR")
@@ -56,5 +73,6 @@ export function loadConfig(): Config {
     maxUserBytes: parseNonNegativeInt("MAX_USER_BYTES", optionalEnv("MAX_USER_BYTES")),
     rateLimitPerMinute:
       parseNonNegativeInt("RATE_LIMIT_PER_MINUTE", optionalEnv("RATE_LIMIT_PER_MINUTE")) ?? DEFAULT_RATE_LIMIT_PER_MINUTE,
+    allowedOrigins: parseOrigins(optionalEnv("ALLOWED_ORIGINS")),
   }
 }

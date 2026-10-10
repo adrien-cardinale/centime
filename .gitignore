@@ -9,6 +9,7 @@ dist
 *.key
 *.key.pub
 dist-desktop
+dist-static
 apps/desktop/src-tauri/target
 apps/desktop/src-tauri/gen/schemas
 *.tsbuildinfo

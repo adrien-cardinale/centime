@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Download — Centime</title>
+<meta name="description" content="Download Centime for Windows, macOS, Linux and Android, or use it in the browser.">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+<script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
+</head>
+<body>
+<header class="top"><div class="wrap bar">
+<a class="brand" href="index.html"><img src="favicon.svg" alt="" width="24" height="24">centime</a>
+<nav><a href="docs/index.html">Docs</a><a href="download.html" aria-current="page">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="app/">Open the app</a>
+<button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
+<main>
+<section class="hero"><div class="wrap">
+<p class="eyebrow">Download</p>
+<h1>Download Centime</h1>
+<p class="lead">Native apps for Windows, macOS, Linux and Android work offline and sync through your server. The web app needs no install at all.</p>
+<p class="release" id="release" aria-live="polite">Checking the latest release…</p>
+</div></section>
+<section class="wrap"><h2 class="sr">Platforms</h2>
+<div class="grid platforms">
+<article class="card" data-os="windows"><h3>Windows</h3><p>Windows 10 and 11, 64-bit.</p>
+<ul class="dl"><li><a class="btn" data-asset="exe" href="https://github.com/adrien-cardinale/centime/releases/latest">Installer (.exe)<span class="size"></span></a></li><li><a class="btn" data-asset="msi" href="https://github.com/adrien-cardinale/centime/releases/latest">MSI package<span class="size"></span></a></li></ul>
+<p class="hint">SmartScreen warns on first launch: click More info, then Run anyway.</p></article>
+<article class="card" data-os="macos"><h3>macOS</h3><p>Disk image for Apple Silicon or Intel Macs.</p>
+<ul class="dl"><li><a class="btn" data-asset="dmg-arm" href="https://github.com/adrien-cardinale/centime/releases/latest">Apple Silicon (.dmg)<span class="size"></span></a></li><li><a class="btn" data-asset="dmg-x64" href="https://github.com/adrien-cardinale/centime/releases/latest">Intel (.dmg)<span class="size"></span></a></li></ul>
+<p class="hint">Gatekeeper blocks the first launch: right-click the app, then Open.</p></article>
+<article class="card" data-os="linux"><h3>Linux</h3><p>x86-64 packages for Debian, Fedora and the rest.</p>
+<ul class="dl"><li><a class="btn" data-asset="deb" href="https://github.com/adrien-cardinale/centime/releases/latest">Debian, Ubuntu (.deb)<span class="size"></span></a></li><li><a class="btn" data-asset="rpm" href="https://github.com/adrien-cardinale/centime/releases/latest">Fedora, openSUSE (.rpm)<span class="size"></span></a></li><li><a class="btn" data-asset="appimage" href="https://github.com/adrien-cardinale/centime/releases/latest">AppImage<span class="size"></span></a></li></ul>
+<p class="hint">Make the AppImage executable first: <code>chmod +x</code>.</p></article>
+<article class="card" data-os="android"><h3>Android</h3><p>APK to install directly on your phone.</p>
+<ul class="dl"><li><a class="btn" data-asset="apk" href="https://github.com/adrien-cardinale/centime/releases/latest">Android (.apk)<span class="size"></span></a></li></ul>
+<p class="hint">Android asks you to allow installs from your browser.</p></article>
+<article class="card" data-os="web"><h3>Web</h3><p>Runs in any modern browser. Your data stays on the device in IndexedDB, and sync is optional.</p>
+<ul class="dl"><li><a class="btn" href="app/">Open the app</a></li></ul>
+<p class="hint">Works on iPhone and iPad too.</p></article>
+</div>
+<p class="note">The installers are not code-signed yet, so Windows and macOS warn you on first launch. <a href="docs/desktop.html#install">How to open them →</a></p>
+<p>Older versions and release notes are on the <a href="https://github.com/adrien-cardinale/centime/releases">GitHub releases page</a>.</p></section>
+</main>
+<footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
+<script src="site.js"></script>
+<script src="download.js"></script>
+</body></html>

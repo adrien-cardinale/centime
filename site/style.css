@@ -50,3 +50,13 @@ code{font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:v
 .grid+.shot-row{margin-top:32px}
 .shot-row .shot{margin:0}
 @media(max-width:760px){.shot-row{grid-template-columns:1fr}}
+.release{color:var(--muted);margin:-12px 0 0}
+.platforms{grid-template-columns:repeat(auto-fit,minmax(min(300px,100%),1fr))}
+.card.mine{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.badge{display:inline-block;margin-left:6px;padding:1px 8px;border-radius:999px;background:var(--accent);color:var(--accent-fg);font-size:.72rem;font-weight:550;vertical-align:2px}
+.dl{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:8px}
+.dl .btn{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:9px 14px;font-size:.95rem}
+.size{color:var(--muted);font-size:.82rem;font-weight:400;white-space:nowrap}.btn.primary .size{color:inherit;opacity:.7}
+.card .hint{margin-top:12px;font-size:.85rem}
+@media(max-width:560px){.top nav{gap:12px;font-size:14px}.top nav a[href^="https:"]{display:none}}
+@media(max-width:400px){.brand{font-size:0}}

@@ -20,6 +20,10 @@
       "identifier": "http:default",
       "allow": [{ "url": "https://*" }, { "url": "https://*:*" }, { "url": "http://*" }, { "url": "http://*:*" }]
     },
-    "os:allow-hostname"
+    "os:allow-hostname",
+    {
+      "identifier": "opener:allow-open-url",
+      "allow": [{ "url": "https://github.com/*" }]
+    }
   ]
 }

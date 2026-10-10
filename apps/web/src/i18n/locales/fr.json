@@ -30,6 +30,27 @@
       "title": "Langue",
       "description": "Langue de l'interface, des dates et des montants."
     },
+    "updates": {
+      "title": "Mises à jour",
+      "description": {
+        "desktop": "Vérifie les nouvelles versions de centime et les installe depuis l'application.",
+        "android": "Vérifie les nouvelles versions de centime et télécharge l'APK à installer.",
+        "web": "Vérifie les nouvelles versions de centime. Mettez à jour votre serveur pour l'obtenir."
+      },
+      "installedVersion": "Version installée",
+      "check": "Vérifier maintenant",
+      "checking": "Vérification…",
+      "checkFailed": "Vérification impossible",
+      "releaseUnavailable": "Aucune release lisible sur GitHub pour le moment.",
+      "upToDate": "centime est à jour.",
+      "available": "Version {{version}} disponible",
+      "install": "Installer et redémarrer",
+      "installing": "Installation…",
+      "installFailed": "Installation impossible",
+      "downloadApk": "Télécharger l'APK",
+      "openRelease": "Voir la release",
+      "openFailed": "Ouverture du lien impossible"
+    },
     "sync": {
       "title": "Serveur de synchronisation",
       "configuredDescription": "Les modifications sont échangées avec le serveur toutes les 5 minutes et après chaque changement.",

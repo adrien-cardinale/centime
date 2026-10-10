@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/page-header"
 import { LanguageCard } from "@/components/settings/language-card"
 import SyncPanel from "@/components/settings/sync-panel"
+import { UpdateCard } from "@/components/settings/update-card"
 
 export const Route = createFileRoute("/_app/settings")({
   component: SettingsPage,
@@ -15,6 +16,7 @@ function SettingsPage() {
       <PageHeader title={t("settings.title")} />
       <LanguageCard />
       <SyncPanel />
+      <UpdateCard />
     </div>
   )
 }

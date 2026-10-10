@@ -30,6 +30,27 @@
       "title": "Language",
       "description": "Language of the interface, dates and amounts."
     },
+    "updates": {
+      "title": "Updates",
+      "description": {
+        "desktop": "Checks for new centime versions and installs them from the app.",
+        "android": "Checks for new centime versions and downloads the APK to install.",
+        "web": "Checks for new centime versions. Update your server to get it."
+      },
+      "installedVersion": "Installed version",
+      "check": "Check now",
+      "checking": "Checking…",
+      "checkFailed": "Check failed",
+      "releaseUnavailable": "No readable release on GitHub right now.",
+      "upToDate": "centime is up to date.",
+      "available": "Version {{version}} available",
+      "install": "Install and restart",
+      "installing": "Installing…",
+      "installFailed": "Install failed",
+      "downloadApk": "Download the APK",
+      "openRelease": "View the release",
+      "openFailed": "Could not open the link"
+    },
     "sync": {
       "title": "Sync server",
       "configuredDescription": "Changes are exchanged with the server every 5 minutes and after every change.",

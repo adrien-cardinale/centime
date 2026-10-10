@@ -6,6 +6,8 @@ dist
 *.db-journal
 *.db-wal
 *.db-shm
+*.key
+*.key.pub
 dist-desktop
 apps/desktop/src-tauri/target
 apps/desktop/src-tauri/gen/schemas

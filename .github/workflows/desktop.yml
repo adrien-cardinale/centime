@@ -23,6 +23,14 @@ jobs:
       - run: bun apps/desktop/scripts/check-version.ts "$GITHUB_REF_NAME"
       - name: Check changelog entry
         run: bun apps/desktop/scripts/release-notes.ts "$GITHUB_REF_NAME" > /dev/null
+      - name: Check updater signing key
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+        run: |
+          if [[ -z "$TAURI_SIGNING_PRIVATE_KEY" ]]; then
+            echo "Secret TAURI_SIGNING_PRIVATE_KEY manquant : sans signature, la mise à jour automatique refuserait le paquet." >&2
+            exit 1
+          fi
 
   test:
     name: Typecheck and test
@@ -77,7 +85,11 @@ jobs:
 
       - run: bun install --frozen-lockfile
 
-      - run: bun run build ${{ matrix.args }}
+      - name: Build installers
+        env:
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        run: bun run build --config src-tauri/tauri.updater.conf.json ${{ matrix.args }}
         working-directory: apps/desktop
 
       - uses: actions/upload-artifact@v4
@@ -92,6 +104,8 @@ jobs:
             apps/desktop/src-tauri/target/**/bundle/**/*.deb
             apps/desktop/src-tauri/target/**/bundle/**/*.rpm
             apps/desktop/src-tauri/target/**/bundle/**/*.AppImage
+            apps/desktop/src-tauri/target/**/bundle/**/*.app.tar.gz
+            apps/desktop/src-tauri/target/**/bundle/**/*.sig
           if-no-files-found: error
 
   build-android:
@@ -187,17 +201,23 @@ jobs:
           path: artifacts
           pattern: centime-desktop-*
 
+      - name: Build the updater manifest
+        run: |
+          bun apps/desktop/scripts/release-notes.ts "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+          bun apps/desktop/scripts/updater-manifest.ts "$GITHUB_REF_NAME" artifacts "$RUNNER_TEMP/notes.md" > latest.json
+
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          bun apps/desktop/scripts/release-notes.ts "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
-          mapfile -t files < <(find artifacts -type f \( -name '*.msi' -o -name '*.exe' -o -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.apk' \))
+          mapfile -t files < <(find artifacts -type f \( -name '*.msi' -o -name '*.exe' -o -name '*.dmg' -o -name '*.deb' -o -name '*.rpm' -o -name '*.AppImage' -o -name '*.apk' -o -name '*.app.tar.gz' \))
           if [[ ${#files[@]} -eq 0 ]]; then
             echo "Aucun installateur trouvé dans les artefacts" >&2
             exit 1
           fi
+          # latest.json porte la version et les signatures : sans lui, aucune application installée ne voit la mise à jour.
+          files+=(latest.json)
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
             # Relance d'un job qui avait partiellement échoué : on complète le release existant.
             gh release upload "$GITHUB_REF_NAME" "${files[@]}" --clobber

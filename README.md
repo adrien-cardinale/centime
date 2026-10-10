@@ -16,6 +16,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
 - **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
+- **Updates**: Settings shows the installed version, then installs the new release (desktop) or downloads the APK (Android).
 - **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, following the filters of the Transactions page.
 
 ## Screenshots
@@ -122,6 +123,33 @@ Installers are attached to each tagged version. They are **not code-signed** yet
 - **macOS**: Gatekeeper refuses to open the app. Right-click (or Control-click) the app, choose **Open**, then confirm. If it still says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/centime.app`.
 - **Linux**: no warning. For an AppImage, make it executable first: `chmod +x centime_*.AppImage`.
 - **Android**: download `centime_<version>.apk` on the device and open it. Android asks to allow installing apps from your browser (unknown sources) the first time. The APK is signed with the project's release key, so later versions install over the previous one.
+
+A release also carries `latest.json` and `centime.app.tar.gz`: the updater reads them, nothing to download by hand.
+
+### Updates
+
+**Settings › Updates** shows the installed version and compares it with the latest GitHub release. The check runs when the page opens, at most once an hour, and on demand. It only reads the public release manifest.
+
+- **Desktop**: the Tauri updater downloads the signed package, installs it and restarts the app.
+- **Android**: the card opens the `.apk` of the release; Android installs it over the current app.
+- **Web**: the card links to the release, since the version served is the one deployed on your server.
+
+#### Updater signing
+
+The updater only installs a package signed with the project key, and the installed app only trusts the matching public key. Create the key pair once and keep it safe (losing it means every installed app refuses later updates until it is reinstalled by hand):
+
+```sh
+bunx tauri signer generate -w centime-updater.key
+```
+
+Copy the printed public key into `apps/desktop/src-tauri/tauri.conf.json`, field `plugins.updater.pubkey`, then register the private key as repository secrets:
+
+```sh
+gh secret set TAURI_SIGNING_PRIVATE_KEY < centime-updater.key
+gh secret set TAURI_SIGNING_PRIVATE_KEY_PASSWORD   # the password typed at generation, empty if none
+```
+
+On each `v*` tag, the `Build desktop` workflow builds with `src-tauri/tauri.updater.conf.json`, which adds the signed updater artifacts, then attaches `latest.json` (version, changelog section, signatures and asset URLs) to the release. The job fails early if the private key is missing. A local `bun run desktop:build` never needs the key: it builds without that config, so without updater artifacts.
 
 ### Prerequisites
 

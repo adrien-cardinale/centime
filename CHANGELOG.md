@@ -4,7 +4,7 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
-## [Unreleased]
+## [0.3.0] - 2026-10-10
 
 ### Added
 

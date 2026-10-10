@@ -35,6 +35,7 @@ bun run start</code></pre>
 <tr><td><code>STATIC_DIR</code></td><td>empty</td><td>Override for the web build folder</td></tr>
 <tr><td><code>MAX_USER_BYTES</code></td><td><code>536870912</code></td><td>Storage quota per user id in bytes (512&nbsp;MiB). <code>0</code> disables the quota.</td></tr>
 <tr><td><code>RATE_LIMIT_PER_MINUTE</code></td><td><code>300</code></td><td>Maximum API requests per minute and per client. <code>0</code> disables the limit.</td></tr>
+<tr><td><code>ALLOWED_ORIGINS</code></td><td>empty</td><td>Comma-separated origins of a web app hosted elsewhere (for example <code>https://you.github.io</code>) allowed to reach the relay. Leave empty when the relay serves the web app itself.</td></tr>
 </tbody></table>
 <h2>HTTPS</h2>
 <p>Web Crypto needs a secure context, so serve the browser version over HTTPS, or from <code>localhost</code>. Put a reverse proxy (Caddy, Traefik, nginx) in front of the container.</p>

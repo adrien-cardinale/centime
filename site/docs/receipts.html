@@ -18,7 +18,7 @@
 <main class="prose"><h1>Receipts</h1>
 <p>Centime keeps a photo of your till receipts next to the transactions they explain. A receipt can also split a transaction over several categories, line by line.</p>
 <h2>Capturing a receipt</h2>
-<p>Open <strong>Receipts</strong> and choose <strong>Add a receipt</strong>. On a phone, the camera opens directly; on a computer, drop a photo or a PDF, or pick a file. Photos are straightened, reduced to 1600 pixels on their longest side and saved as JPEG, which keeps them light. PDF receipts are kept as they are. <strong>Retake</strong> replaces the photo before going further.</p>
+<p>Open <strong>Receipts</strong> and choose <strong>Add a receipt</strong>. On a phone, the camera opens directly; on a computer, drop a photo or a PDF, or pick a file. Photos are straightened, reduced to 1600 pixels on their longest side and saved as JPEG, which keeps them light. PDF receipts are kept as they are. <strong>Retake</strong> replaces the photo before going further, and <strong>Crop</strong> frames the receipt: centime suggests a frame around the bright area of the photo, which you move and resize by its corners; <strong>Original image</strong> undoes the crop. A receipt that fills the frame is read much better.</p>
 <p>From the Transactions page, <strong>Attach a receipt</strong> in a transaction's menu does the same for that transaction: the receipt is linked to it straight away.</p>
 <h2>Details</h2>
 <p>Enter the merchant, the total and the date printed on the receipt. A note is optional. To split the expense, add <strong>lines</strong>: a label, an amount and a category for each item. Amounts are typed without a sign. Centime shows the sum of the lines and warns when it differs from the total.</p>
@@ -46,7 +46,7 @@
 <ul><li>Files up to 7 MB, so that the encrypted file fits the relay's 8 MiB limit; photos are much smaller once reduced.</li>
 <li>Up to 200 lines per receipt.</li>
 <li>A receipt belongs to one account and links to one transaction of that account.</li>
-<li>Text recognition runs on the device (tesseract.js), for photos only. It pre-fills the merchant, total, date and lines: check them before saving.</li></ul>
+<li>Text recognition runs on the device (tesseract.js), for photos only, on the original photo at full resolution. It pre-fills the merchant, total, date and lines: check them before saving. <strong>Text read by the OCR</strong> under the reading buttons shows the raw recognized text.</li></ul>
 <nav class="pager"><a href="importing.html">← Importing transactions</a><a href="budgets.html">Categories, fixed items and budgets →</a></nav></main></div>
 <footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
 <script src="../site.js"></script>

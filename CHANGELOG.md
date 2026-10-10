@@ -4,6 +4,13 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [Unreleased]
+
+### Added
+
+- The web app also builds as a static site (`build:static`, path set by `BASE_PATH`) and runs without a relay. It is published on GitHub Pages under `app/`, and asks for the relay address at first launch, like the desktop app.
+- Relay: `ALLOWED_ORIGINS` (comma-separated) lets a web app hosted on another origin, such as GitHub Pages, synchronize with the relay.
+
 ## [0.2.1] - 2026-10-10
 
 ### Changed

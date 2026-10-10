@@ -2,6 +2,7 @@ import { useRef } from "react"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useSyncStore } from "@/lib/sync/sync-store"
+import { AccountCard } from "./account-card"
 import { LocalDataCard } from "./local-data-card"
 import { RecoveryKeyCard } from "./recovery-key-card"
 import { SyncConnectForm } from "./sync-connect-form"
@@ -28,6 +29,7 @@ export default function SyncPanel() {
       </Card>
       <RecoveryKeyCard serverUrl={state.serverUrl} />
       <LocalDataCard onConfigureSync={state.configured ? undefined : scrollToSync} />
+      <AccountCard syncConfigured={state.configured} />
     </div>
   )
 }

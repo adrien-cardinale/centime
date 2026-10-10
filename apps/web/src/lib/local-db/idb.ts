@@ -33,3 +33,7 @@ export async function idbGet(key: string): Promise<Uint8Array | null> {
 export async function idbSet(key: string, value: Uint8Array): Promise<void> {
   await run("readwrite", (store) => store.put(value, key))
 }
+
+export async function idbDelete(key: string): Promise<void> {
+  await run("readwrite", (store) => store.delete(key))
+}

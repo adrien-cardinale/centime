@@ -7,7 +7,7 @@ import { getLocalDatabase } from "@/lib/local-db/current-database"
 import { countPendingChanges, markAllChangesPending } from "@/lib/local-db/local-data"
 import { onMutationSettled } from "@/lib/queries"
 import { isStaticBuild, isTauri } from "@/lib/runtime"
-import { type FetchLike, normalizeServerUrl, SyncError, type SyncReport, synchronize } from "./sync-client"
+import { deleteAccount, type FetchLike, normalizeServerUrl, SyncError, type SyncReport, synchronize } from "./sync-client"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
 const SYNC_INTERVAL_MS = 5 * 60 * 1000
@@ -52,12 +52,12 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener)
 }
 
-function getSnapshot(): SyncState {
+export function getSyncState(): SyncState {
   return state
 }
 
 export function useSyncStore(): SyncState {
-  return useSyncExternalStore(subscribe, getSnapshot)
+  return useSyncExternalStore(subscribe, getSyncState)
 }
 
 export async function refreshSyncState(): Promise<void> {
@@ -132,6 +132,12 @@ export async function disconnect(): Promise<void> {
   await getLocalDatabase().run((db) => clearSyncSetting(db, "serverUrl", "lastError"))
   setState({ status: "idle" })
   await refreshSyncState()
+}
+
+export async function deleteServerAccount(): Promise<void> {
+  const { serverUrl } = await getLocalDatabase().run(readSyncSettings)
+  if (serverUrl === null) throw new Error(i18n.t("syncState.notConfigured"))
+  await deleteAccount({ serverUrl, vault: getVault(), fetch: fetchFromRuntime })
 }
 
 function scheduleAfterMutation(): void {

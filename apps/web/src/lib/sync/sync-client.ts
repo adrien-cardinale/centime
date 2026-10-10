@@ -82,17 +82,33 @@ async function send(config: SyncConfig, path: string, init: RequestInit): Promis
   }
 }
 
+function authorizationOf(config: SyncConfig): string {
+  const { userId, secret } = config.vault.credentials
+  return `Bearer ${userId}.${secret}`
+}
+
+async function ensureOk(response: Response): Promise<void> {
+  if (response.status === 401) throw new SyncError(i18n.t("syncErrors.unauthorized"), "unauthorized")
+  if (!response.ok) throw new SyncError(await errorMessageOf(response), "server")
+}
+
+export async function deleteAccount(config: SyncConfig): Promise<void> {
+  const response = await send(config, "/api/account", {
+    method: "DELETE",
+    headers: { Authorization: authorizationOf(config) },
+  })
+  await ensureOk(response)
+}
+
 async function requestJson<Schema extends z.ZodType>(
   config: SyncConfig,
   path: string,
   init: RequestInit,
   schema: Schema,
 ): Promise<z.output<Schema>> {
-  const { userId, secret } = config.vault.credentials
-  const headers = { Authorization: `Bearer ${userId}.${secret}`, "Content-Type": "application/json" }
+  const headers = { Authorization: authorizationOf(config), "Content-Type": "application/json" }
   const response = await send(config, path, { ...init, headers })
-  if (response.status === 401) throw new SyncError(i18n.t("syncErrors.unauthorized"), "unauthorized")
-  if (!response.ok) throw new SyncError(await errorMessageOf(response), "server")
+  await ensureOk(response)
   const parsed = schema.safeParse(await response.json().catch(() => null))
   if (!parsed.success) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
   return parsed.data

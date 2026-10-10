@@ -103,6 +103,26 @@
       "size": "Taille",
       "androidBackup": "Sur Android, vos données restent sur cet appareil. Connectez un serveur de synchronisation pour les sauvegarder.",
       "configureSync": "Configurer la synchronisation"
+    },
+    "account": {
+      "title": "Compte",
+      "description": "Retirez votre budget de cet appareil ou supprimez votre compte du serveur.",
+      "leave": "Quitter ce compte sur cet appareil",
+      "leaveTitle": "Quitter ce compte sur cet appareil ?",
+      "leaveDescription": "La clé de chiffrement et la base locale sont effacées de cet appareil. L'application revient ensuite à l'accueil.",
+      "leaveKeyTitle": "Gardez votre clé de chiffrement",
+      "leaveKeyDescription": "Les données restent sur le serveur pour vos autres appareils. Votre clé suffit pour les retrouver ici.",
+      "leaveNoServerTitle": "Aucun serveur de synchronisation",
+      "leaveNoServerDescription": "Vos données n'existent que sur cet appareil. Elles seront perdues définitivement.",
+      "leaveConfirm": "Quitter",
+      "leaveFailed": "Impossible de quitter le compte",
+      "delete": "Supprimer le compte sur le serveur",
+      "deleteTitle": "Supprimer le compte sur le serveur ?",
+      "deleteDescription": "Vos données sont supprimées du serveur, puis effacées de cet appareil.",
+      "deleteWarningTitle": "Action irréversible",
+      "deleteWarningDescription": "Toutes les données du serveur sont perdues, pour tous vos appareils. Les autres appareils ne pourront plus se synchroniser.",
+      "deleteConfirm": "Supprimer définitivement",
+      "deleteFailed": "Suppression du compte impossible"
     }
   },
   "syncState": {

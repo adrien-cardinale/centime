@@ -103,6 +103,26 @@
       "size": "Size",
       "androidBackup": "On Android, your data stays on this device. Connect a sync server to back it up.",
       "configureSync": "Set up sync"
+    },
+    "account": {
+      "title": "Account",
+      "description": "Remove your budget from this device or delete your account from the server.",
+      "leave": "Leave this account on this device",
+      "leaveTitle": "Leave this account on this device?",
+      "leaveDescription": "The encryption key and the local database are erased from this device. The app then returns to the welcome screen.",
+      "leaveKeyTitle": "Keep your encryption key",
+      "leaveKeyDescription": "Your data stays on the server for your other devices. Your key is enough to get it back here.",
+      "leaveNoServerTitle": "No sync server",
+      "leaveNoServerDescription": "Your data only exists on this device. It will be lost for good.",
+      "leaveConfirm": "Leave",
+      "leaveFailed": "Unable to leave the account",
+      "delete": "Delete the account on the server",
+      "deleteTitle": "Delete the account on the server?",
+      "deleteDescription": "Your data is deleted from the server, then erased from this device.",
+      "deleteWarningTitle": "This cannot be undone",
+      "deleteWarningDescription": "All server data is lost, for every device. Your other devices will no longer be able to sync.",
+      "deleteConfirm": "Delete for good",
+      "deleteFailed": "Unable to delete the account"
     }
   },
   "syncState": {

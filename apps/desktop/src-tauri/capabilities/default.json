@@ -12,6 +12,7 @@
     "fs:allow-write-file",
     "fs:allow-rename",
     "fs:allow-mkdir",
+    "fs:allow-remove",
     {
       "identifier": "fs:scope",
       "allow": [{ "path": "$APPDATA" }, { "path": "$APPDATA/**" }]

@@ -1,8 +1,8 @@
 import { appDataDir, join } from "@tauri-apps/api/path"
-import { exists, mkdir, readFile, rename, writeFile } from "@tauri-apps/plugin-fs"
+import { exists, mkdir, readFile, remove, rename, writeFile } from "@tauri-apps/plugin-fs"
 import { isSealed, type Vault } from "@/lib/crypto/envelope"
 import { isTauri } from "@/lib/runtime"
-import { idbGet, idbSet } from "./idb"
+import { idbDelete, idbGet, idbSet } from "./idb"
 
 const DATABASE_FILE = "centime.db"
 const TEMPORARY_SUFFIX = ".tmp"
@@ -16,6 +16,7 @@ export type Persistence = {
   filePath: string
   load(): Promise<Uint8Array | null>
   save(bytes: Uint8Array): Promise<void>
+  remove(): Promise<void>
 }
 
 export async function createFilePersistence(): Promise<Persistence> {
@@ -30,6 +31,9 @@ export async function createFilePersistence(): Promise<Persistence> {
       await writeFile(temporaryPath, bytes)
       await rename(temporaryPath, filePath)
     },
+    remove: async () => {
+      for (const path of [temporaryPath, filePath]) if (await exists(path)) await remove(path)
+    },
   }
 }
 
@@ -38,6 +42,7 @@ function createBrowserPersistence(): Persistence {
     filePath: BROWSER_LOCATION,
     load: () => idbGet(BROWSER_ENTRY),
     save: (bytes) => idbSet(BROWSER_ENTRY, bytes),
+    remove: () => idbDelete(BROWSER_ENTRY),
   }
 }
 
@@ -57,6 +62,7 @@ export function withEncryption(inner: Persistence, vault: Vault): Persistence {
       throw new Error(UNKNOWN_FORMAT)
     },
     save: async (bytes) => inner.save(await vault.encrypt(bytes)),
+    remove: () => inner.remove(),
   }
 }
 
@@ -76,15 +82,17 @@ export type AutoSaverOptions = {
 export type AutoSaver = {
   schedule(): void
   flush(): Promise<void>
+  stop(): Promise<void>
 }
 
 export function createAutoSaver({ exportBytes, persistence, delayMs, onSaved, onError }: AutoSaverOptions): AutoSaver {
   let timer: ReturnType<typeof setTimeout> | null = null
   let dirty = false
   let writing: Promise<void> = Promise.resolve()
+  let stopped = false
 
   const write = async () => {
-    if (!dirty) return
+    if (stopped || !dirty) return
     dirty = false
     const bytes = await exportBytes()
     await persistence.save(bytes)
@@ -106,10 +114,17 @@ export function createAutoSaver({ exportBytes, persistence, delayMs, onSaved, on
 
   return {
     schedule: () => {
+      if (stopped) return
       dirty = true
       if (timer !== null) clearTimeout(timer)
       timer = setTimeout(() => void flush().catch(() => undefined), delayMs)
     },
     flush,
+    stop: async () => {
+      stopped = true
+      if (timer !== null) clearTimeout(timer)
+      timer = null
+      await writing
+    },
   }
 }

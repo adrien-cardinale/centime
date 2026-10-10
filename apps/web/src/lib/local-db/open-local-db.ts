@@ -14,6 +14,7 @@ export type LocalDatabase = {
   filePath: string
   run<Result>(task: (db: Db) => Promise<Result>): Promise<Result>
   flush(): Promise<void>
+  erase(): Promise<void>
   sizeInBytes(): number
 }
 
@@ -51,6 +52,10 @@ export async function openLocalDb(vault: Vault): Promise<LocalDatabase> {
     filePath: persistence.filePath,
     run: (task) => queue(() => task(db)),
     flush: () => saver.flush(),
+    erase: async () => {
+      await saver.stop()
+      await persistence.remove()
+    },
     sizeInBytes: () => sizeInBytes,
   }
 }

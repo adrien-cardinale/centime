@@ -84,7 +84,7 @@ describe("runMigrations", () => {
 
   it("turns parent categories into themes", async () => {
     const db = createDb(":memory:")
-    await simulateDrizzleMigratedDatabase(db, MIGRATIONS.length - 1)
+    await simulateDrizzleMigratedDatabase(db, MIGRATIONS.findIndex((migration) => migration.tag === "0006_drop_category_parent"))
     const stamp = "2026-01-01T00:00:00.000Z"
     const insert = (id: string, name: string, parentId: string | null) =>
       db.run(

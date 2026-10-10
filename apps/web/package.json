@@ -13,6 +13,7 @@
     "test": "bun test"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "0.133.0",
     "@centime/core": "workspace:*",
     "@centime/db": "workspace:*",
     "@centime/services": "workspace:*",

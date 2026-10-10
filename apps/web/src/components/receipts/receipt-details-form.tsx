@@ -1,4 +1,5 @@
 import { zodResolver } from "@hookform/resolvers/zod"
+import { useQuery } from "@tanstack/react-query"
 import { type ReactNode, useEffect, useRef, useState } from "react"
 import { type UseFormReturn, useForm } from "react-hook-form"
 import { useTranslation } from "react-i18next"
@@ -9,8 +10,12 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { todayIso } from "@/lib/budgets"
+import { categoriesQuery } from "@/lib/queries"
+import { type AiExtractionCategory, isAiExtractionSupported } from "@/lib/receipts/ai-extract"
+import { isAiExtractionReady, useAiExtractionSettings } from "@/lib/receipts/ai-settings"
 import { isOcrSupported, type RecognizedReceipt } from "@/lib/receipts/ocr"
 import type { PreparedReceiptImage } from "@/lib/receipts/prepare-image"
+import { AiSettingsHint } from "./ai-settings-hint"
 import { OcrFieldWarning } from "./ocr-field-warning"
 import {
   type ReceiptDetails,
@@ -27,9 +32,10 @@ import {
   type OcrFilledFields,
   type OcrPatch,
   ocrFormPatch,
+  type PrefillResult,
 } from "./receipt-ocr-fill"
 import { ReceiptOcrPanel } from "./receipt-ocr-panel"
-import { useReceiptOcr } from "./use-receipt-ocr"
+import { type ReaderEngine, useReceiptReader } from "./use-receipt-reader"
 
 type DetailsForm = UseFormReturn<ReceiptDetailsValues, unknown, ReceiptDetailsParsed>
 
@@ -44,6 +50,7 @@ type ReceiptDetailsFormProps = {
   backLabel?: string
   ocrImage?: PreparedReceiptImage | null
   autoOcr?: boolean
+  aiSettingsHint?: boolean
 }
 
 function applyPatch(form: DetailsForm, patch: OcrPatch) {
@@ -58,16 +65,29 @@ function isDefaultDate(form: DetailsForm): boolean {
   return !form.getFieldState("receiptDate").isDirty && form.getValues("receiptDate") === todayIso()
 }
 
+const NO_CATEGORIES: AiExtractionCategory[] = []
+
+function toAiCategories(categories: readonly AiExtractionCategory[]): AiExtractionCategory[] {
+  return categories.map(({ id, name }) => ({ id, name }))
+}
+
+function useAiReadiness() {
+  const { settings, isLoading } = useAiExtractionSettings()
+  const enabled = !isLoading && isAiExtractionReady(settings)
+  const categories = useQuery({ ...categoriesQuery, select: toAiCategories, enabled })
+  const canAutoRun = !isLoading && (!enabled || categories.isSuccess)
+  return { settings, enabled, isLoading, canAutoRun, categories: categories.data ?? NO_CATEGORIES }
+}
+
 function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, autoOcr: boolean) {
   const { t } = useTranslation()
   const [filled, setFilled] = useState<OcrFilledFields | null>(null)
-  const ocrImage = image && isOcrSupported(image.mime) ? image : null
+  const [prefilledBy, setPrefilledBy] = useState<ReaderEngine | null>(null)
+  const readableImage = image && isOcrSupported(image.mime) ? image : null
+  const ai = useAiReadiness()
+  const aiEnabled = ai.enabled && readableImage !== null && isAiExtractionSupported(readableImage.mime)
 
-  const applyResult = (result: RecognizedReceipt) => {
-    if (result.rawText.trim() === "") {
-      toast.error(t("receipts.ocr.noText"))
-      return
-    }
+  const applyPrefill = (result: PrefillResult, engine: ReaderEngine) => {
     const patch = ocrFormPatch(form.getValues(), result, isDefaultDate(form))
     if (isEmptyPatch(patch)) {
       toast.info(t("receipts.ocr.nothingFound"))
@@ -75,22 +95,47 @@ function useOcrPrefill(form: DetailsForm, image: PreparedReceiptImage | null, au
     }
     applyPatch(form, patch)
     setFilled(filledFields(patch, result))
+    setPrefilledBy(engine)
   }
 
-  const ocr = useReceiptOcr(ocrImage, applyResult)
+  const applyRecognized = (result: RecognizedReceipt) => {
+    if (result.rawText.trim() === "") {
+      toast.error(t("receipts.ocr.noText"))
+      return
+    }
+    applyPrefill(result, "ocr")
+  }
+
+  const reader = useReceiptReader({
+    image: readableImage,
+    aiEnabled,
+    categories: ai.categories,
+    settings: ai.settings,
+    onRecognized: applyRecognized,
+    onExtracted: (result) => applyPrefill(result, "ai"),
+  })
   const autoStarted = useRef(false)
-  const { start, cancel } = ocr
+  const { start, cancel } = reader
+  const { canAutoRun } = ai
   useEffect(() => {
-    if (!autoOcr || !ocrImage || autoStarted.current || !isFormEmptyForOcr(form.getValues())) return
+    if (!autoOcr || !readableImage || !canAutoRun) return
+    if (autoStarted.current || !isFormEmptyForOcr(form.getValues())) return
     autoStarted.current = true
     void start()
     return () => {
       autoStarted.current = false
       cancel()
     }
-  }, [autoOcr, ocrImage, form, start, cancel])
+  }, [autoOcr, readableImage, canAutoRun, form, start, cancel])
 
-  return { ocr, filled, available: ocrImage !== null }
+  return {
+    reader,
+    filled,
+    prefilledBy,
+    available: readableImage !== null,
+    aiEnabled,
+    aiMissing: !ai.isLoading && !ai.enabled,
+  }
 }
 
 export function ReceiptDetailsForm({
@@ -104,6 +149,7 @@ export function ReceiptDetailsForm({
   backLabel,
   ocrImage = null,
   autoOcr = false,
+  aiSettingsHint = false,
 }: ReceiptDetailsFormProps) {
   const { t } = useTranslation()
   const form = useForm<ReceiptDetailsValues, unknown, ReceiptDetailsParsed>({
@@ -117,14 +163,19 @@ export function ReceiptDetailsForm({
     <Form {...form}>
       <form onSubmit={form.handleSubmit((parsed) => onSubmit(toReceiptDetails(parsed)))} className="space-y-5">
         {prefill.available && (
-          <ReceiptOcrPanel
-            running={prefill.ocr.running}
-            progress={prefill.ocr.progress}
-            prefilled={prefill.filled !== null}
-            disabled={pending}
-            onStart={() => void prefill.ocr.start()}
-            onCancel={prefill.ocr.cancel}
-          />
+          <div className="space-y-2">
+            <ReceiptOcrPanel
+              engine={prefill.reader.engine}
+              progress={prefill.reader.progress}
+              prefilledBy={prefill.prefilledBy}
+              aiAvailable={prefill.aiEnabled}
+              disabled={pending}
+              onStartAi={() => void prefill.reader.startAi()}
+              onStartOcr={() => void prefill.reader.startOcr()}
+              onCancel={prefill.reader.cancel}
+            />
+            {aiSettingsHint && prefill.aiMissing && <AiSettingsHint />}
+          </div>
         )}
         {showAccount && (
           <FormField

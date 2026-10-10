@@ -29,7 +29,7 @@
 <h2>Splitting by the receipt</h2>
 <p>When the lines of a linked receipt cover at least two categories, <strong>Split the transaction by the receipt</strong> turns them into a split: the lines are grouped by category and their labels become the notes. The lines must add up exactly to the transaction amount; otherwise centime says so and nothing changes. The split can then be edited like any other.</p>
 <h2>Where the images are stored</h2>
-<p>Receipt images never leave your device unencrypted. They are encrypted with your account key and stored locally: in the app's data folder on desktop and Android, in the browser's storage on the web.</p>
+<p>Receipt images never leave your device unencrypted, unless you turn on the optional AI reading (see below). They are encrypted with your account key and stored locally: in the app's data folder on desktop and Android, in the browser's storage on the web.</p>
 <h2>Sync between devices</h2>
 <p>The details and lines of a receipt travel in the encrypted log, like the rest of your data. The image travels apart:</p>
 <ol><li>After each sync, the device uploads to the relay the images it holds and the relay lacks. It sends the encrypted file as stored, so the relay only ever sees an opaque file named after the receipt id.</li>
@@ -38,6 +38,10 @@
 <li>Deleting a receipt deletes its image on the relay and on the other devices at their next sync.</li></ol>
 <p>A sync transfers at most 20 images; the next one continues. Images count toward the same storage quota as the log on the relay. Without a relay, images stay on the device that captured them.</p>
 <p>Deleting a receipt erases its image and its details; the transaction stays as it is. Removing an account from a device also removes its receipt images from that device.</p>
+<h2>Reading receipts with AI (optional)</h2>
+<p>By default, receipts are read on the device and nothing leaves it. <strong>Settings › AI receipt reading</strong> offers an optional second reader: Claude, the AI model made by Anthropic. It is off until you turn it on, and it needs your own Anthropic API key, created on the <a href="https://console.anthropic.com/">Anthropic console</a>.</p>
+<p>When the option is on, centime reads receipt photos with Claude instead of on the device, and falls back to the local reading if Claude cannot answer. For each reading, it sends two things straight from your device to Anthropic's API: the receipt photo and the names of your categories. Claude returns the merchant, total, date, currency and lines, with a category for each line taken from your list. Nothing else is sent: no transactions, no amounts from your accounts, no recovery key. The photo is sent in clear over HTTPS, not encrypted with your account key, and Anthropic processes it under its own terms.</p>
+<p>The API key and the chosen model stay on the device, in the encrypted local database of the active account. They are never synchronized and never reach the relay; each device and each account needs its own setting. Turn the switch off to stop sending photos at once. Only photos (JPEG, PNG, WebP, GIF) can be read this way, not PDFs.</p>
 <h2>Limits</h2>
 <ul><li>Files up to 7 MB, so that the encrypted file fits the relay's 8 MiB limit; photos are much smaller once reduced.</li>
 <li>Up to 200 lines per receipt.</li>

@@ -44,4 +44,11 @@ describe("pré-remplissage du ticket", () => {
     expect(isFormEmptyForOcr({ ...empty, receiptDate: "2026-10-10" })).toBe(true)
     expect(isFormEmptyForOcr({ ...empty, merchant: "Coop" })).toBe(false)
   })
+
+  test("garde la catégorie proposée pour chaque ligne", () => {
+    const withCategories = { ...result, lines: [{ label: "Pain", amount: 2.5, categoryId: "cat-food" }] }
+    expect(ocrFormPatch(empty, withCategories, false).lines).toEqual([
+      { label: "Pain", amountText: "2.50", categoryId: "cat-food" },
+    ])
+  })
 })

@@ -36,6 +36,8 @@
 <p>Sync runs at startup, every 5 minutes, 5 seconds after each change, and on demand from the sidebar.</p>
 <h2>Receipt images</h2>
 <p>Receipt images are sealed with the same AES-256-GCM key as the database and the log, in the same self-contained format. After each log sync, the device uploads the sealed bytes as they are to <code>/api/blob/&lt;receipt id&gt;</code>, and the other devices download them unchanged. The relay sees only ciphertext, its size and the receipt id; the file type and the fingerprint stay in the encrypted log.</p>
+<h2>The AI reading exception</h2>
+<p>Your data never leaves your devices unencrypted, with one opt-in exception. If you turn on <strong>Settings › AI receipt reading</strong>, each receipt photo read by the AI is sent in clear over HTTPS, with the names of your categories, from your device to Anthropic's API. The relay is not involved. The option is off by default, uses your own API key stored only in the encrypted local database, and sends nothing while it is off. See <a href="receipts.html">Receipts</a>.</p>
 <h2>Threat model in short</h2>
 <p>A compromised or curious server sees ciphertext, sizes and timing, not your transactions. A stolen device or application folder exposes the key and data on it, hence the advice to use disk encryption.</p>
 <nav class="pager"><a href="desktop.html">← Desktop app</a><a href="api.html">Relay API →</a></nav></main></div>

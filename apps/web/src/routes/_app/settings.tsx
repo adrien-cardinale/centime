@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useTranslation } from "react-i18next"
 import { PageHeader } from "@/components/page-header"
+import { AiExtractionCard } from "@/components/settings/ai-extraction-card"
 import { LanguageCard } from "@/components/settings/language-card"
 import SyncPanel from "@/components/settings/sync-panel"
 import { UpdateCard } from "@/components/settings/update-card"
@@ -16,6 +17,7 @@ function SettingsPage() {
       <PageHeader title={t("settings.title")} />
       <LanguageCard />
       <SyncPanel />
+      <AiExtractionCard />
       <UpdateCard />
     </div>
   )

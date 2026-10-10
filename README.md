@@ -13,7 +13,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Manual entry**: add from the Transactions page an operation missing from the statements (account, date, label, merchant, amount, category).
 - **Categories and rules**: categories grouped by theme (transactions are filed under categories), "contains" or regex rules on the label, the merchant or the provider category, applied at import time or on demand.
 - **Split transactions**: spread one transaction over several categories with partial amounts that add up to the total; dashboard, budgets, filters and export count each part in its own category.
-- **Receipts**: photograph till receipts (or attach a PDF), enter the merchant, total and lines, link them to a transaction with suggested matches, and split the transaction by category from the receipt lines. Images are encrypted and stored on the device.
+- **Receipts**: photograph till receipts (or attach a PDF), enter the merchant, total and lines, link them to a transaction with suggested matches, and split the transaction by category from the receipt lines. Text is read on the device; an optional, off-by-default AI reading sends the photo to Anthropic with your own API key. Images are encrypted and stored on the device.
 - **Fixed items**: recurring expenses and income (monthly, quarterly, yearly), automatic transaction matching, upcoming and overdue items.
 - **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
 - **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).

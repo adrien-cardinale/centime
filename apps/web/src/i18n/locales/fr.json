@@ -139,6 +139,22 @@
       "deleteWarningDescription": "Toutes les données du serveur sont perdues, pour tous vos appareils. Les autres appareils ne pourront plus se synchroniser.",
       "deleteConfirm": "Supprimer définitivement",
       "deleteFailed": "Suppression du compte impossible"
+    },
+    "ai": {
+      "title": "Lecture des tickets par IA",
+      "description": "Option : Claude, l'IA d'Anthropic, lit la photo du ticket et remplit le formulaire.",
+      "privacy": "Si vous activez cette option, la photo du ticket quitte votre appareil. Elle est envoyée à Anthropic avec les noms de vos catégories. Rien d'autre n'est envoyé.",
+      "enable": "Envoyer les photos de tickets à Anthropic",
+      "apiKey": "Clé d'API Anthropic",
+      "apiKeyHint": "La clé reste sur cet appareil, dans la base chiffrée. Créez-la sur la console Anthropic :",
+      "showKey": "Afficher la clé",
+      "hideKey": "Masquer la clé",
+      "model": "Modèle",
+      "modelHint": "Choisissez un modèle proposé ou saisissez un autre identifiant.",
+      "save": "Enregistrer",
+      "saved": "Réglages de l'IA enregistrés",
+      "saveFailed": "Impossible d'enregistrer les réglages de l'IA",
+      "keyMissing": "Ajoutez une clé d'API pour utiliser la lecture par IA."
     }
   },
   "syncState": {
@@ -544,6 +560,22 @@
       "failed": "Lecture du ticket impossible. Remplissez les champs à la main.",
       "noText": "Aucun texte lisible sur la photo.",
       "nothingFound": "Rien à pré-remplir : les champs sont déjà remplis ou le ticket est illisible."
+    },
+    "ai": {
+      "analyze": "Analyser avec l'IA",
+      "running": "Analyse par l'IA…",
+      "cancel": "Arrêter l'analyse",
+      "prefilled": "Champs pré-remplis par l'IA, vérifiez les montants et les catégories.",
+      "fallback": "Analyse par l'IA impossible : {{reason}} Lecture locale du ticket à la place.",
+      "settingsHint": "Lecture par IA disponible dans les réglages",
+      "errors": {
+        "auth": "la clé d'API est refusée.",
+        "rateLimit": "trop de demandes, réessayez plus tard.",
+        "network": "le service est injoignable.",
+        "refused": "le service a refusé d'analyser cette image.",
+        "invalid": "la réponse du service est illisible.",
+        "unsupported": "ce type de fichier n'est pas pris en charge."
+      }
     },
     "link": {
       "link": "Lier",

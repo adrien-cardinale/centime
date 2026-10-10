@@ -106,6 +106,7 @@ function ReceiptFlow({ transaction, onClose }: ReceiptFlowProps) {
         onBack={() => setStep("photo")}
         ocrImage={image}
         autoOcr
+        aiSettingsHint
       />
     )
   }

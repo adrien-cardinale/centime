@@ -139,6 +139,22 @@
       "deleteWarningDescription": "All server data is lost, for every device. Your other devices will no longer be able to sync.",
       "deleteConfirm": "Delete for good",
       "deleteFailed": "Unable to delete the account"
+    },
+    "ai": {
+      "title": "AI receipt reading",
+      "description": "Option: Claude, Anthropic's AI, reads the receipt photo and fills in the form.",
+      "privacy": "If you turn on this option, the receipt photo leaves your device. It is sent to Anthropic with the names of your categories. Nothing else is sent.",
+      "enable": "Send receipt photos to Anthropic",
+      "apiKey": "Anthropic API key",
+      "apiKeyHint": "The key stays on this device, in the encrypted database. Create it on the Anthropic console:",
+      "showKey": "Show the key",
+      "hideKey": "Hide the key",
+      "model": "Model",
+      "modelHint": "Pick a suggested model or type another model ID.",
+      "save": "Save",
+      "saved": "AI settings saved",
+      "saveFailed": "Could not save the AI settings",
+      "keyMissing": "Add an API key to use AI reading."
     }
   },
   "syncState": {
@@ -544,6 +560,22 @@
       "failed": "Could not read the receipt. Fill in the fields by hand.",
       "noText": "No readable text on the photo.",
       "nothingFound": "Nothing to pre-fill: the fields are already filled or the receipt is unreadable."
+    },
+    "ai": {
+      "analyze": "Analyze with AI",
+      "running": "Analyzing with AI…",
+      "cancel": "Stop the analysis",
+      "prefilled": "Fields pre-filled by AI, check the amounts and categories.",
+      "fallback": "AI analysis failed: {{reason}} Reading the receipt locally instead.",
+      "settingsHint": "AI reading is available in the settings",
+      "errors": {
+        "auth": "the API key was rejected.",
+        "rateLimit": "too many requests, try again later.",
+        "network": "the service cannot be reached.",
+        "refused": "the service refused to analyze this image.",
+        "invalid": "the service response is unreadable.",
+        "unsupported": "this file type is not supported."
+      }
     },
     "link": {
       "link": "Link",

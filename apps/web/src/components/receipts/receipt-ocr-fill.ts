@@ -1,4 +1,4 @@
-import { MAX_RECEIPT_LINES, type ReceiptOcrResult } from "@centime/core"
+import { MAX_RECEIPT_LINES, type ReceiptOcrLine, type ReceiptOcrResult } from "@centime/core"
 import type { ReceiptDetailsValues, ReceiptLineValues } from "./receipt-form"
 
 export type OcrField = "merchant" | "totalText" | "receiptDate"
@@ -8,6 +8,10 @@ export type OcrFillTarget = Pick<ReceiptDetailsValues, OcrField | "lines">
 export type OcrPatch = Partial<Record<OcrField, string>> & { lines?: ReceiptLineValues[] }
 
 export type OcrFilledFields = Partial<Record<OcrField, { value: string; confidence: number }>>
+
+export type PrefillLine = ReceiptOcrLine & { categoryId?: string | null }
+
+export type PrefillResult = Omit<ReceiptOcrResult, "lines"> & { lines: readonly PrefillLine[] }
 
 export const LOW_CONFIDENCE = 0.6
 
@@ -19,15 +23,15 @@ export function isFormEmptyForOcr(values: OcrFillTarget): boolean {
   return isBlank(values.merchant) && isBlank(values.totalText) && values.lines.length === 0
 }
 
-function ocrLines(result: ReceiptOcrResult): ReceiptLineValues[] {
+function ocrLines(result: PrefillResult): ReceiptLineValues[] {
   return result.lines.slice(0, MAX_RECEIPT_LINES).map((line) => ({
     label: line.label,
     amountText: line.amount.toFixed(2),
-    categoryId: null,
+    categoryId: line.categoryId ?? null,
   }))
 }
 
-export function ocrFormPatch(current: OcrFillTarget, result: ReceiptOcrResult, replaceableDate: boolean): OcrPatch {
+export function ocrFormPatch(current: OcrFillTarget, result: PrefillResult, replaceableDate: boolean): OcrPatch {
   const patch: OcrPatch = {}
   if (result.merchant && isBlank(current.merchant)) patch.merchant = result.merchant
   if (result.total !== null && isBlank(current.totalText)) patch.totalText = result.total.toFixed(2)
@@ -46,7 +50,7 @@ const CONFIDENCE_KEY: Record<OcrField, keyof ReceiptOcrResult["confidence"]> = {
   receiptDate: "receiptDate",
 }
 
-export function filledFields(patch: OcrPatch, result: ReceiptOcrResult): OcrFilledFields {
+export function filledFields(patch: OcrPatch, result: PrefillResult): OcrFilledFields {
   const filled: OcrFilledFields = {}
   for (const field of Object.keys(CONFIDENCE_KEY) as OcrField[]) {
     const value = patch[field]

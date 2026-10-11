@@ -16,7 +16,7 @@ type AmountMatch = { value: number; start: number; end: number }
 
 type ReceiptRow = { text: string; folded: string; amounts: AmountMatch[] }
 
-type TotalSource = "keyword" | "sum" | "lowerHalf"
+type TotalSource = "keyword" | "payment" | "sum" | "lowerHalf"
 
 type TotalPick = { amount: number; source: TotalSource; itemsEnd: number; skippedRow: number }
 
@@ -34,6 +34,7 @@ const EDGE_PUNCTUATION = /^[\s*:.,;|\-]+|[\s*:.,;|\-]+$/g
 const TOTAL_KEYWORD = /\b(?:TOTAL|TOTALE|MONTANT|SOMME|SUMME|A PAYER|NET A PAYER)\b/
 const NON_TOTAL_KEYWORD =
   /SOUS[- ]?TOTAL|SUB[- ]?TOTAL|ZWISCHENSUMME|\b(?:TVA|MWST|RENDU|MONNAIE|CASH|ESPECES|CARTE|EC|MAESTRO|TWINT|VISA|MASTERCARD|POSTFINANCE|RUCKGELD)\b/
+const CARD_PAYMENT_KEYWORD = /\b(?:CARTE|KARTE|EC|MAESTRO|TWINT|VISA|MASTERCARD|POSTFINANCE)\b/
 const NON_ITEM_KEYWORD = /\b(?:UID|TAUX|SOLDE|PUNKTE|POINTS)\b|CHE-/
 const DISCOUNT_KEYWORD = /\b(?:RABAIS|RABATT|REMISE|REDUCTION)\b/
 const MERCHANT_REJECTED = /\b(?:TEL|FAX|UID|MWST|TVA|WWW)\b|@|CHE-/
@@ -64,7 +65,7 @@ const SUM_TOLERANCE = 0.05
 const MERCHANT_ROW_LIMIT = 6
 const CHAIN_ROW_LIMIT = 8
 const MAX_RECEIPT_AGE_YEARS = 15
-const TOTAL_CONFIDENCE: Record<TotalSource, number> = { keyword: 0.75, sum: 0.6, lowerHalf: 0.3 }
+const TOTAL_CONFIDENCE: Record<TotalSource, number> = { keyword: 0.75, payment: 0.6, sum: 0.6, lowerHalf: 0.3 }
 const KEYWORD_AND_SUM_CONFIDENCE = 0.95
 
 export function parseReceiptText(text: string, options: ReceiptOcrOptions = {}): ReceiptOcrResult {
@@ -131,6 +132,16 @@ function lastAmount(row: ReceiptRow | undefined): AmountMatch | undefined {
   return row?.amounts.at(-1)
 }
 
+function totalAmount(row: ReceiptRow | undefined): AmountMatch | undefined {
+  const last = lastAmount(row)
+  return row && last && !isInParentheses(row.text, last) ? last : undefined
+}
+
+function isInParentheses(text: string, amount: AmountMatch): boolean {
+  const before = text.slice(0, amount.start)
+  return before.lastIndexOf("(") > before.lastIndexOf(")") && text.includes(")", amount.end)
+}
+
 function roundToCents(value: number): number {
   return Math.round(value * 100) / 100
 }
@@ -153,7 +164,7 @@ function isNonItemRow(row: ReceiptRow): boolean {
 }
 
 function pickTotal(rows: ReceiptRow[]): TotalPick | null {
-  return findKeywordTotal(rows) ?? findSumTotal(rows) ?? findLowerHalfTotal(rows)
+  return findKeywordTotal(rows) ?? findCardPaymentTotal(rows) ?? findSumTotal(rows) ?? findLowerHalfTotal(rows)
 }
 
 function findKeywordTotal(rows: ReceiptRow[]): TotalPick | null {
@@ -166,11 +177,20 @@ function findKeywordTotal(rows: ReceiptRow[]): TotalPick | null {
 }
 
 function keywordAmount(row: ReceiptRow, nextRow: ReceiptRow | undefined): number | null {
-  const sameLine = lastAmount(row)
+  const sameLine = totalAmount(row)
   if (sameLine) return Math.abs(sameLine.value)
-  const nextLine = lastAmount(nextRow)
+  const nextLine = totalAmount(nextRow)
   if (!nextRow || !nextLine || NON_TOTAL_KEYWORD.test(nextRow.folded)) return null
   return Math.abs(nextLine.value)
+}
+
+function findCardPaymentTotal(rows: ReceiptRow[]): TotalPick | null {
+  const position = rows.findIndex((row) => CARD_PAYMENT_KEYWORD.test(row.folded) && totalAmount(row))
+  const amount = totalAmount(rows[position])
+  if (!amount) return null
+  const keywordPosition = rows.findIndex((row) => TOTAL_KEYWORD.test(row.folded))
+  const itemsEnd = keywordPosition >= 0 && keywordPosition < position ? keywordPosition : position
+  return { amount: Math.abs(amount.value), source: "payment", itemsEnd, skippedRow: -1 }
 }
 
 function findSumTotal(rows: ReceiptRow[]): TotalPick | null {
@@ -193,7 +213,7 @@ function findLowerHalfTotal(rows: ReceiptRow[]): TotalPick | null {
 function totalCandidates(rows: ReceiptRow[]): Array<{ amount: number; position: number }> {
   return rows
     .flatMap((row, position) => {
-      const last = lastAmount(row)
+      const last = totalAmount(row)
       return last && !NON_TOTAL_KEYWORD.test(row.folded) ? [{ amount: Math.abs(last.value), position }] : []
     })
     .sort((left, right) => right.amount - left.amount || left.position - right.position)
@@ -202,7 +222,7 @@ function totalCandidates(rows: ReceiptRow[]): Array<{ amount: number; position: 
 function totalConfidence(total: TotalPick | null, lines: ReceiptOcrLine[]): number {
   if (!total) return 0
   const matchesLines = lines.length > 0 && isCloseTo(sumAmounts(lines), total.amount)
-  if (total.source === "keyword" && matchesLines) return KEYWORD_AND_SUM_CONFIDENCE
+  if (total.source !== "sum" && total.source !== "lowerHalf" && matchesLines) return KEYWORD_AND_SUM_CONFIDENCE
   return TOTAL_CONFIDENCE[total.source]
 }
 

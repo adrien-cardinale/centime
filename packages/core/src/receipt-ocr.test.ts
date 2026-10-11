@@ -129,6 +129,21 @@ CHE-115.792.190 TVA
 MERCI DE VOTRE VISITE
 `
 
+const ticketWithUnreadableTotal = `
+MARCHE ASIATIQUE
+REG 08-12-2025 18:37
+SURGELE 46.50
+SURGELE 10.50
+SURGELE 9.985 |
+ALIMENTATION 2.00
+NET TVA 2 83.77
+TVA 2.6% 2.18
+TOTAL 85.965
+(€61. 40)
+ENCALS. CARTE 85. 95
+MERCI DE VOTRE VISITE
+`
+
 const now = new Date(2026, 9, 10, 12, 0, 0)
 
 describe("parseReceiptText", () => {
@@ -162,6 +177,14 @@ describe("parseReceiptText", () => {
       { label: "ALIMENTATION", amount: 2 },
     ])
     expect(result.confidence.total).toBeGreaterThanOrEqual(0.9)
+  })
+
+  it("takes the card payment when the total is unreadable and ignores the converted amount", () => {
+    const result = parseReceiptText(ticketWithUnreadableTotal, { now })
+
+    expect(result.total).toBe(85.95)
+    expect(result.lines.map((line) => line.amount)).toEqual([46.5, 10.5, 2])
+    expect(result.confidence.total).toBeLessThan(0.9)
   })
 
   it("reads a Migros ticket with quantities and discounts", () => {

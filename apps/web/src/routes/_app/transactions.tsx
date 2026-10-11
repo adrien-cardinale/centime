@@ -124,7 +124,10 @@ function TransactionsPage() {
     if (searchKeyOf(nextSearch) !== searchKey) void navigate({ search: nextSearch, replace: true })
   }
 
-  const changePage = (next: number) => setPage(next)
+  const changePage = (next: number) => {
+    setPage(next)
+    window.scrollTo({ top: 0 })
+  }
   const hasSelection = selectedIds.size > 0
 
   return (

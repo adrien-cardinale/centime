@@ -82,6 +82,7 @@ The relay database is created on first start, by default in `data/relay.db`.
 | `bun run build` | Type-checks core, db and services, then builds the web UI |
 | `bun run typecheck` | Type-checks every package |
 | `bun run test` | Unit tests (`bun test`), package by package |
+| `bun run format` | Formats the code with Prettier (`format:check` only checks, as CI does) |
 | `bun run db:generate` | Generates a migration after a schema change and regenerates `migrations.generated.ts` |
 | `bun run db:bundle` | Regenerates `migrations.generated.ts` from the `drizzle/` folder |
 | `bun run db:migrate` | Applies migrations without starting the server |

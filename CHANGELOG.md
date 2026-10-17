@@ -4,6 +4,21 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.5.2] - 2026-10-17
+
+### Changed
+
+- Receipts: the **Settings › AI receipt reading** options (on/off, API key, model) are now synchronized, end-to-end encrypted, with your other devices. Set them once and every device can read receipts with the AI. Settings saved by an earlier version are kept.
+
+### Fixed
+
+- Receipts: when the AI reading fails, the message now tells a request rejected by Anthropic (for example an API key outside any workspace) and an unknown model apart, instead of always saying the response is unreadable. The AI reading also no longer runs out of room on long receipts.
+- Receipts: on-device text recognition takes the card payment amount when the total is unreadable.
+- Android: scanning the QR code to add an account no longer closes the app.
+- Adding an account that is already on the device now shows an error instead of silently switching to it.
+- Transactions: changing page scrolls back to the top, and uncategorized transactions show **No category** instead of a dash.
+- Dialogs for fixed items, rules and CSV profiles keep their title and buttons in place while the form scrolls.
+
 ## [0.5.1] - 2026-10-10
 
 ### Fixed

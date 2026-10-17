@@ -55,7 +55,10 @@ export function useReceiptAi({ image, categories, settings, onExtracted, onFaile
       })
       if (!controller.signal.aborted) latest.current.onExtracted(result)
     } catch (error) {
-      if (!controller.signal.aborted) failure = aiFailureKind(error)
+      if (!controller.signal.aborted) {
+        console.error("Analyse du ticket par l'IA impossible", String(error), String((error as Error).cause))
+        failure = aiFailureKind(error)
+      }
     } finally {
       if (controllerRef.current === controller) {
         controllerRef.current = null

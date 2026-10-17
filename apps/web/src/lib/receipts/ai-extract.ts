@@ -19,7 +19,16 @@ export type AiExtractionCategory = ReceiptAiCategory
 export type AiExtractionLine = ReceiptAiLine
 export type AiExtractionResult = ReceiptAiResult
 
-export type AiExtractionErrorKind = "auth" | "rate-limit" | "network" | "refused" | "invalid" | "aborted" | "unsupported"
+export type AiExtractionErrorKind =
+  | "auth"
+  | "rate-limit"
+  | "network"
+  | "refused"
+  | "rejected"
+  | "model"
+  | "invalid"
+  | "aborted"
+  | "unsupported"
 
 export type AiExtractionInput = {
   bytes: Uint8Array
@@ -39,7 +48,7 @@ const SUPPORTED_IMAGE_MIMES: ReadonlySet<string> = new Set<SupportedImageMime>([
 ])
 const MODELS_WITH_SERVER_FALLBACK: ReadonlySet<string> = new Set(["claude-opus-5-5", "claude-sonnet-5-5"])
 const SERVER_FALLBACK_BETA = "server-side-fallback-2026-07-01"
-const MAX_OUTPUT_TOKENS = 4096
+const MAX_OUTPUT_TOKENS = 16_000
 const REQUEST_TIMEOUT_MS = 90_000
 const BASE64_CHUNK_SIZE = 0x8000
 
@@ -122,6 +131,8 @@ function toExtractionError(sdk: AnthropicModule, error: unknown, signal: AbortSi
   if (error instanceof sdk.RateLimitError) return new AiExtractionError("rate-limit", cause)
   if (error instanceof sdk.APIConnectionError) return new AiExtractionError("network", cause)
   if (error instanceof sdk.InternalServerError) return new AiExtractionError("network", cause)
+  if (error instanceof sdk.NotFoundError) return new AiExtractionError("model", cause)
+  if (error instanceof sdk.BadRequestError) return new AiExtractionError("rejected", cause)
   return new AiExtractionError("invalid", cause)
 }
 

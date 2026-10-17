@@ -590,6 +590,8 @@
         "rateLimit": "trop de demandes, réessayez plus tard.",
         "network": "le service est injoignable.",
         "refused": "le service a refusé d'analyser cette image.",
+        "rejected": "le service a refusé la requête, vérifiez la clé d'API dans les réglages.",
+        "model": "le modèle est inconnu, vérifiez son nom dans les réglages.",
         "invalid": "la réponse du service est illisible.",
         "unsupported": "ce type de fichier n'est pas pris en charge."
       }

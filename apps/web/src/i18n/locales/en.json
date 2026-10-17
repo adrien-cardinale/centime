@@ -590,6 +590,8 @@
         "rateLimit": "too many requests, try again later.",
         "network": "the service cannot be reached.",
         "refused": "the service refused to analyze this image.",
+        "rejected": "the service rejected the request, check the API key in the settings.",
+        "model": "the model is unknown, check its name in the settings.",
         "invalid": "the service response is unreadable.",
         "unsupported": "this file type is not supported."
       }

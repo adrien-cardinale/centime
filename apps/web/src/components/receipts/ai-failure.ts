@@ -7,6 +7,8 @@ const REASON_KEYS: Record<AiFailureKind, string> = {
   "rate-limit": "receipts.ai.errors.rateLimit",
   network: "receipts.ai.errors.network",
   refused: "receipts.ai.errors.refused",
+  rejected: "receipts.ai.errors.rejected",
+  model: "receipts.ai.errors.model",
   invalid: "receipts.ai.errors.invalid",
   unsupported: "receipts.ai.errors.unsupported",
 }

@@ -4,6 +4,12 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.5.3] - 2026-10-17
+
+### Fixed
+
+- Receipts: splitting a transaction from the receipt lines now accepts a gap of less than 0.05 between the lines and the amount paid, as left by cash rounding to 5 centimes. The gap is added to the largest part, so the parts still add up to the transaction amount.
+
 ## [0.5.2] - 2026-10-17
 
 ### Changed

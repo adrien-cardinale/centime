@@ -1,5 +1,5 @@
 import { applyCompiledRules, compileRules, type RuleMatcherInput, type RulePayload } from "@centime/core"
-import { type Db, fixedItems, rules, transactions } from "@centime/db"
+import { type Db, rules, transactions } from "@centime/db"
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { z } from "zod"
 import { isActiveCategory } from "./categories"
@@ -20,25 +20,10 @@ function activeRule(id: string) {
   return and(eq(rules.id, id), isNull(rules.deletedAt))
 }
 
-async function isActiveFixedItem(db: Db, id: string): Promise<boolean> {
-  const [row] = await db
-    .select({ id: fixedItems.id })
-    .from(fixedItems)
-    .where(and(eq(fixedItems.id, id), isNull(fixedItems.deletedAt)))
-  return row !== undefined
-}
-
 async function assertValidTarget(db: Db, input: RulePayload): Promise<void> {
   if (input.categoryId !== null && !(await isActiveCategory(db, input.categoryId))) {
     throw new ServiceError("Catégorie introuvable")
   }
-  if (input.fixedItemId && !(await isActiveFixedItem(db, input.fixedItemId))) {
-    throw new ServiceError("Charge fixe introuvable")
-  }
-}
-
-function toRow(input: RulePayload) {
-  return { ...input, fixedItemId: input.fixedItemId ?? null }
 }
 
 export function listRules(db: Db) {
@@ -47,14 +32,14 @@ export function listRules(db: Db) {
 
 export async function createRule(db: Db, input: RulePayload) {
   await assertValidTarget(db, input)
-  const [created] = await db.insert(rules).values(toRow(input)).returning()
+  const [created] = await db.insert(rules).values(input).returning()
   if (!created) throw new Error("Insertion de la règle impossible")
   return created
 }
 
 export async function updateRule(db: Db, { id, ...input }: RuleUpdate) {
   await assertValidTarget(db, input)
-  const [updated] = await db.update(rules).set(toRow(input)).where(activeRule(id)).returning()
+  const [updated] = await db.update(rules).set(input).where(activeRule(id)).returning()
   if (!updated) throw notFound(NOT_FOUND)
   return updated
 }
@@ -70,9 +55,7 @@ export async function deleteRule(db: Db, { id }: { id: string }, clock: Clock = 
 }
 
 export async function testRule(db: Db, matcher: RuleMatcherInput) {
-  const { compiled } = compileRules([
-    { ...matcher, id: "test", categoryId: null, fixedItemId: null, markAsTransfer: false, priority: 0 },
-  ])
+  const { compiled } = compileRules([{ ...matcher, id: "test", categoryId: null, markAsTransfer: false, priority: 0 }])
   const rows = await db
     .select({
       id: transactions.id,

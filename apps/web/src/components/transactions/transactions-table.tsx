@@ -15,7 +15,6 @@ import type { Receipt, TransactionItem } from "@/lib/api"
 import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { CategoryCell } from "./category-cell"
-import { FixedItemCell } from "./fixed-item-cell"
 import { SplitTransactionDialog } from "./split-transaction-dialog"
 import { TransactionList } from "./transaction-list"
 import { TransactionRowActions } from "./transaction-row-actions"
@@ -45,7 +44,6 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
   const { t } = useTranslation()
   const isMobile = useIsMobile()
   const [ruleSource, setRuleSource] = useState<TransactionItem | null>(null)
-  const [linkingId, setLinkingId] = useState<string | null>(null)
   const [splitting, setSplitting] = useState<TransactionItem | null>(null)
   const [attaching, setAttaching] = useState<TransactionItem | null>(null)
   const [openedReceiptId, setOpenedReceiptId] = useState<string | null>(null)
@@ -85,8 +83,6 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
           onAttachReceipt={setAttaching}
           receiptsByTransaction={receiptsByTransaction}
           onOpenReceipt={openReceipt}
-          linkingId={linkingId}
-          onLinkingChange={setLinkingId}
         />
         {overlays}
       </>
@@ -110,9 +106,6 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
             <TableHead>{t("transactionsPage.columns.label")}</TableHead>
             <TableHead className="hidden lg:table-cell">{t("transactionsPage.columns.merchant")}</TableHead>
             <TableHead>{t("transactionsPage.columns.category")}</TableHead>
-            <TableHead className="w-8 px-0">
-              <span className="sr-only">{t("transactionsPage.columns.fixedItem")}</span>
-            </TableHead>
             <TableHead className="text-right">{t("transactionsPage.columns.amount")}</TableHead>
             <TableHead className="hidden md:table-cell">{t("transactionsPage.columns.status")}</TableHead>
             <TableHead className="w-12 pr-4 sm:pr-6" />
@@ -153,13 +146,6 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
               <TableCell>
                 <CategoryCell transaction={item} onCreateRule={setRuleSource} onSplit={setSplitting} />
               </TableCell>
-              <TableCell className="px-0">
-                <FixedItemCell
-                  transaction={item}
-                  open={linkingId === item.id}
-                  onOpenChange={(open) => setLinkingId(open ? item.id : null)}
-                />
-              </TableCell>
               <TableCell className="text-right">
                 <Amount amount={item.amount} currency={item.currency} />
               </TableCell>
@@ -172,7 +158,6 @@ export function TransactionsTable({ items, selectedIds, onSelectionChange }: Tra
                 <TransactionRowActions
                   transaction={item}
                   onCreateRule={setRuleSource}
-                  onLinkFixedItem={(transaction) => setLinkingId(transaction.id)}
                   onSplit={setSplitting}
                   onAttachReceipt={setAttaching}
                 />

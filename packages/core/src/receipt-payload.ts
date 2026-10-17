@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { isoDateSchema } from "./fixed-item-payload"
+import { isoDateSchema } from "./iso-date"
 import { RECEIPT_STATUSES } from "./types"
 
 export const MAX_RECEIPT_BYTES = 7 * 1024 * 1024

@@ -36,7 +36,6 @@ const EMPTY_RULE: RuleFormValues = {
   matchKind: "contains",
   field: "raw_label",
   categoryId: null,
-  fixedItemId: null,
   markAsTransfer: false,
   priority: DEFAULT_USER_RULE_PRIORITY,
 }
@@ -57,7 +56,6 @@ function formValuesFor(rule: Rule | undefined, initialValues: Partial<RuleFormVa
     matchKind: rule.matchKind,
     field: rule.field,
     categoryId: rule.categoryId,
-    fixedItemId: rule.fixedItemId,
     markAsTransfer: rule.markAsTransfer,
     priority: rule.priority,
   }

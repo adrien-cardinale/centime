@@ -1,5 +1,4 @@
 export const UNCATEGORIZED_FILTER = "none"
-export const WITHOUT_FIXED_ITEM_FILTER = "none"
 
 export type TransferFilter = "only" | "hide"
 
@@ -10,7 +9,6 @@ export type TransactionFilters = {
   search?: string | undefined
   categoryId?: string | undefined
   themeId?: string | undefined
-  fixedItemId?: string | undefined
   transfer?: TransferFilter | undefined
 }
 
@@ -26,7 +24,6 @@ export type NormalizedTransactionFilter = {
   search: string | undefined
   categoryId: string | undefined
   themeId: string | undefined
-  fixedItemId: string | undefined
   isTransfer: boolean | undefined
 }
 
@@ -43,7 +40,6 @@ export function normalizeTransactionFilter(filters: TransactionFilters): Normali
     search: filters.search?.trim() || undefined,
     categoryId: filters.categoryId || undefined,
     themeId: filters.themeId || undefined,
-    fixedItemId: filters.fixedItemId || undefined,
     isTransfer: transferFlag(filters.transfer),
   }
 }

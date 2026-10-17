@@ -11,7 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import type { BudgetOverviewItem } from "@/lib/api"
-import { transactionsSearchOf } from "./budget-groups"
+import { transactionsSearchOf } from "./plan-groups"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
 type BudgetActionsMenuProps = {

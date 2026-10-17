@@ -4,7 +4,6 @@ import type { PreparedReceiptImage } from "@/lib/receipts/prepare-image"
 export type TransactionChanges = {
   categoryId?: string | null
   isTransfer?: boolean
-  fixedItemId?: string | null
 }
 
 export type ImportUpload = {

@@ -14,9 +14,8 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Categories and rules**: categories grouped by theme (transactions are filed under categories), "contains" or regex rules on the label, the merchant or the provider category, applied at import time or on demand.
 - **Split transactions**: spread one transaction over several categories with partial amounts that add up to the total; dashboard, budgets, filters and export count each part in its own category.
 - **Receipts**: photograph till receipts (or attach a PDF), enter the merchant, total and lines, link them to a transaction with suggested matches, and split the transaction by category from the receipt lines. Text is read on the device; an optional, off-by-default AI reading sends the photo to Anthropic with your own API key. Images are encrypted and stored on the device.
-- **Fixed items**: recurring expenses and income (monthly, quarterly, yearly), automatic transaction matching, upcoming and overdue items.
-- **Budgets**: per-category caps, balance carry-over, projection at the current pace, history.
-- **Month plan**: fixed items and budgets on a single page, with the remainder of the month (fixed income − fixed expenses − envelopes).
+- **Budgets**: one budget per category, of two kinds. An envelope caps spending, with balance carry-over, projection at the current pace and history. An income sets the amount a category should receive per period (monthly, quarterly, yearly).
+- **Month plan**: all budgets on a single page, grouped by theme, with the remainder of the month (income − envelopes).
 - **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
 - **Updates**: Settings shows the installed version, then installs the new release (desktop) or downloads the APK (Android).
 - **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, one row per part for split transactions, following the filters of the Transactions page (saved in the app's Download folder on Android).
@@ -25,7 +24,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 
 | | |
 | --- | --- |
-| <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/budgets-dark.webp"><img src="site/screenshots/budgets-light.webp" alt="Budget page"></picture> *Month plan: fixed items and envelopes* | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/transactions-dark.webp"><img src="site/screenshots/transactions-light.webp" alt="Transactions page"></picture> *Transactions, filters and CSV export* |
+| <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/budgets-dark.webp"><img src="site/screenshots/budgets-light.webp" alt="Budget page"></picture> *Month plan: income and envelopes* | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/transactions-dark.webp"><img src="site/screenshots/transactions-light.webp" alt="Transactions page"></picture> *Transactions, filters and CSV export* |
 | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/import-dark.webp"><img src="site/screenshots/import-light.webp" alt="Import preview"></picture> *Import preview with duplicate detection* | <picture><source media="(prefers-color-scheme: dark)" srcset="site/screenshots/categories-dark.webp"><img src="site/screenshots/categories-light.webp" alt="Categories page"></picture> *Categories, themes and rules* |
 
 ## Structure

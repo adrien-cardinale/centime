@@ -3,7 +3,7 @@ import type { Rule, RuleField } from "./types"
 
 export type RuleInput = Pick<
   Rule,
-  "id" | "pattern" | "matchKind" | "field" | "categoryId" | "fixedItemId" | "markAsTransfer" | "priority"
+  "id" | "pattern" | "matchKind" | "field" | "categoryId" | "markAsTransfer" | "priority"
 > & { createdAt?: string }
 
 export type RuleSubject = {
@@ -15,7 +15,6 @@ export type RuleSubject = {
 export type RuleOutcome = {
   ruleId: string
   categoryId: string | null
-  fixedItemId: string | null
   markAsTransfer: boolean
 }
 
@@ -110,7 +109,6 @@ function toOutcome(rule: RuleInput): RuleOutcome {
   return {
     ruleId: rule.id,
     categoryId: rule.categoryId,
-    fixedItemId: rule.fixedItemId,
     markAsTransfer: rule.markAsTransfer,
   }
 }

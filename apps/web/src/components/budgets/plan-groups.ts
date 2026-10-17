@@ -1,10 +1,12 @@
 import { roundCents } from "@centime/core"
-import type { BudgetOverviewItem, BudgetTotals, Theme } from "@/lib/api"
+import type { BudgetOverviewItem, Theme } from "@/lib/api"
 import { BUDGET_CURRENCY } from "@/lib/budgets"
 import i18n from "@/i18n"
 import { formatAmount } from "@/lib/format"
 
-export type ThemeBudgets = { theme: Theme | null; budgets: BudgetOverviewItem[]; totals: BudgetTotals }
+export type ThemeTotals = { available: number; spent: number; remaining: number }
+
+export type ThemeBudgets = { theme: Theme | null; budgets: BudgetOverviewItem[]; totals: ThemeTotals }
 
 export function money(amount: number): string {
   return formatAmount(amount, BUDGET_CURRENCY)
@@ -14,7 +16,7 @@ function signedMoney(amount: number): string {
   return amount > 0 ? `+${money(amount)}` : money(amount)
 }
 
-function sumTotals(budgets: BudgetOverviewItem[]): BudgetTotals {
+function sumTotals(budgets: BudgetOverviewItem[]): ThemeTotals {
   const sum = (pick: (budget: BudgetOverviewItem) => number) =>
     roundCents(budgets.reduce((total, budget) => total + pick(budget), 0))
   return {
@@ -45,7 +47,7 @@ export function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
   ].filter((detail) => detail !== false)
 }
 
-export function transactionsSearchOf(budget: BudgetOverviewItem) {
+export function transactionsSearchOf(budget: Pick<BudgetOverviewItem, "categoryId" | "status">) {
   const { range } = budget.status
   return { categoryId: budget.categoryId, from: range.start, to: range.end }
 }

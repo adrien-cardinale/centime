@@ -8,7 +8,6 @@ import { formatDate } from "@/lib/format"
 import { transactionStatusLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { CategoryCell } from "./category-cell"
-import { FixedItemCell } from "./fixed-item-cell"
 import { TransactionRowActions } from "./transaction-row-actions"
 
 type TransactionListProps = {
@@ -21,8 +20,6 @@ type TransactionListProps = {
   onAttachReceipt: (transaction: TransactionItem) => void
   receiptsByTransaction: ReadonlyMap<string, Receipt>
   onOpenReceipt: (receipt: Receipt) => void
-  linkingId: string | null
-  onLinkingChange: (id: string | null) => void
 }
 
 export function TransactionList({
@@ -35,8 +32,6 @@ export function TransactionList({
   onAttachReceipt,
   receiptsByTransaction,
   onOpenReceipt,
-  linkingId,
-  onLinkingChange,
 }: TransactionListProps) {
   const { t } = useTranslation()
   const selectedCount = items.filter((item) => selectedIds.has(item.id)).length
@@ -77,11 +72,6 @@ export function TransactionList({
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <CategoryCell transaction={item} onCreateRule={onCreateRule} onSplit={onSplit} />
-              <FixedItemCell
-                transaction={item}
-                open={linkingId === item.id}
-                onOpenChange={(open) => onLinkingChange(open ? item.id : null)}
-              />
               {item.status === "pending" && <Badge variant="outline">{transactionStatusLabels[item.status]}</Badge>}
               {item.isTransfer && (
                 <Badge variant="outline" className="text-muted-foreground">
@@ -94,7 +84,6 @@ export function TransactionList({
           <TransactionRowActions
             transaction={item}
             onCreateRule={onCreateRule}
-            onLinkFixedItem={(transaction) => onLinkingChange(transaction.id)}
             onSplit={onSplit}
             onAttachReceipt={onAttachReceipt}
           />

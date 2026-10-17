@@ -13,10 +13,11 @@ import {
   previousPeriods,
   roundCents,
 } from "@centime/core"
-import { budgets, categories, type DbExecutor, transactions, transactionSplits } from "@centime/db"
+import { budgets, categories, type Db, type DbExecutor, transactions, transactionSplits } from "@centime/db"
 import { and, eq, gte, isNotNull, isNull, lte, ne } from "drizzle-orm"
 import { type CategoryNode, loadCategoryNodes } from "./categories"
 import { type Clock, nowIso, systemClock, todayOf } from "./clock"
+import { loadLinkedRules, syncLinkedRule } from "./budget-rules"
 import { notFound, ServiceError } from "./errors"
 
 const HISTORY_PERIODS = 6
@@ -54,6 +55,10 @@ export type BudgetOverviewItem = BudgetEntry & {
 
 export type BudgetTotals = { available: number; spent: number; remaining: number }
 
+export type IncomeStatus = { range: PeriodRange; expected: number; received: number; remaining: number; ratio: number }
+
+export type IncomeOverviewItem = BudgetEntry & { status: IncomeStatus }
+
 export type UnbudgetedCategory = CategorySpending
 
 function activeBudget(id: string) {
@@ -61,9 +66,17 @@ function activeBudget(id: string) {
 }
 
 export async function listBudgets(db: DbExecutor, onlyId?: string) {
-  const rows = await db
+  const [rows, linkedRules] = await Promise.all([loadBudgetRows(db, onlyId), loadLinkedRules(db)])
+  return rows
+    .map((row) => ({ ...row, rule: linkedRules.get(row.categoryId) ?? null }))
+    .sort((left, right) => left.categoryName.localeCompare(right.categoryName, "fr"))
+}
+
+function loadBudgetRows(db: DbExecutor, onlyId?: string) {
+  return db
     .select({
       id: budgets.id,
+      kind: budgets.kind,
       categoryId: budgets.categoryId,
       categoryName: categories.name,
       categoryColor: categories.color,
@@ -76,7 +89,6 @@ export async function listBudgets(db: DbExecutor, onlyId?: string) {
     .from(budgets)
     .innerJoin(categories, eq(budgets.categoryId, categories.id))
     .where(onlyId === undefined ? isNull(budgets.deletedAt) : activeBudget(onlyId))
-  return rows.sort((left, right) => left.categoryName.localeCompare(right.categoryName, "fr"))
 }
 
 export async function findBudget(db: DbExecutor, id: string): Promise<BudgetEntry | undefined> {
@@ -117,17 +129,32 @@ async function requireBudget(db: DbExecutor, id: string): Promise<BudgetEntry> {
   return budget
 }
 
-export async function createBudget(db: DbExecutor, payload: BudgetPayload): Promise<BudgetEntry> {
-  await assertBudgetable(db, payload.categoryId)
-  const [created] = await db.insert(budgets).values(payload).returning({ id: budgets.id })
-  if (!created) throw new Error("Insertion du budget impossible")
-  return requireBudget(db, created.id)
+function toRow({ rule: _rule, ...payload }: BudgetPayload) {
+  return payload
 }
 
-export async function updateBudget(db: DbExecutor, { id, ...payload }: BudgetUpdate): Promise<BudgetEntry> {
+export async function createBudget(db: Db, payload: BudgetPayload, clock: Clock = systemClock): Promise<BudgetEntry> {
+  await assertBudgetable(db, payload.categoryId)
+  const id = await db.transaction(async (tx) => {
+    const [created] = await tx.insert(budgets).values(toRow(payload)).returning({ id: budgets.id })
+    if (!created) throw new Error("Insertion du budget impossible")
+    await syncLinkedRule(tx, payload.categoryId, payload.categoryId, payload.rule, clock)
+    return created.id
+  })
+  return requireBudget(db, id)
+}
+
+export async function updateBudget(
+  db: Db,
+  { id, ...payload }: BudgetUpdate,
+  clock: Clock = systemClock,
+): Promise<BudgetEntry> {
+  const current = await requireBudget(db, id)
   await assertBudgetable(db, payload.categoryId, id)
-  const [updated] = await db.update(budgets).set(payload).where(activeBudget(id)).returning({ id: budgets.id })
-  if (!updated) throw notFound(NOT_FOUND)
+  await db.transaction(async (tx) => {
+    await tx.update(budgets).set(toRow(payload)).where(activeBudget(id))
+    await syncLinkedRule(tx, current.categoryId, payload.categoryId, payload.rule, clock)
+  })
   return requireBudget(db, id)
 }
 
@@ -152,7 +179,6 @@ function eligibleCondition(from: IsoDate, to: IsoDate, isSplit: boolean) {
     isNull(transactions.deletedAt),
     eq(transactions.isTransfer, false),
     eq(transactions.isSplit, isSplit),
-    isNull(transactions.fixedItemId),
     gte(transactions.bookingDate, from),
     lte(transactions.bookingDate, to),
   )
@@ -303,14 +329,48 @@ function monthEnvelopes(
   }
 }
 
+function rowsOf(rows: EligibleTransaction[], categoryId: string): EligibleTransaction[] {
+  return rows.filter((row) => row.categoryId === categoryId)
+}
+
+function receivedIn(rows: EligibleTransaction[], range: PeriodRange): number {
+  const booked = rows.filter(
+    (row) => row.status === "booked" && row.bookingDate >= range.start && row.bookingDate <= range.end,
+  )
+  return Math.max(0, roundCents(booked.reduce((sum, row) => sum + row.amount, 0)))
+}
+
+function toIncomeItem(plan: BudgetPlan, rows: EligibleTransaction[]): IncomeOverviewItem {
+  const expected = plan.budget.amount
+  const received = receivedIn(rows, plan.current)
+  return {
+    ...plan.budget,
+    status: {
+      range: plan.current,
+      expected,
+      received,
+      remaining: roundCents(expected - received),
+      ratio: expected > 0 ? received / expected : 0,
+    },
+  }
+}
+
+function monthIncome(plans: BudgetPlan[], rows: EligibleTransaction[], month: PeriodRange): PlanLine {
+  const sum = (pick: (plan: BudgetPlan) => number) => roundCents(plans.reduce((total, plan) => total + pick(plan), 0))
+  return {
+    expected: sum((plan) => monthlyBudgetAmount(plan.budget)),
+    actual: sum((plan) => receivedIn(rowsOf(rows, plan.budget.categoryId), month)),
+  }
+}
+
 function unbudgetedCategories(
   rows: EligibleTransaction[],
   nodes: CategoryNode[],
-  mapping: Map<string, string>,
+  planned: ReadonlySet<string>,
   month: PeriodRange,
 ): UnbudgetedCategory[] {
   return nodes
-    .filter((node) => !mapping.has(node.id))
+    .filter((node) => !planned.has(node.id))
     .map((node) => ({
       categoryId: node.id,
       categoryName: node.name,
@@ -326,10 +386,12 @@ function unbudgetedCategories(
 }
 
 export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoDate) {
-  const [entries, nodes] = await Promise.all([listBudgets(db), loadCategoryNodes(db)])
+  const [allEntries, nodes] = await Promise.all([listBudgets(db), loadCategoryNodes(db)])
+  const entries = allEntries.filter((entry) => entry.kind === "envelope")
   const month = periodContaining("monthly", date)
   const plans = entries.map((budget) => planBudget(budget, date))
-  const window = loadWindow(plans, month)
+  const incomePlans = allEntries.filter((entry) => entry.kind === "income").map((budget) => planBudget(budget, date))
+  const window = loadWindow([...plans, ...incomePlans], month)
   const rows = await loadEligibleTransactions(db, window.from, window.to)
   const mapping = budgetedCategoryMap(nodes, new Set(entries.map((entry) => entry.categoryId)))
   const grouped = groupByBudgetedCategory(rows, mapping)
@@ -345,9 +407,11 @@ export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoD
     date,
     today,
     budgets: items,
+    incomes: incomePlans.map((plan) => toIncomeItem(plan, rowsOf(rows, plan.budget.categoryId))),
     totals: overviewTotals(items),
     envelopes: monthEnvelopes(plans, grouped, month),
-    unbudgeted: unbudgetedCategories(rows, nodes, mapping, month),
+    income: monthIncome(incomePlans, rows, month),
+    unbudgeted: unbudgetedCategories(rows, nodes, new Set(allEntries.map((entry) => entry.categoryId)), month),
   }
 }
 

@@ -1,5 +1,6 @@
 import {
   ACCOUNT_KINDS,
+  BUDGET_KINDS,
   IMPORT_FORMATS,
   PERIODICITIES,
   RECEIPT_STATUSES,
@@ -86,22 +87,6 @@ export const imports = sqliteTable(
   (table) => [syncVersionIndex("imports", table)],
 )
 
-export const fixedItems = sqliteTable(
-  "fixed_items",
-  {
-    ...syncColumns,
-    name: text("name").notNull(),
-    expectedAmount: real("expected_amount").notNull(),
-    periodicity: text("periodicity", { enum: PERIODICITIES }).notNull(),
-    dueDay: integer("due_day"),
-    dueMonth: integer("due_month"),
-    categoryId: text("category_id").references(() => categories.id),
-    startDate: text("start_date").notNull(),
-    endDate: text("end_date"),
-  },
-  (table) => [syncVersionIndex("fixed_items", table)],
-)
-
 export const transactions = sqliteTable(
   "transactions",
   {
@@ -118,7 +103,6 @@ export const transactions = sqliteTable(
     currency: text("currency").notNull(),
     status: text("status", { enum: TRANSACTION_STATUSES }).notNull(),
     categoryId: text("category_id").references(() => categories.id),
-    fixedItemId: text("fixed_item_id").references(() => fixedItems.id),
     isTransfer: integer("is_transfer", { mode: "boolean" }).notNull().default(false),
     isSplit: integer("is_split", { mode: "boolean" }).notNull().default(false),
     importId: text("import_id").references(() => imports.id),
@@ -189,7 +173,6 @@ export const rules = sqliteTable(
     matchKind: text("match_kind", { enum: RULE_MATCH_KINDS }).notNull(),
     field: text("field", { enum: RULE_FIELDS }).notNull(),
     categoryId: text("category_id").references(() => categories.id),
-    fixedItemId: text("fixed_item_id").references(() => fixedItems.id),
     markAsTransfer: integer("mark_as_transfer", { mode: "boolean" }).notNull().default(false),
     priority: integer("priority").notNull().default(0),
   },
@@ -200,6 +183,7 @@ export const budgets = sqliteTable(
   "budgets",
   {
     ...syncColumns,
+    kind: text("kind", { enum: BUDGET_KINDS }).notNull().default("envelope"),
     categoryId: text("category_id")
       .notNull()
       .references(() => categories.id),
@@ -261,8 +245,6 @@ export type CsvProfileRow = typeof csvProfiles.$inferSelect
 export type NewCsvProfileRow = typeof csvProfiles.$inferInsert
 export type RuleRow = typeof rules.$inferSelect
 export type NewRuleRow = typeof rules.$inferInsert
-export type FixedItemRow = typeof fixedItems.$inferSelect
-export type NewFixedItemRow = typeof fixedItems.$inferInsert
 export type BudgetRow = typeof budgets.$inferSelect
 export type NewBudgetRow = typeof budgets.$inferInsert
 export type SessionRow = typeof sessions.$inferSelect

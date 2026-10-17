@@ -14,7 +14,7 @@
 <a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
 <nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
 <button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
-<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html" aria-current="page">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html">Categories and budgets</a></li><li><a href="self-hosting.html" aria-current="page">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
 <main class="prose"><h1>Self-hosting</h1>
 <p>The server is a small Hono API on Bun that stores encrypted blobs in SQLite and serves the web build. It holds no business data and no business logic.</p>
 <h2>Docker Compose</h2>
@@ -41,7 +41,7 @@ bun run start</code></pre>
 <p>Web Crypto needs a secure context, so serve the browser version over HTTPS, or from <code>localhost</code>. Put a reverse proxy (Caddy, Traefik, nginx) in front of the container.</p>
 <h2>Backups</h2>
 <p>The relay database only contains encrypted data, so backing up <code>relay.db</code> is safe, but it is useless without your recovery key. Keep the key separately.</p>
-<nav class="pager"><a href="budgets.html">← Categories, fixed items and budgets</a><a href="desktop.html">Desktop app →</a></nav></main></div>
+<nav class="pager"><a href="budgets.html">← Categories and budgets</a><a href="desktop.html">Desktop app →</a></nav></main></div>
 <footer class="foot"><div class="wrap">Centime is free software under the <a href="https://github.com/adrien-cardinale/centime/blob/main/LICENSE">GNU AGPL-3.0</a>. <a href="https://github.com/adrien-cardinale/centime">Source on GitHub</a>.</div></footer>
 <script src="../site.js"></script>
 </body></html>

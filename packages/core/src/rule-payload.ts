@@ -27,7 +27,6 @@ export const rulePayloadSchema = z
   .object({
     ...ruleMatcherFields,
     categoryId: z.string().min(1).nullable(),
-    fixedItemId: z.string().min(1).nullable().optional(),
     markAsTransfer: z.boolean(),
     priority: z
       .number()
@@ -36,7 +35,7 @@ export const rulePayloadSchema = z
       .max(RULE_PRIORITY_MAX, `Priorité maximale : ${RULE_PRIORITY_MAX}`),
   })
   .superRefine(checkRegex)
-  .refine((rule) => rule.categoryId !== null || Boolean(rule.fixedItemId) || rule.markAsTransfer, {
+  .refine((rule) => rule.categoryId !== null || rule.markAsTransfer, {
     path: ["categoryId"],
     message: "Choisissez une catégorie ou marquez comme transfert",
   })

@@ -203,4 +203,9 @@ describe("budgetPayloadSchema", () => {
     )
     expect(budgetPayloadSchema.safeParse({ ...payload, startDate: "2026-02-30" }).success).toBe(false)
   })
+
+  it("rejects a rollover on an income", () => {
+    const parsed = budgetPayloadSchema.safeParse({ ...payload, kind: "income" })
+    expect(parsed.error?.issues.map((issue) => issue.path.join("."))).toContain("rollover")
+  })
 })

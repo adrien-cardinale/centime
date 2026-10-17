@@ -54,7 +54,6 @@ async function insertTransaction(amount: number, bookingDate: string, rawLabel: 
     amount,
     status: "booked",
     categoryId: null,
-    fixedItemId: null,
     isTransfer: false,
   })
   return created.id

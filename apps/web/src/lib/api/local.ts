@@ -2,7 +2,6 @@ import {
   budgetPayloadSchema,
   categoryInputSchema,
   csvProfileSchema,
-  fixedItemPayloadSchema,
   manualTransactionSchema,
   type ReceiptCreate,
   receiptCreateSchema,
@@ -248,23 +247,6 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       remove: (id) => call((db) => surface.rules.remove(db, { id: parseInput(idSchema, id) })),
       test: (matcher) => call((db) => surface.rules.test(db, parseInput(ruleMatcherSchema, matcher))),
       apply: (scope) => call((db) => surface.rules.apply(db, parseInput(applyRulesInputSchema, { scope }))),
-    },
-    fixedItems: {
-      list: () => call((db) => surface.fixedItems.list(db)),
-      create: (input) => call((db) => surface.fixedItems.create(db, parseInput(fixedItemPayloadSchema, input))),
-      update: (id, input) =>
-        call((db) =>
-          surface.fixedItems.update(db, { ...parseInput(fixedItemPayloadSchema, input), id: parseInput(idSchema, id) }),
-        ),
-      remove: (id) => call((db) => surface.fixedItems.remove(db, { id: parseInput(idSchema, id) })),
-      overview: (from, to) =>
-        call((db) =>
-          surface.fixedItems.overview(db, {
-            from: parseInput(optionalIsoDate, from),
-            to: parseInput(optionalIsoDate, to),
-          }),
-        ),
-      transactions: (id) => call((db) => surface.fixedItems.transactions(db, { id: parseInput(idSchema, id) })),
     },
     budgets: {
       list: () => call((db) => surface.budgets.list(db)),

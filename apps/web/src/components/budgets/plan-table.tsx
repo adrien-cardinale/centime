@@ -12,34 +12,34 @@ import type { BudgetOverviewItem, Theme } from "@/lib/api"
 import { BUDGET_CURRENCY, budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
-import { BudgetCardList } from "./budget-card-list"
-import { budgetDetails, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./budget-groups"
+import { PlanCardList } from "./plan-card-list"
+import { budgetDetails, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./plan-groups"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
-type BudgetsTableProps = {
+export type PlanTableProps = {
   budgets: BudgetOverviewItem[]
   themes: Theme[]
   onEdit: (budget: BudgetOverviewItem) => void
 }
 
-export function BudgetsTable(props: BudgetsTableProps) {
+export function PlanTable(props: PlanTableProps) {
   const isMobile = useIsMobile()
-  return isMobile ? <BudgetCardList {...props} /> : <DesktopBudgetsTable {...props} />
+  return isMobile ? <PlanCardList {...props} /> : <DesktopPlanTable {...props} />
 }
 
-function DesktopBudgetsTable({ budgets, themes, onEdit }: BudgetsTableProps) {
+function DesktopPlanTable({ budgets, themes, onEdit }: PlanTableProps) {
   const { t } = useTranslation()
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead className="pl-6">{t("budgets.table.category")}</TableHead>
-          <TableHead>{t("budgets.table.period")}</TableHead>
-          <TableHead className="text-right">{t("budgets.table.budget")}</TableHead>
-          <TableHead className="text-right">{t("budgets.table.spent")}</TableHead>
-          <TableHead>{t("budgets.table.progress")}</TableHead>
-          <TableHead className="text-right">{t("budgets.table.remaining")}</TableHead>
-          <TableHead className="pr-6 text-right">{t("budgets.table.actions")}</TableHead>
+          <TableHead className="pl-6">{t("budgetsPage.table.item")}</TableHead>
+          <TableHead>{t("budgetsPage.table.period")}</TableHead>
+          <TableHead className="text-right">{t("budgetsPage.table.planned")}</TableHead>
+          <TableHead className="text-right">{t("budgetsPage.table.spent")}</TableHead>
+          <TableHead>{t("budgetsPage.table.tracking")}</TableHead>
+          <TableHead className="text-right">{t("budgetsPage.table.remaining")}</TableHead>
+          <TableHead className="pr-6 text-right">{t("budgetsPage.table.actions")}</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

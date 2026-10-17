@@ -8,7 +8,6 @@ export {
   type TransactionPageFilters,
   type TransferFilter,
   UNCATEGORIZED_FILTER,
-  WITHOUT_FIXED_ITEM_FILTER,
 } from "./filters"
 export type { ImportUpload, ReceiptCandidateOptions, ReceiptFileUpload, TransactionChanges } from "./inputs"
 export type * from "./types"

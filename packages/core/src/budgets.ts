@@ -13,7 +13,7 @@ import {
   startOfYear,
 } from "date-fns"
 import { fr } from "date-fns/locale/fr"
-import { isoDateOf, PERIOD_MONTHS, roundCents } from "./fixed-items"
+import { isoDateOf, PERIOD_MONTHS, roundCents } from "./calendar"
 import type { Budget, IsoDate, Periodicity } from "./types"
 
 export type PeriodRange = { start: IsoDate; end: IsoDate; label: string }

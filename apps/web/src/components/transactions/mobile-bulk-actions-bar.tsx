@@ -1,7 +1,6 @@
-import { ArrowLeftRight, Repeat, Tags, X } from "lucide-react"
+import { ArrowLeftRight, Tags, X } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
-import { FixedItemCommand } from "@/components/fixed-items/fixed-item-command"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import type { BulkActionsBarProps } from "./bulk-actions-bar"
@@ -9,7 +8,7 @@ import { CategoryCommand } from "./category-command"
 import { ResponsiveChooser } from "./responsive-chooser"
 import { useBulkActions } from "./use-bulk-actions"
 
-type Chooser = "category" | "fixedItem" | null
+type Chooser = "category" | null
 
 export function MobileBulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
   const { t } = useTranslation()
@@ -20,10 +19,6 @@ export function MobileBulkActionsBar({ selectedIds, onClear }: BulkActionsBarPro
   const assignCategory = (categoryId: string | null) => {
     setChooser(null)
     actions.assignCategory(categoryId)
-  }
-  const linkFixedItem = (fixedItemId: string | null) => {
-    setChooser(null)
-    actions.linkFixedItem(fixedItemId)
   }
 
   return (
@@ -47,23 +42,6 @@ export function MobileBulkActionsBar({ selectedIds, onClear }: BulkActionsBarPro
         }
       >
         <CategoryCommand onSelect={assignCategory} />
-      </ResponsiveChooser>
-      <ResponsiveChooser
-        open={chooser === "fixedItem"}
-        onOpenChange={openChange("fixedItem")}
-        title={t("transactionsPage.linkFixedItem")}
-        trigger={
-          <Button
-            variant="ghost"
-            size="icon"
-            aria-label={t("transactionsPage.linkFixedItem")}
-            disabled={actions.pending}
-          >
-            <Repeat />
-          </Button>
-        }
-      >
-        <FixedItemCommand onSelect={linkFixedItem} />
       </ResponsiveChooser>
       <TransferMenu disabled={actions.pending} onSetTransfer={actions.setTransfer} />
       <Button variant="ghost" size="icon" aria-label={t("transactionsPage.bulk.clear")} onClick={onClear}>

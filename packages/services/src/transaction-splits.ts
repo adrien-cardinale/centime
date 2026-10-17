@@ -96,7 +96,7 @@ export async function splitTransaction(db: Db, input: TransactionSplit, clock: C
     await tx.insert(transactionSplits).values(toSplitRows(transaction.id, input.splits))
     await tx
       .update(transactions)
-      .set({ isSplit: true, categoryId: null, fixedItemId: null, isTransfer: false })
+      .set({ isSplit: true, categoryId: null, isTransfer: false })
       .where(eq(transactions.id, transaction.id))
     return withSplits(tx, transaction.id)
   })

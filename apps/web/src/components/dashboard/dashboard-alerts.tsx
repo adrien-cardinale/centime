@@ -23,13 +23,6 @@ function alertsOf(kpis: DashboardKpis, t: (key: string, options: { count: number
       link: { to: "/budgets" },
     })
   }
-  if (kpis.overdueOccurrences > 0) {
-    alerts.push({
-      key: "overdue",
-      label: t("dashboard.overdue", { count: kpis.overdueOccurrences }),
-      link: { to: "/budgets" },
-    })
-  }
   if (kpis.pendingCount > 0) {
     alerts.push({ key: "pending", label: t("dashboard.pending", { count: kpis.pendingCount }) })
   }

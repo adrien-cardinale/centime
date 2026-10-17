@@ -55,7 +55,6 @@ export type Transaction = SyncColumns & {
   currency: string
   status: TransactionStatus
   categoryId: string | null
-  fixedItemId: string | null
   isTransfer: boolean
   importId: string | null
   sourceRef: string | null
@@ -78,23 +77,16 @@ export type Rule = SyncColumns & {
   matchKind: RuleMatchKind
   field: RuleField
   categoryId: string | null
-  fixedItemId: string | null
   markAsTransfer: boolean
   priority: number
 }
 
-export type FixedItem = SyncColumns & {
-  name: string
-  expectedAmount: number
-  periodicity: Periodicity
-  dueDay: number | null
-  dueMonth: number | null
-  categoryId: string | null
-  startDate: IsoDate
-  endDate: IsoDate | null
-}
+export type BudgetKind = "envelope" | "income"
+
+export const BUDGET_KINDS = ["envelope", "income"] as const satisfies readonly BudgetKind[]
 
 export type Budget = SyncColumns & {
+  kind: BudgetKind
   categoryId: string
   amount: number
   period: Periodicity

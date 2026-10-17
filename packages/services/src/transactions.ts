@@ -1,10 +1,9 @@
 import type { IsoDate } from "@centime/core"
-import { accounts, categories, type DbExecutor, fixedItems, transactions, transactionSplits } from "@centime/db"
+import { accounts, categories, type DbExecutor, transactions, transactionSplits } from "@centime/db"
 import { and, count, desc, eq, gte, inArray, isNull, lte, or, type SQL, sql } from "drizzle-orm"
 import { loadTransactionSplits } from "./transaction-splits"
 
 export const UNCATEGORIZED = "none"
-export const WITHOUT_FIXED_ITEM = "none"
 
 export type TransactionFilter = {
   accountId?: string | undefined
@@ -13,7 +12,6 @@ export type TransactionFilter = {
   search?: string | undefined
   categoryId?: string | undefined
   themeId?: string | undefined
-  fixedItemId?: string | undefined
   isTransfer?: boolean | undefined
 }
 
@@ -45,7 +43,7 @@ function hasSplitMatching(splitCategory: SQL): SQL {
   )})`
 }
 
-function categoryCondition(categoryId: string): SQL | undefined {
+export function categoryCondition(categoryId: string): SQL | undefined {
   if (categoryId === UNCATEGORIZED) return and(isNull(transactions.categoryId), eq(transactions.isSplit, false))
   return or(
     eq(transactions.categoryId, categoryId),
@@ -65,12 +63,6 @@ function themeCondition(themeId: string): SQL | undefined {
   )
 }
 
-function fixedItemCondition(fixedItemId: string): SQL {
-  return fixedItemId === WITHOUT_FIXED_ITEM
-    ? isNull(transactions.fixedItemId)
-    : eq(transactions.fixedItemId, fixedItemId)
-}
-
 export async function transactionCondition(db: DbExecutor, filter: TransactionFilter): Promise<SQL | undefined> {
   return and(
     isNull(transactions.deletedAt),
@@ -80,7 +72,6 @@ export async function transactionCondition(db: DbExecutor, filter: TransactionFi
     filter.search ? searchCondition(filter.search) : undefined,
     filter.categoryId ? categoryCondition(filter.categoryId) : undefined,
     filter.themeId ? themeCondition(filter.themeId) : undefined,
-    filter.fixedItemId ? fixedItemCondition(filter.fixedItemId) : undefined,
     filter.isTransfer === undefined ? undefined : eq(transactions.isTransfer, filter.isTransfer),
   )
 }
@@ -102,8 +93,6 @@ function selectTransactions(db: DbExecutor, condition: SQL | undefined, window: 
       categoryId: transactions.categoryId,
       categoryName: categories.name,
       categoryColor: categories.color,
-      fixedItemId: transactions.fixedItemId,
-      fixedItemName: fixedItems.name,
       isTransfer: transactions.isTransfer,
       isSplit: transactions.isSplit,
       balanceAfter: transactions.balanceAfter,
@@ -111,7 +100,6 @@ function selectTransactions(db: DbExecutor, condition: SQL | undefined, window: 
     .from(transactions)
     .innerJoin(accounts, eq(transactions.accountId, accounts.id))
     .leftJoin(categories, eq(transactions.categoryId, categories.id))
-    .leftJoin(fixedItems, eq(transactions.fixedItemId, fixedItems.id))
     .where(condition)
     .orderBy(desc(transactions.bookingDate), desc(transactions.createdAt), desc(transactions.id))
     .limit(window.limit)

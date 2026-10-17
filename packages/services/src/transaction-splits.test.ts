@@ -36,7 +36,6 @@ async function insertTransaction(amount = -100, rawLabel = "Supermarché"): Prom
     amount,
     status: "booked",
     categoryId: null,
-    fixedItemId: null,
     isTransfer: false,
   })
   return created.id
@@ -78,7 +77,7 @@ describe("splitTransaction", () => {
 
     const split = await splitInHalf(transactionId)
 
-    expect(split).toMatchObject({ isSplit: true, categoryId: null, fixedItemId: null, isTransfer: false })
+    expect(split).toMatchObject({ isSplit: true, categoryId: null, isTransfer: false })
     expect(split.splits.map((line) => [line.categoryId, line.amount, line.note])).toEqual([
       [groceries, -60, null],
       [household, -40, "Lessive"],
@@ -230,6 +229,7 @@ describe("aggregations", () => {
 
   it("counts the lines in the budget of their category", async () => {
     await createBudget(db, {
+      kind: "envelope",
       categoryId: household,
       amount: 100,
       period: "monthly",

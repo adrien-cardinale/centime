@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { isoDateSchema } from "./fixed-item-payload"
+import { isoDateSchema } from "./iso-date"
 import { TRANSACTION_STATUSES } from "./types"
 
 export const manualTransactionSchema = z.object({
@@ -19,7 +19,6 @@ export const manualTransactionSchema = z.object({
     .refine((amount) => amount !== 0, "Le montant doit être différent de zéro"),
   status: z.enum(TRANSACTION_STATUSES).default("booked"),
   categoryId: z.string().min(1).nullable().default(null),
-  fixedItemId: z.string().min(1).nullable().default(null),
   isTransfer: z.boolean().default(false),
 })
 

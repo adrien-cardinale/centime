@@ -9,7 +9,6 @@ import { DashboardAlerts } from "@/components/dashboard/dashboard-alerts"
 import { IncomeExpensesChart } from "@/components/dashboard/income-expenses-chart"
 import { KpiTiles } from "@/components/dashboard/kpi-tiles"
 import { RecentTransactionsCard } from "@/components/dashboard/recent-transactions-card"
-import { UpcomingCard } from "@/components/dashboard/upcoming-card"
 import { PageHeader } from "@/components/page-header"
 import { PeriodNavigator } from "@/components/period-navigator"
 import { Button } from "@/components/ui/button"
@@ -61,9 +60,8 @@ function DashboardContent({ overview }: { overview: DashboardOverview }) {
         <CategoryBreakdownChart entries={overview.categoryBreakdown} month={overview.month} />
         <BalanceChart series={overview.balanceSeries} />
       </div>
-      <div className="grid gap-4 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-4 lg:grid-cols-2">
         <BudgetsCard budgets={overview.budgets} />
-        <UpcomingCard occurrences={overview.upcomingOccurrences} />
         <RecentTransactionsCard transactions={overview.recentTransactions} />
       </div>
     </>

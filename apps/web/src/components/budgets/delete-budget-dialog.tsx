@@ -11,11 +11,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
-import { api, type BudgetOverviewItem } from "@/lib/api"
+import { api, type Budget } from "@/lib/api"
 import { invalidateBudgetData } from "@/lib/queries"
 
 type DeleteBudgetDialogProps = {
-  budget: BudgetOverviewItem
+  budget: Pick<Budget, "id" | "categoryName">
   open: boolean
   onOpenChange: (open: boolean) => void
 }

@@ -6,7 +6,6 @@ function rule(overrides: Partial<RuleInput> & Pick<RuleInput, "id" | "pattern">)
     matchKind: "contains",
     field: "raw_label",
     categoryId: null,
-    fixedItemId: null,
     markAsTransfer: false,
     priority: 0,
     ...overrides,
@@ -90,7 +89,7 @@ describe("applyRules", () => {
       ],
       subject(),
     )
-    expect(outcome).toEqual({ ruleId: "specific", categoryId: "food", fixedItemId: null, markAsTransfer: false })
+    expect(outcome).toEqual({ ruleId: "specific", categoryId: "food", markAsTransfer: false })
   })
 
   it("lets the oldest rule win on equal priority", () => {

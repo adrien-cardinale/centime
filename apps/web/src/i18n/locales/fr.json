@@ -179,8 +179,6 @@
     "uncategorized_other": "{{count}} transactions non catégorisées",
     "budgetsExceeded_one": "{{count}} budget dépassé",
     "budgetsExceeded_other": "{{count}} budgets dépassés",
-    "overdue_one": "{{count}} échéance en retard",
-    "overdue_other": "{{count}} échéances en retard",
     "pending": "{{count}} en suspens"
   },
   "labels": {
@@ -245,10 +243,6 @@
       "1": "2e mois du trimestre",
       "2": "3e mois du trimestre"
     }
-  },
-  "fixedItems": {
-    "dueFirst": "le 1er",
-    "dueDay": "le {{day}}"
   },
   "page": {
     "notFound": {
@@ -348,10 +342,6 @@
       "empty": "Aucune transaction.",
       "uncategorized": "Non catégorisée"
     },
-    "upcoming": {
-      "title": "Prochaines échéances",
-      "empty": "Aucune échéance à venir."
-    },
     "delta": {
       "none": "Pas de comparaison avec le mois précédent",
       "up": "hausse",
@@ -368,12 +358,10 @@
     "empty": "Aucune transaction pour l'instant.",
     "importStatement": "Importer un relevé",
     "none": "Aucune",
-    "linkFixedItem": "Lier à un poste fixe",
     "markTransfer": "Marquer comme transfert",
     "removeTransfer": "Retirer le transfert",
     "createRule": "Créer une règle depuis cette transaction",
     "actions": "Actions",
-    "fixedItemLabel": "Poste fixe : {{name}}",
     "create": {
       "new": "Nouvelle transaction",
       "description": "Saisissez une opération absente de vos relevés.",
@@ -438,9 +426,7 @@
       "showResults": "Voir les résultats",
       "uncategorized": "Non catégorisées",
       "theme": "Thème : {{name}}",
-      "transfers": "Transferts",
-      "allFixedItems": "Tous",
-      "withoutFixedItem": "Sans poste"
+      "transfers": "Transferts"
     },
     "columns": {
       "date": "Date",
@@ -448,7 +434,6 @@
       "label": "Libellé",
       "merchant": "Commerçant",
       "category": "Catégorie",
-      "fixedItem": "Poste fixe",
       "amount": "Montant",
       "status": "Statut"
     },
@@ -837,7 +822,7 @@
     "newCategory": "Nouvelle catégorie",
     "otherRules": {
       "title": "Autres règles",
-      "description": "Règles sans catégorie : transferts ou rattachement à un poste fixe."
+      "description": "Règles sans catégorie : transferts."
     },
     "empty": "Aucune catégorie.",
     "columns": {
@@ -859,7 +844,7 @@
     "deleteThemeDescription_other": "Ses {{count}} catégories et leurs transactions sont conservées, mais n'auront plus de thème.",
     "categoryDeleted": "Catégorie « {{name}} » supprimée",
     "deleteCategoryTitle": "Supprimer la catégorie « {{name}} » ?",
-    "deleteCategoryRules": "Les règles qui la référencent seront aussi détachées.",
+    "deleteCategoryRules": "Les règles qui la référencent seront aussi détachées. Son budget sera supprimé.",
     "detachNone": "Aucune transaction n'utilise cette catégorie.",
     "detachWarning_one": "{{count}} transaction sera détachée et redeviendra non catégorisée.",
     "detachWarning_other": "{{count}} transactions seront détachées et redeviendront non catégorisées.",
@@ -914,7 +899,7 @@
       },
       "confirm": "Réappliquer",
       "done": "Règles réappliquées",
-      "summary": "{{examined}} examinée(s), {{categorized}} catégorisée(s), {{markedAsTransfer}} marquée(s) comme transfert, {{linkedToFixedItem}} rattachée(s) à un poste fixe"
+      "summary": "{{examined}} examinée(s), {{categorized}} catégorisée(s), {{markedAsTransfer}} marquée(s) comme transfert"
     },
     "dialog": {
       "created": "Règle créée",
@@ -980,44 +965,42 @@
   },
   "budgetsPage": {
     "title": "Budget",
-    "description": "Le plan du mois : revenus et charges fixes, puis enveloppes de dépenses variables par catégorie.",
-    "newFixedItem": "Nouveau poste fixe",
-    "newBudget": "Nouveau budget",
-    "variableEnvelopes": "Enveloppes variables",
-    "fixedExpenses": "Charges fixes",
-    "fixedIncome": "Revenus fixes",
+    "description": "Le plan du mois : revenus attendus, puis enveloppes de dépenses par thème.",
+    "add": "Ajouter",
+    "expenses": "Dépenses",
+    "table": {
+      "item": "Poste",
+      "planned": "Prévu",
+      "tracking": "Suivi",
+      "remaining": "Reste",
+      "actions": "Actions",
+      "period": "Période",
+      "spent": "Dépensé",
+      "received": "Reçu"
+    },
     "progressSpent": "Dépensé {{actual}} sur {{expected}}",
-    "progressPaid": "Payé {{actual}} sur {{expected}}",
     "progressReceived": "Reçu {{actual}} sur {{expected}}",
-    "emptyFixedExpenses": "Aucune charge fixe pour l'instant.",
-    "emptyFixedIncome": "Aucun revenu fixe pour l'instant.",
-    "emptyBudgetsTitle": "Aucun budget pour l'instant",
-    "emptyBudgetsDescription": "Fixez un plafond de dépenses pour une catégorie et suivez sa consommation période par période.",
-    "createBudget": "Créer un budget"
+    "emptyExpensesTitle": "Aucune dépense prévue pour l'instant",
+    "emptyExpensesDescription": "Fixez un plafond de dépenses pour une catégorie et suivez sa consommation.",
+    "income": "Revenus",
+    "emptyIncome": "Aucun revenu attendu pour l'instant."
   },
   "budgets": {
     "dialog": {
       "editTitle": "Modifier le budget",
-      "newTitle": "Nouveau budget",
-      "description": "Un plafond pour les dépenses variables d'une catégorie.",
+      "newTitle": "Ajouter au budget",
+      "description": "Une enveloppe plafonne les dépenses d'une catégorie. Un revenu indique ce qu'une catégorie doit recevoir.",
       "saved": "Budget « {{name}} » enregistré",
       "category": "Catégorie",
       "amount": "Montant",
       "periodicity": "Périodicité",
-      "startDate": "Date de début",
       "rollover": "Reporter le reliquat",
       "rolloverHint": "Le solde des périodes précédentes, positif ou négatif, s'ajoute au plafond de la période en cours.",
       "saving": "Enregistrement…",
-      "save": "Enregistrer"
+      "save": "Enregistrer",
+      "kind": "Type"
     },
     "table": {
-      "category": "Catégorie",
-      "period": "Période",
-      "budget": "Budget",
-      "spent": "Dépensé",
-      "progress": "Avancement",
-      "remaining": "Reste",
-      "actions": "Actions",
       "noTheme": "Sans thème",
       "carry": "Report : {{amount}}",
       "pending": "En suspens : {{amount}}",
@@ -1046,99 +1029,31 @@
       "view": "Voir {{month}}"
     },
     "planSummary": {
-      "income": "Revenus fixes",
-      "fixedExpenses": "Charges fixes",
+      "income": "Revenus",
       "envelopes": "Enveloppes",
       "remaining": "Reste",
       "received": "Reçu : {{amount}}",
-      "paid": "Payé : {{amount}}",
       "spent": "Dépensé : {{amount}}",
-      "remainingHint": "Revenus fixes − charges fixes − enveloppes"
+      "remainingHint": "Revenus − enveloppes"
     },
     "unbudgeted": {
       "title": "Dépenses sans budget",
       "description": "Catégories non couvertes par un budget, dépenses de {{month}}.",
       "create": "Créer un budget",
       "createFor": "Créer un budget pour {{name}}"
-    }
-  },
-  "fixedItemsUi": {
-    "delete": {
-      "deleted": "Poste « {{name}} » supprimé",
-      "label": "Supprimer {{name}}",
-      "title": "Supprimer le poste « {{name}} » ?",
-      "description": "Les transactions rattachées sont conservées mais détachées du poste. Sa règle de rapprochement est supprimée.",
-      "confirm": "Supprimer"
     },
-    "deviation": {
-      "title": "Écart entre le montant réel et le montant attendu",
-      "label": "Écart {{amount}} (réel − attendu)"
-    },
-    "earlierOverdue_one": "{{count}} échéance en retard sur les mois précédents",
-    "earlierOverdue_other": "{{count}} échéances en retard sur les mois précédents",
-    "command": {
-      "search": "Rechercher un poste fixe…",
-      "empty": "Aucun poste fixe trouvé.",
-      "none": "Aucun"
+    "kind": {
+      "envelope": "Enveloppe",
+      "income": "Revenu"
     },
     "rule": {
       "legend": "Règle de rapprochement",
-      "autoLink": "Rattacher automatiquement les transactions",
+      "autoLink": "Classer automatiquement les transactions dans cette catégorie",
       "pattern": "Motif",
       "patternPlaceholder": "Régie",
       "patternHint": "« contient » ignore la casse et les accents.",
       "type": "Type",
       "field": "Champ"
-    },
-    "direction": {
-      "expense": "Dépense",
-      "income": "Revenu"
-    },
-    "dialog": {
-      "saved": "Poste « {{name}} » enregistré",
-      "linked_one": "{{count}} transaction rattachée",
-      "linked_other": "{{count}} transactions rattachées",
-      "editTitle": "Modifier le poste fixe",
-      "newTitle": "Nouveau poste fixe",
-      "description": "Une dépense ou un revenu récurrent, avec son montant attendu et son échéance.",
-      "name": "Nom",
-      "namePlaceholder": "Loyer",
-      "type": "Type",
-      "expectedAmount": "Montant attendu",
-      "category": "Catégorie",
-      "noCategory": "Aucune",
-      "saving": "Enregistrement…",
-      "save": "Enregistrer",
-      "periodicity": "Périodicité",
-      "dueDay": "Jour d'échéance",
-      "startDate": "Date de début",
-      "endDate": "Date de fin (facultative)",
-      "dueMonth": "Mois d'échéance",
-      "chooseMonth": "Choisir un mois"
-    },
-    "sheet": {
-      "occurrences": "Échéances de la période",
-      "noOccurrences": "Aucune échéance sur la période.",
-      "viewLinked": "Voir toutes les transactions liées ({{count}})",
-      "noRule": "Aucune règle de rapprochement.",
-      "rule": "Règle : {{field}} {{matchKind}}",
-      "honored": "Échéances honorées",
-      "noTransactions": "Aucune transaction rattachée entre le {{start}} et le {{end}}.",
-      "deviationLegend": "Écart = montant réel − montant attendu.",
-      "edit": "Modifier",
-      "delete": "Supprimer"
-    },
-    "table": {
-      "name": "Nom",
-      "category": "Catégorie",
-      "periodicity": "Périodicité",
-      "expected": "Attendu",
-      "monthDue": "Échéance du mois",
-      "actual": "Réel",
-      "actions": "Actions",
-      "next": "Prochaine le {{date}}",
-      "noDue": "Aucune échéance",
-      "edit": "Modifier {{name}}"
     }
   }
 }

@@ -1,20 +1,15 @@
 import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Progress } from "@/components/ui/progress"
-import type { BudgetOverviewItem, Theme } from "@/lib/api"
+import type { BudgetOverviewItem } from "@/lib/api"
 import { budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { BudgetActionsMenu } from "./budget-actions-menu"
-import { budgetDetails, groupByTheme, money, type ThemeBudgets } from "./budget-groups"
+import { budgetDetails, groupByTheme, money, type ThemeBudgets } from "./plan-groups"
+import type { PlanTableProps } from "./plan-table"
 
-type BudgetCardListProps = {
-  budgets: BudgetOverviewItem[]
-  themes: Theme[]
-  onEdit: (budget: BudgetOverviewItem) => void
-}
-
-export function BudgetCardList({ budgets, themes, onEdit }: BudgetCardListProps) {
+export function PlanCardList({ budgets, themes, onEdit }: PlanTableProps) {
   return (
     <div className="divide-y">
       {groupByTheme(budgets, themes).map((group) => (

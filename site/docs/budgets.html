@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Categories, fixed items and budgets — Centime docs</title>
-<meta name="description" content="Categories, fixed items and budgets">
+<title>Categories and budgets — Centime docs</title>
+<meta name="description" content="Categories and budgets">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="../style.css">
 <script>try{var t=localStorage.getItem("theme");if(t)document.documentElement.dataset.theme=t}catch(e){}</script>
@@ -14,8 +14,8 @@
 <a class="brand" href="../index.html"><img src="../favicon.svg" alt="" width="24" height="24">centime</a>
 <nav><a href="../docs/index.html" aria-current="page">Docs</a><a href="../download.html">Download</a><a href="https://github.com/adrien-cardinale/centime">GitHub</a><a class="btn primary" href="../app/">Open the app</a>
 <button id="theme" type="button" aria-label="Toggle theme">◐</button></nav></div></header>
-<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html" aria-current="page">Categories, fixed items and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
-<main class="prose"><h1>Categories, fixed items and budgets</h1>
+<div class="wrap docs"><aside class="side"><p class="side-title">Documentation</p><ul><li><a href="getting-started.html">Getting started</a></li><li><a href="importing.html">Importing transactions</a></li><li><a href="receipts.html">Receipts</a></li><li><a href="budgets.html" aria-current="page">Categories and budgets</a></li><li><a href="self-hosting.html">Self-hosting</a></li><li><a href="desktop.html">Desktop app</a></li><li><a href="encryption.html">Encryption and sync</a></li><li><a href="api.html">Relay API</a></li></ul></aside>
+<main class="prose"><h1>Categories and budgets</h1>
 <h2>Categories and rules</h2>
 <p>Categories are grouped by theme, and each transaction is filed under a category. Rules assign categories automatically: a rule matches the label, the merchant or the provider category, either with a <em>contains</em> test or a regular expression. Rules run at import time or on demand.</p>
 <figure class="shot">
@@ -24,14 +24,17 @@
 </figure>
 <h2>Split transactions</h2>
 <p>One receipt can cover several categories, such as groceries and household goods. <strong>Split…</strong> in the row menu of the Transactions page spreads the transaction over several lines, each with a category, an amount and an optional note. The amounts are typed without a sign and must add up to the total; the dialog shows what is left to allocate. The dashboard, budgets and category filters then count each line in its own category. Choosing a single category again, or marking the transaction as a transfer, removes the split.</p>
-<h2>Fixed items</h2>
-<p>Recurring expenses and income (monthly, quarterly or yearly). Incoming transactions are matched against them automatically, and the app lists what is upcoming and what is overdue.</p>
 <h2>Budgets</h2>
-<p>Set a cap per category. Unused or overspent balance can be carried over to the next month. Centime also projects your spending at the current pace and keeps a history.</p>
+<p>Each category can hold one budget, of one of two kinds.</p>
+<ul>
+<li><strong>Envelope</strong>: a cap on spending. Unused or overspent balance can be carried over to the next period. Centime also projects your spending at the current pace and keeps a history.</li>
+<li><strong>Income</strong>: the amount a category should receive per period, such as a salary, compared with what actually came in.</li>
+</ul>
+<p>Filing a transaction under its category is all it takes. A budget can also carry a rule that files matching transactions automatically.</p>
 <h2>Month plan</h2>
-<p>Fixed items and budgets on a single page. The remainder of the month is: <code>fixed income − fixed expenses − envelopes</code>.</p>
+<p>Income and envelopes on a single page, envelopes grouped by theme. One <em>Add</em> button creates either kind. The remainder of the month is: <code>income − envelopes</code>.</p>
 <figure class="shot">
-<img class="light" src="../screenshots/budgets-light.webp" alt="The Budget page: fixed income and expenses, envelopes, unbudgeted spending and progress per category" width="1512" height="920" loading="lazy">
+<img class="light" src="../screenshots/budgets-light.webp" alt="The Budget page: income, envelopes, unbudgeted spending and progress per category" width="1512" height="920" loading="lazy">
 <img class="dark" src="../screenshots/budgets-dark.webp" alt="The Budget page in dark mode" width="1512" height="920" loading="lazy">
 </figure>
 <h2>Dashboard</h2>

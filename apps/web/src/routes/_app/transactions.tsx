@@ -16,13 +16,13 @@ import { useDebouncedValue } from "@/hooks/use-debounced-value"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { TransactionsPage as TransactionsPageData } from "@/lib/api"
 import { isIsoDate } from "@/lib/budgets"
-import { accountsQuery, categoriesQuery, fixedItemsQuery, transactionsQuery } from "@/lib/queries"
+import { accountsQuery, categoriesQuery, transactionsQuery } from "@/lib/queries"
 import { cn } from "@/lib/utils"
 
 const DESKTOP_PAGE_SIZE = 50
 const MOBILE_PAGE_SIZE = 25
 const SEARCH_DEBOUNCE_MS = 300
-type UrlFilterKey = "fixedItemId" | "categoryId" | "themeId" | "from" | "to"
+type UrlFilterKey = "categoryId" | "themeId" | "from" | "to"
 type LocalFilterValues = Omit<TransactionFilterValues, UrlFilterKey>
 type TransactionsSearch = Partial<Record<UrlFilterKey, string>>
 type PageState = { searchKey: string; page: number; selectedIds: Set<string> }
@@ -39,7 +39,6 @@ function nonEmptyString(value: unknown): string | undefined {
 
 function validateTransactionsSearch(search: Record<string, unknown>): TransactionsSearch {
   const entries = {
-    fixedItemId: nonEmptyString(search.fixedItemId),
     categoryId: nonEmptyString(search.categoryId),
     themeId: nonEmptyString(search.themeId),
     from: isIsoDate(search.from) ? search.from : undefined,
@@ -48,8 +47,8 @@ function validateTransactionsSearch(search: Record<string, unknown>): Transactio
   return Object.fromEntries(Object.entries(entries).filter(([, value]) => value !== undefined))
 }
 
-function toSearch({ fixedItemId, categoryId, themeId, from, to }: TransactionFilterValues): TransactionsSearch {
-  return validateTransactionsSearch({ fixedItemId, categoryId, themeId, from, to })
+function toSearch({ categoryId, themeId, from, to }: TransactionFilterValues): TransactionsSearch {
+  return validateTransactionsSearch({ categoryId, themeId, from, to })
 }
 
 function toLocalFilters({ accountId, search, transfer }: TransactionFilterValues): LocalFilterValues {
@@ -57,29 +56,19 @@ function toLocalFilters({ accountId, search, transfer }: TransactionFilterValues
 }
 
 function searchKeyOf(search: TransactionsSearch): string {
-  return JSON.stringify([search.fixedItemId, search.categoryId, search.themeId, search.from, search.to])
+  return JSON.stringify([search.categoryId, search.themeId, search.from, search.to])
 }
 
 export const Route = createFileRoute("/_app/transactions")({
   validateSearch: validateTransactionsSearch,
   loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.prefetchQuery(accountsQuery),
-      context.queryClient.prefetchQuery(categoriesQuery),
-      context.queryClient.prefetchQuery(fixedItemsQuery),
-    ]),
+    Promise.all([context.queryClient.prefetchQuery(accountsQuery), context.queryClient.prefetchQuery(categoriesQuery)]),
   component: TransactionsPage,
 })
 
 function hasActiveFilters(filters: TransactionFilterValues): boolean {
   return Boolean(
-    filters.accountId ||
-    filters.from ||
-    filters.to ||
-    filters.search.trim() ||
-    filters.categoryId ||
-    filters.fixedItemId ||
-    filters.transfer,
+    filters.accountId || filters.from || filters.to || filters.search.trim() || filters.categoryId || filters.transfer,
   )
 }
 
@@ -105,7 +94,6 @@ function TransactionsPage() {
   const { page, setPage, selectedIds, setSelectedIds } = usePageState(`${searchKey}|${pageSize}`)
   const filters: TransactionFilterValues = {
     ...localFilters,
-    fixedItemId: urlFilters.fixedItemId,
     categoryId: urlFilters.categoryId,
     themeId: urlFilters.themeId,
     from: urlFilters.from ?? "",

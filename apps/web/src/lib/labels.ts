@@ -6,7 +6,6 @@ import type {
   CsvEncoding,
   DecimalSeparator,
   ImportFormat,
-  OccurrenceStatus,
   Periodicity,
   RuleField,
   RuleMatchKind,
@@ -54,13 +53,6 @@ export const ruleMatchKindLabels = translatedLabels<RuleMatchKind>("ruleMatchKin
 export const ruleFieldLabels = translatedLabels<RuleField>("ruleField", ["raw_label", "merchant", "provider_category"])
 
 export const periodicityLabels = translatedLabels<Periodicity>("periodicity", ["monthly", "quarterly", "yearly"])
-
-export const occurrenceStatusLabels = translatedLabels<OccurrenceStatus>("occurrenceStatus", [
-  "paid",
-  "upcoming",
-  "due",
-  "overdue",
-])
 
 export const budgetStateLabels = translatedLabels<BudgetState>("budgetState", ["ok", "warning", "exceeded"])
 

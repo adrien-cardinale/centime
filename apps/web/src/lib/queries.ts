@@ -81,26 +81,6 @@ export const rulesQuery = queryOptions({
   queryFn: api.rules.list,
 })
 
-export const fixedItemsQuery = queryOptions({
-  queryKey: ["fixed-items"],
-  queryFn: api.fixedItems.list,
-})
-
-export function fixedItemsOverviewQuery(from: string, to: string) {
-  return queryOptions({
-    queryKey: ["fixed-items", "overview", from, to],
-    queryFn: () => api.fixedItems.overview(from, to),
-    placeholderData: keepPreviousData,
-  })
-}
-
-export function fixedItemTransactionsQuery(id: string) {
-  return queryOptions({
-    queryKey: ["fixed-items", "transactions", id],
-    queryFn: () => api.fixedItems.transactions(id),
-  })
-}
-
 export const budgetsQuery = queryOptions({
   queryKey: ["budgets"],
   queryFn: api.budgets.list,
@@ -134,7 +114,6 @@ export async function invalidateTransactionData(queryClient: QueryClient): Promi
     queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     queryClient.invalidateQueries({ queryKey: categoriesQuery.queryKey }),
     queryClient.invalidateQueries({ queryKey: themesQuery.queryKey }),
-    queryClient.invalidateQueries({ queryKey: fixedItemsQuery.queryKey }),
     invalidateBudgetData(queryClient),
   ])
 }
@@ -143,7 +122,7 @@ export async function invalidateReceiptData(queryClient: QueryClient): Promise<v
   await Promise.all([queryClient.invalidateQueries({ queryKey: ["receipts"] }), invalidateTransactionData(queryClient)])
 }
 
-export async function invalidateFixedItemData(queryClient: QueryClient): Promise<void> {
+export async function invalidatePlanEdits(queryClient: QueryClient): Promise<void> {
   await Promise.all([
     invalidateTransactionData(queryClient),
     queryClient.invalidateQueries({ queryKey: rulesQuery.queryKey }),
@@ -164,7 +143,6 @@ export async function invalidateAfterImport(queryClient: QueryClient): Promise<v
     queryClient.invalidateQueries({ queryKey: importsQuery.queryKey }),
     queryClient.invalidateQueries({ queryKey: ["receipts"] }),
     queryClient.invalidateQueries({ queryKey: categoriesQuery.queryKey }),
-    queryClient.invalidateQueries({ queryKey: fixedItemsQuery.queryKey }),
     invalidateBudgetData(queryClient),
   ])
 }

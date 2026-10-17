@@ -1,11 +1,8 @@
-import { applyCompiledRules, type CompiledRule, compileRules, type RuleOutcome, type RuleSubject } from "@centime/core"
+import { applyCompiledRules, compileRules, type RuleOutcome, type RuleSubject } from "@centime/core"
 import { type DbExecutor, rules, transactions } from "@centime/db"
 import { and, eq, inArray, isNull } from "drizzle-orm"
 
 export type Categorizer = (subject: RuleSubject) => RuleOutcome | null
-export type FixedItemLinker = (subject: RuleSubject) => string | null
-
-type RuleEngine = { categorize: Categorizer; linkFixedItem: FixedItemLinker }
 
 export type ApplyScope = "uncategorized" | "all"
 
@@ -13,17 +10,15 @@ export type ApplyRulesResult = {
   examined: number
   categorized: number
   markedAsTransfer: number
-  linkedToFixedItem: number
 }
 
 export type CategorizableTransaction = RuleSubject & {
   id: string
   categoryId: string | null
-  fixedItemId: string | null
   isTransfer: boolean
 }
 
-type Assignment = Pick<CategorizableTransaction, "categoryId" | "fixedItemId" | "isTransfer">
+type Assignment = Pick<CategorizableTransaction, "categoryId" | "isTransfer">
 
 const UPDATE_CHUNK_SIZE = 500
 
@@ -35,7 +30,6 @@ export async function loadActiveRules(db: DbExecutor) {
       matchKind: rules.matchKind,
       field: rules.field,
       categoryId: rules.categoryId,
-      fixedItemId: rules.fixedItemId,
       markAsTransfer: rules.markAsTransfer,
       priority: rules.priority,
       createdAt: rules.createdAt,
@@ -44,31 +38,15 @@ export async function loadActiveRules(db: DbExecutor) {
     .where(isNull(rules.deletedAt))
 }
 
-function fixedItemLinker(compiled: CompiledRule[]): FixedItemLinker {
-  const linking = compiled.filter((candidate) => candidate.rule.fixedItemId !== null)
-  return (subject) => applyCompiledRules(linking, subject)?.fixedItemId ?? null
-}
-
-async function loadRuleEngine(db: DbExecutor): Promise<RuleEngine> {
-  const { compiled } = compileRules(await loadActiveRules(db))
-  const linkFixedItem = fixedItemLinker(compiled)
-  const categorize: Categorizer = (subject) => {
-    const winner = applyCompiledRules(compiled, subject)
-    if (!winner || winner.fixedItemId !== null) return winner
-    return { ...winner, fixedItemId: linkFixedItem(subject) }
-  }
-  return { categorize, linkFixedItem }
-}
-
 export async function loadCategorizer(db: DbExecutor): Promise<Categorizer> {
-  return (await loadRuleEngine(db)).categorize
+  const { compiled } = compileRules(await loadActiveRules(db))
+  return (subject) => applyCompiledRules(compiled, subject)
 }
 
 export function assignmentFor(current: Assignment, outcome: RuleOutcome | null): Assignment {
   if (!outcome) return current
   return {
     categoryId: outcome.categoryId ?? current.categoryId,
-    fixedItemId: outcome.fixedItemId ?? current.fixedItemId,
     isTransfer: outcome.markAsTransfer || current.isTransfer,
   }
 }
@@ -78,22 +56,11 @@ function isEligible(transaction: CategorizableTransaction, scope: ApplyScope): b
 }
 
 function currentAssignment(transaction: CategorizableTransaction): Assignment {
-  return {
-    categoryId: transaction.categoryId,
-    fixedItemId: transaction.fixedItemId,
-    isTransfer: transaction.isTransfer,
-  }
-}
-
-function nextAssignment(transaction: CategorizableTransaction, scope: ApplyScope, engine: RuleEngine): Assignment {
-  const current = currentAssignment(transaction)
-  if (isEligible(transaction, scope)) return assignmentFor(current, engine.categorize(transaction))
-  if (current.fixedItemId !== null) return current
-  return { ...current, fixedItemId: engine.linkFixedItem(transaction) }
+  return { categoryId: transaction.categoryId, isTransfer: transaction.isTransfer }
 }
 
 function assignmentKey(assignment: Assignment): string {
-  return JSON.stringify([assignment.categoryId, assignment.fixedItemId, assignment.isTransfer])
+  return JSON.stringify([assignment.categoryId, assignment.isTransfer])
 }
 
 function hasChanged(before: Assignment, after: Assignment): boolean {
@@ -103,19 +70,25 @@ function hasChanged(before: Assignment, after: Assignment): boolean {
 type PlannedChanges = { groups: Map<string, { assignment: Assignment; ids: string[] }>; result: ApplyRulesResult }
 
 function emptyResult(candidates: CategorizableTransaction[], scope: ApplyScope): ApplyRulesResult {
-  const examined = candidates.filter((transaction) => isEligible(transaction, scope)).length
-  return { examined, categorized: 0, markedAsTransfer: 0, linkedToFixedItem: 0 }
+  return {
+    examined: candidates.filter((transaction) => isEligible(transaction, scope)).length,
+    categorized: 0,
+    markedAsTransfer: 0,
+  }
 }
 
-function planChanges(candidates: CategorizableTransaction[], scope: ApplyScope, engine: RuleEngine): PlannedChanges {
+function planChanges(
+  candidates: CategorizableTransaction[],
+  scope: ApplyScope,
+  categorize: Categorizer,
+): PlannedChanges {
   const groups: PlannedChanges["groups"] = new Map()
   const result = emptyResult(candidates, scope)
-  for (const transaction of candidates) {
-    const next = nextAssignment(transaction, scope, engine)
+  for (const transaction of candidates.filter((candidate) => isEligible(candidate, scope))) {
+    const next = assignmentFor(currentAssignment(transaction), categorize(transaction))
     if (!hasChanged(currentAssignment(transaction), next)) continue
     if (next.categoryId !== null && next.categoryId !== transaction.categoryId) result.categorized++
     if (next.isTransfer && !transaction.isTransfer) result.markedAsTransfer++
-    if (next.fixedItemId !== null && transaction.fixedItemId === null) result.linkedToFixedItem++
     const key = assignmentKey(next)
     const group = groups.get(key) ?? { assignment: next, ids: [] }
     group.ids.push(transaction.id)
@@ -144,7 +117,7 @@ export async function categorizeTransactions(
   candidates: CategorizableTransaction[],
   scope: ApplyScope,
 ): Promise<ApplyRulesResult> {
-  const { groups, result } = planChanges(candidates, scope, await loadRuleEngine(db))
+  const { groups, result } = planChanges(candidates, scope, await loadCategorizer(db))
   for (const { assignment, ids } of groups.values()) await writeAssignment(db, assignment, ids)
   return result
 }
@@ -157,7 +130,6 @@ export async function loadCategorizableTransactions(db: DbExecutor): Promise<Cat
       merchant: transactions.merchant,
       providerCategory: transactions.providerCategory,
       categoryId: transactions.categoryId,
-      fixedItemId: transactions.fixedItemId,
       isTransfer: transactions.isTransfer,
     })
     .from(transactions)

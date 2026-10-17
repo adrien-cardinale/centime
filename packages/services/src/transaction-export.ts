@@ -26,7 +26,6 @@ const HEADERS = [
   "Devise",
   "Statut",
   "Catégorie",
-  "Poste fixe",
   "Transfert",
   "Note",
 ]
@@ -47,7 +46,6 @@ function toCells(item: TransactionListItem, split?: TransactionSplitItem): CsvCe
     item.currency,
     STATUS_LABELS[item.status],
     split ? split.categoryName : item.categoryName,
-    item.fixedItemName,
     item.isTransfer ? "Oui" : "Non",
     split?.note ?? null,
   ]

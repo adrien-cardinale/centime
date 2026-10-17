@@ -1,5 +1,5 @@
 import { computeTransactionFingerprint, type ManualTransaction } from "@centime/core"
-import { accounts, categories, type Db, type DbExecutor, fixedItems, transactions } from "@centime/db"
+import { accounts, categories, type Db, type DbExecutor, transactions } from "@centime/db"
 import { and, eq, isNull } from "drizzle-orm"
 import { notFound, ServiceError } from "./errors"
 
@@ -21,16 +21,6 @@ async function checkCategory(db: DbExecutor, categoryId: string | null): Promise
     .from(categories)
     .where(and(eq(categories.id, categoryId), isNull(categories.deletedAt)))
   if (!category) throw new ServiceError("Catégorie introuvable")
-}
-
-async function fixedItemCategory(db: DbExecutor, fixedItemId: string | null): Promise<string | null> {
-  if (fixedItemId === null) return null
-  const [fixedItem] = await db
-    .select({ categoryId: fixedItems.categoryId })
-    .from(fixedItems)
-    .where(and(eq(fixedItems.id, fixedItemId), isNull(fixedItems.deletedAt)))
-  if (!fixedItem) throw new ServiceError("Poste fixe introuvable")
-  return fixedItem.categoryId
 }
 
 // L'empreinte est unique sur toute la table, y compris les lignes supprimées : on avance l'occurrence
@@ -57,7 +47,6 @@ export async function createTransaction(db: Db, input: ManualTransaction) {
   return db.transaction(async (tx) => {
     const currency = await accountCurrency(tx, input.accountId)
     await checkCategory(tx, input.categoryId)
-    const inheritedCategoryId = await fixedItemCategory(tx, input.fixedItemId)
     const [created] = await tx
       .insert(transactions)
       .values({
@@ -68,8 +57,7 @@ export async function createTransaction(db: Db, input: ManualTransaction) {
         amount: input.amount,
         currency,
         status: input.status,
-        categoryId: input.categoryId ?? inheritedCategoryId,
-        fixedItemId: input.fixedItemId,
+        categoryId: input.categoryId,
         isTransfer: input.isTransfer,
         fingerprint: await freeFingerprint(tx, input),
       })

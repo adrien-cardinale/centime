@@ -4,7 +4,6 @@ import {
   categories,
   type Db,
   type DbExecutor,
-  fixedItems,
   rules,
   themes,
   transactions,
@@ -98,7 +97,6 @@ async function detachCategory(db: DbExecutor, id: string, deletedAt: string): Pr
   await db.update(transactions).set({ categoryId: null }).where(eq(transactions.categoryId, id))
   await db.update(transactionSplits).set({ categoryId: null }).where(eq(transactionSplits.categoryId, id))
   await db.update(rules).set({ categoryId: null }).where(eq(rules.categoryId, id))
-  await db.update(fixedItems).set({ categoryId: null }).where(eq(fixedItems.categoryId, id))
   await db
     .update(budgets)
     .set({ deletedAt })

@@ -5,10 +5,10 @@ import { AccountSelect } from "@/components/accounts/account-select"
 import { CategorySelect } from "@/components/categories/category-select"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectSeparator, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { type TransferFilter, UNCATEGORIZED_FILTER, WITHOUT_FIXED_ITEM_FILTER } from "@/lib/api"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { type TransferFilter, UNCATEGORIZED_FILTER } from "@/lib/api"
 import i18n from "@/i18n"
-import { fixedItemsQuery, themesQuery } from "@/lib/queries"
+import { themesQuery } from "@/lib/queries"
 
 export type TransactionFilterValues = {
   accountId: string | undefined
@@ -17,7 +17,6 @@ export type TransactionFilterValues = {
   search: string
   categoryId: string | undefined
   themeId: string | undefined
-  fixedItemId: string | undefined
   transfer: TransferFilter | undefined
 }
 
@@ -36,7 +35,6 @@ export const NO_FILTERS: TransactionFilterValues = {
   search: "",
   categoryId: undefined,
   themeId: undefined,
-  fixedItemId: undefined,
   transfer: undefined,
 }
 
@@ -59,7 +57,6 @@ export function activeFilterCount(values: TransactionFilterValues): number {
     values.to,
     values.search.trim(),
     values.categoryId ?? values.themeId,
-    values.fixedItemId,
     values.transfer,
   ]
   return active.filter(Boolean).length
@@ -130,10 +127,6 @@ export function TransactionFilterFields({ values, onChange }: TransactionFilterF
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="filter-fixed-item">{t("transactionsPage.columns.fixedItem")}</Label>
-        <FixedItemFilter value={values.fixedItemId} onChange={(fixedItemId) => update({ fixedItemId })} />
-      </div>
-      <div className="space-y-2">
         <Label htmlFor="filter-transfer">{t("transactionsPage.filters.transfers")}</Label>
         <Select value={values.transfer ?? ALL} onValueChange={(value) => update({ transfer: toTransferFilter(value) })}>
           <SelectTrigger id="filter-transfer" className="w-full">
@@ -149,33 +142,5 @@ export function TransactionFilterFields({ values, onChange }: TransactionFilterF
         </Select>
       </div>
     </>
-  )
-}
-
-function FixedItemFilter({
-  value,
-  onChange,
-}: {
-  value: string | undefined
-  onChange: (value: string | undefined) => void
-}) {
-  const { t } = useTranslation()
-  const { data: items = [] } = useQuery(fixedItemsQuery)
-  return (
-    <Select value={value ?? ALL} onValueChange={(next) => onChange(next === ALL ? undefined : next)}>
-      <SelectTrigger id="filter-fixed-item" className="w-full">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value={ALL}>{t("transactionsPage.filters.allFixedItems")}</SelectItem>
-        <SelectItem value={WITHOUT_FIXED_ITEM_FILTER}>{t("transactionsPage.filters.withoutFixedItem")}</SelectItem>
-        {items.length > 0 && <SelectSeparator />}
-        {items.map((item) => (
-          <SelectItem key={item.id} value={item.id}>
-            {item.name}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
   )
 }

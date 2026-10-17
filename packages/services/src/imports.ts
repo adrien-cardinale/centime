@@ -274,7 +274,7 @@ async function createMissingAccounts(db: DbExecutor, analysis: ImportAnalysis): 
   return missing.size
 }
 
-const UNASSIGNED = { categoryId: null, fixedItemId: null, isTransfer: false }
+const UNASSIGNED = { categoryId: null, isTransfer: false }
 
 function toNewTransaction(row: AnalyzedRow, importId: string, categorize: Categorizer) {
   if (row.accountId === null || row.fingerprint === null) throw new Error("Transaction sans compte résolu")

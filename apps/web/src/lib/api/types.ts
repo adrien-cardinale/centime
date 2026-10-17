@@ -1,8 +1,7 @@
 import type {
-  BudgetPayload,
+  BudgetPayloadInput,
   CategoryInput,
   CsvProfileInput,
-  FixedItemPayload,
   ManualTransactionInput,
   ReceiptCreateInput,
   receiptFilterSchema,
@@ -82,18 +81,10 @@ export type Api = {
     test(matcher: RuleMatcherInput): Out<Surface["rules"]["test"]>
     apply(scope: ApplyScopeInput): Out<Surface["rules"]["apply"]>
   }
-  fixedItems: {
-    list(): Out<Surface["fixedItems"]["list"]>
-    create(input: FixedItemPayload): Out<Surface["fixedItems"]["create"]>
-    update(id: string, input: FixedItemPayload): Out<Surface["fixedItems"]["update"]>
-    remove(id: string): Out<Surface["fixedItems"]["remove"]>
-    overview(from: string, to: string): Out<Surface["fixedItems"]["overview"]>
-    transactions(id: string): Out<Surface["fixedItems"]["transactions"]>
-  }
   budgets: {
     list(): Out<Surface["budgets"]["list"]>
-    create(input: BudgetPayload): Out<Surface["budgets"]["create"]>
-    update(id: string, input: BudgetPayload): Out<Surface["budgets"]["update"]>
+    create(input: BudgetPayloadInput): Out<Surface["budgets"]["create"]>
+    update(id: string, input: BudgetPayloadInput): Out<Surface["budgets"]["update"]>
     remove(id: string): Out<Surface["budgets"]["remove"]>
     overview(date: string): Out<Surface["budgets"]["overview"]>
   }
@@ -123,15 +114,10 @@ export type RuleTestResult = Result<Api["rules"]["test"]>
 export type ApplyRulesScope = Parameters<Api["rules"]["apply"]>[0]
 export type ApplyRulesResult = Result<Api["rules"]["apply"]>
 
-export type FixedItem = Result<Api["fixedItems"]["list"]>[number]
-export type FixedItemsOverview = Result<Api["fixedItems"]["overview"]>
-export type FixedItemOverview = FixedItemsOverview["items"][number]
-export type OccurrenceReport = FixedItemOverview["occurrences"][number]
-export type FixedItemTransaction = Result<Api["fixedItems"]["transactions"]>[number]
-
 export type Budget = Result<Api["budgets"]["list"]>[number]
 export type BudgetsOverview = Result<Api["budgets"]["overview"]>
 export type BudgetOverviewItem = BudgetsOverview["budgets"][number]
+export type IncomeOverviewItem = BudgetsOverview["incomes"][number]
 export type BudgetTotals = BudgetsOverview["totals"]["monthly"]
 export type UnbudgetedCategory = BudgetsOverview["unbudgeted"][number]
 
@@ -140,4 +126,3 @@ export type DashboardKpis = DashboardOverview["kpis"]
 export type MonthlyPoint = DashboardOverview["monthlySeries"][number]
 export type CategoryBreakdownEntry = DashboardOverview["categoryBreakdown"][number]
 export type BalancePoint = DashboardOverview["balanceSeries"][number]
-export type UpcomingOccurrence = DashboardOverview["upcomingOccurrences"][number]

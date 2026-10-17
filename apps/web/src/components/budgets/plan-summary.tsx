@@ -30,18 +30,13 @@ function PlanTile({ title, value, hint, className }: PlanTileProps) {
 
 export function PlanSummary({ plan }: { plan: MonthPlan }) {
   const { t } = useTranslation()
-  const { income, fixedExpenses, envelopes, remaining } = plan
+  const { income, envelopes, remaining } = plan
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
       <PlanTile
         title={t("budgets.planSummary.income")}
         value={income.expected}
         hint={t("budgets.planSummary.received", { amount: money(income.actual) })}
-      />
-      <PlanTile
-        title={t("budgets.planSummary.fixedExpenses")}
-        value={fixedExpenses.expected}
-        hint={t("budgets.planSummary.paid", { amount: money(fixedExpenses.actual) })}
       />
       <PlanTile
         title={t("budgets.planSummary.envelopes")}

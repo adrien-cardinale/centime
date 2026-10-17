@@ -179,8 +179,6 @@
     "uncategorized_other": "{{count}} uncategorized transactions",
     "budgetsExceeded_one": "{{count}} budget exceeded",
     "budgetsExceeded_other": "{{count}} budgets exceeded",
-    "overdue_one": "{{count}} overdue payment",
-    "overdue_other": "{{count}} overdue payments",
     "pending": "{{count}} pending"
   },
   "labels": {
@@ -245,10 +243,6 @@
       "1": "2nd month of the quarter",
       "2": "3rd month of the quarter"
     }
-  },
-  "fixedItems": {
-    "dueFirst": "on the 1st",
-    "dueDay": "on the {{day}}"
   },
   "page": {
     "notFound": {
@@ -348,10 +342,6 @@
       "empty": "No transactions.",
       "uncategorized": "Uncategorized"
     },
-    "upcoming": {
-      "title": "Upcoming due dates",
-      "empty": "No upcoming due dates."
-    },
     "delta": {
       "none": "No comparison with the previous month",
       "up": "up",
@@ -368,12 +358,10 @@
     "empty": "No transactions yet.",
     "importStatement": "Import a statement",
     "none": "None",
-    "linkFixedItem": "Link to a fixed item",
     "markTransfer": "Mark as transfer",
     "removeTransfer": "Remove transfer",
     "createRule": "Create a rule from this transaction",
     "actions": "Actions",
-    "fixedItemLabel": "Fixed item: {{name}}",
     "create": {
       "new": "New transaction",
       "description": "Record a transaction that is missing from your statements.",
@@ -438,9 +426,7 @@
       "showResults": "Show results",
       "uncategorized": "Uncategorized",
       "theme": "Theme: {{name}}",
-      "transfers": "Transfers",
-      "allFixedItems": "All",
-      "withoutFixedItem": "No fixed item"
+      "transfers": "Transfers"
     },
     "columns": {
       "date": "Date",
@@ -448,7 +434,6 @@
       "label": "Label",
       "merchant": "Merchant",
       "category": "Category",
-      "fixedItem": "Fixed item",
       "amount": "Amount",
       "status": "Status"
     },
@@ -837,7 +822,7 @@
     "newCategory": "New category",
     "otherRules": {
       "title": "Other rules",
-      "description": "Rules without a category: transfers or links to a fixed item."
+      "description": "Rules without a category: transfers."
     },
     "empty": "No categories.",
     "columns": {
@@ -859,7 +844,7 @@
     "deleteThemeDescription_other": "Its {{count}} categories and their transactions are kept, but will no longer have a theme.",
     "categoryDeleted": "Category \"{{name}}\" deleted",
     "deleteCategoryTitle": "Delete category \"{{name}}\"?",
-    "deleteCategoryRules": "Rules that reference it will also be detached.",
+    "deleteCategoryRules": "Rules that reference it will also be detached. Its budget will be deleted.",
     "detachNone": "No transactions use this category.",
     "detachWarning_one": "{{count}} transaction will be detached and become uncategorized again.",
     "detachWarning_other": "{{count}} transactions will be detached and become uncategorized again.",
@@ -914,7 +899,7 @@
       },
       "confirm": "Reapply",
       "done": "Rules reapplied",
-      "summary": "{{examined}} examined, {{categorized}} categorized, {{markedAsTransfer}} marked as transfer, {{linkedToFixedItem}} linked to a fixed item"
+      "summary": "{{examined}} examined, {{categorized}} categorized, {{markedAsTransfer}} marked as transfer"
     },
     "dialog": {
       "created": "Rule created",
@@ -980,44 +965,42 @@
   },
   "budgetsPage": {
     "title": "Budget",
-    "description": "The month's plan: fixed income and expenses, then variable spending envelopes by category.",
-    "newFixedItem": "New fixed item",
-    "newBudget": "New budget",
-    "variableEnvelopes": "Variable envelopes",
-    "fixedExpenses": "Fixed expenses",
-    "fixedIncome": "Fixed income",
+    "description": "The month's plan: expected income, then spending envelopes by theme.",
+    "add": "Add",
+    "expenses": "Spending",
+    "table": {
+      "item": "Item",
+      "planned": "Planned",
+      "tracking": "Status",
+      "remaining": "Remaining",
+      "actions": "Actions",
+      "period": "Period",
+      "spent": "Spent",
+      "received": "Received"
+    },
     "progressSpent": "Spent {{actual}} of {{expected}}",
-    "progressPaid": "Paid {{actual}} of {{expected}}",
     "progressReceived": "Received {{actual}} of {{expected}}",
-    "emptyFixedExpenses": "No fixed expenses yet.",
-    "emptyFixedIncome": "No fixed income yet.",
-    "emptyBudgetsTitle": "No budgets yet",
-    "emptyBudgetsDescription": "Set a spending limit for a category and track how much of it you use, period by period.",
-    "createBudget": "Create a budget"
+    "emptyExpensesTitle": "No planned spending yet",
+    "emptyExpensesDescription": "Set a spending limit for a category and track how much of it you use.",
+    "income": "Income",
+    "emptyIncome": "No expected income yet."
   },
   "budgets": {
     "dialog": {
       "editTitle": "Edit budget",
-      "newTitle": "New budget",
-      "description": "A limit for a category's variable spending.",
+      "newTitle": "Add to budget",
+      "description": "An envelope caps a category's spending. An income sets the amount a category should receive.",
       "saved": "Budget \"{{name}}\" saved",
       "category": "Category",
       "amount": "Amount",
       "periodicity": "Periodicity",
-      "startDate": "Start date",
       "rollover": "Roll over the balance",
       "rolloverHint": "The balance from previous periods, positive or negative, is added to the current period's limit.",
       "saving": "Saving…",
-      "save": "Save"
+      "save": "Save",
+      "kind": "Type"
     },
     "table": {
-      "category": "Category",
-      "period": "Period",
-      "budget": "Budget",
-      "spent": "Spent",
-      "progress": "Progress",
-      "remaining": "Remaining",
-      "actions": "Actions",
       "noTheme": "No theme",
       "carry": "Carried over: {{amount}}",
       "pending": "Pending: {{amount}}",
@@ -1046,99 +1029,31 @@
       "view": "View {{month}}"
     },
     "planSummary": {
-      "income": "Fixed income",
-      "fixedExpenses": "Fixed expenses",
+      "income": "Income",
       "envelopes": "Envelopes",
       "remaining": "Remaining",
       "received": "Received: {{amount}}",
-      "paid": "Paid: {{amount}}",
       "spent": "Spent: {{amount}}",
-      "remainingHint": "Fixed income − fixed expenses − envelopes"
+      "remainingHint": "Income − envelopes"
     },
     "unbudgeted": {
       "title": "Unbudgeted spending",
       "description": "Categories not covered by a budget, spending in {{month}}.",
       "create": "Create a budget",
       "createFor": "Create a budget for {{name}}"
-    }
-  },
-  "fixedItemsUi": {
-    "delete": {
-      "deleted": "Item \"{{name}}\" deleted",
-      "label": "Delete {{name}}",
-      "title": "Delete item \"{{name}}\"?",
-      "description": "Linked transactions are kept but detached from the item. Its matching rule is deleted.",
-      "confirm": "Delete"
     },
-    "deviation": {
-      "title": "Difference between the actual and expected amounts",
-      "label": "Difference {{amount}} (actual − expected)"
-    },
-    "earlierOverdue_one": "{{count}} overdue payment in previous months",
-    "earlierOverdue_other": "{{count}} overdue payments in previous months",
-    "command": {
-      "search": "Search for a fixed item…",
-      "empty": "No fixed item found.",
-      "none": "None"
+    "kind": {
+      "envelope": "Envelope",
+      "income": "Income"
     },
     "rule": {
       "legend": "Matching rule",
-      "autoLink": "Automatically link transactions",
+      "autoLink": "Automatically file transactions under this category",
       "pattern": "Pattern",
       "patternPlaceholder": "Landlord",
       "patternHint": "\"contains\" ignores case and accents.",
       "type": "Type",
       "field": "Field"
-    },
-    "direction": {
-      "expense": "Expense",
-      "income": "Income"
-    },
-    "dialog": {
-      "saved": "Item \"{{name}}\" saved",
-      "linked_one": "{{count}} transaction linked",
-      "linked_other": "{{count}} transactions linked",
-      "editTitle": "Edit fixed item",
-      "newTitle": "New fixed item",
-      "description": "A recurring expense or income, with its expected amount and due date.",
-      "name": "Name",
-      "namePlaceholder": "Rent",
-      "type": "Type",
-      "expectedAmount": "Expected amount",
-      "category": "Category",
-      "noCategory": "None",
-      "saving": "Saving…",
-      "save": "Save",
-      "periodicity": "Periodicity",
-      "dueDay": "Due day",
-      "startDate": "Start date",
-      "endDate": "End date (optional)",
-      "dueMonth": "Due month",
-      "chooseMonth": "Choose a month"
-    },
-    "sheet": {
-      "occurrences": "Payments in this period",
-      "noOccurrences": "No payments in this period.",
-      "viewLinked": "View all linked transactions ({{count}})",
-      "noRule": "No matching rule.",
-      "rule": "Rule: {{field}} {{matchKind}}",
-      "honored": "Payments honored",
-      "noTransactions": "No transactions linked between {{start}} and {{end}}.",
-      "deviationLegend": "Difference = actual amount − expected amount.",
-      "edit": "Edit",
-      "delete": "Delete"
-    },
-    "table": {
-      "name": "Name",
-      "category": "Category",
-      "periodicity": "Periodicity",
-      "expected": "Expected",
-      "monthDue": "Due this month",
-      "actual": "Actual",
-      "actions": "Actions",
-      "next": "Next on {{date}}",
-      "noDue": "No upcoming payment",
-      "edit": "Edit {{name}}"
     }
   }
 }

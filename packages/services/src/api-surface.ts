@@ -3,14 +3,6 @@ import { createBudget, deleteBudget, getBudgetsOverview, listBudgets, updateBudg
 import { createCategory, deleteCategory, listCategories, updateCategory } from "./categories"
 import { createCsvProfile, deleteCsvProfile, listCsvProfiles, updateCsvProfile } from "./csv-profiles"
 import { getDashboard } from "./dashboard"
-import {
-  createFixedItem,
-  deleteFixedItem,
-  getFixedItemsOverview,
-  listFixedItems,
-  listFixedItemTransactions,
-  updateFixedItem,
-} from "./fixed-items"
 import { commitImport, deleteImport, listImports, previewImport } from "./imports"
 import {
   applyReceiptLinesAsSplits,
@@ -89,14 +81,6 @@ export const apiSurface = {
     remove: deleteRule,
     test: testRule,
     apply: applyRules,
-  },
-  fixedItems: {
-    list: listFixedItems,
-    create: createFixedItem,
-    update: updateFixedItem,
-    remove: deleteFixedItem,
-    overview: getFixedItemsOverview,
-    transactions: listFixedItemTransactions,
   },
   budgets: {
     list: listBudgets,

@@ -1,5 +1,5 @@
 import { useRef } from "react"
-import { ArrowLeftRight, MoreHorizontal, Receipt, Repeat, Split, Wand2 } from "lucide-react"
+import { ArrowLeftRight, MoreHorizontal, Receipt, Split, Wand2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
@@ -9,7 +9,6 @@ import type { TransactionItem } from "@/lib/api"
 type TransactionRowActionsProps = {
   transaction: TransactionItem
   onCreateRule: (transaction: TransactionItem) => void
-  onLinkFixedItem: (transaction: TransactionItem) => void
   onSplit: (transaction: TransactionItem) => void
   onAttachReceipt: (transaction: TransactionItem) => void
 }
@@ -17,7 +16,6 @@ type TransactionRowActionsProps = {
 export function TransactionRowActions({
   transaction,
   onCreateRule,
-  onLinkFixedItem,
   onSplit,
   onAttachReceipt,
 }: TransactionRowActionsProps) {
@@ -44,15 +42,6 @@ export function TransactionRowActions({
         <DropdownMenuItem onSelect={toggleTransfer} disabled={update.isPending}>
           <ArrowLeftRight />
           {transaction.isTransfer ? t("transactionsPage.removeTransfer") : t("transactionsPage.markTransfer")}
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onSelect={() => {
-            opensOverlay.current = true
-            onLinkFixedItem(transaction)
-          }}
-        >
-          <Repeat />
-          {t("transactionsPage.linkFixedItem")}
         </DropdownMenuItem>
         <DropdownMenuItem
           onSelect={() => {

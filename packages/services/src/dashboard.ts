@@ -2,7 +2,6 @@ import {
   balanceSeries,
   type BalancePoint,
   type BreakdownEntry,
-  defaultOverviewRange,
   type IsoDate,
   lastMonths,
   latestBalance,
@@ -17,12 +16,10 @@ import { and, asc, count, eq, gte, isNotNull, isNull, lte, type SQL, sql } from 
 import { budgetsOverview } from "./budgets"
 import { loadCategoryNodes } from "./categories"
 import { type Clock, systemClock, todayOf } from "./clock"
-import { fixedItemsOverview } from "./fixed-items"
 import { listTransactions } from "./transactions"
 
 const SERIES_MONTHS = 12
 const TOP_BUDGETS = 5
-const UPCOMING_OCCURRENCES = 5
 const RECENT_TRANSACTIONS = 8
 
 type MonthTotals = { income: number; expenses: number }
@@ -225,27 +222,16 @@ async function budgetHighlights(db: DbExecutor, date: IsoDate, today: IsoDate) {
   }
 }
 
-async function fixedItemHighlights(db: DbExecutor, today: IsoDate) {
-  const overview = await fixedItemsOverview(db, defaultOverviewRange(today), today)
-  const upcoming = overview.items
-    .flatMap((item) => item.occurrences.map((report) => ({ ...report, fixedItemName: item.fixedItemName })))
-    .filter((report) => report.status !== "paid" && report.dueDate >= today)
-    .sort((left, right) => left.dueDate.localeCompare(right.dueDate))
-    .slice(0, UPCOMING_OCCURRENCES)
-  return { overdue: overview.totals.overdueCount, upcoming }
-}
-
 export async function dashboardOverview(db: DbExecutor, date: IsoDate, today: IsoDate) {
   const month = periodContaining("monthly", date)
   const months = lastMonths(month, SERIES_MONTHS)
-  const [series, breakdown, allBalances, uncategorizedCount, pendingCount, budgets, fixed, recent] = await Promise.all([
+  const [series, breakdown, allBalances, uncategorizedCount, pendingCount, budgets, recent] = await Promise.all([
     monthlySeries(db, months),
     categoryBreakdown(db, month),
     loadBankBalances(db),
     countUncategorized(db),
     countPending(db),
     budgetHighlights(db, date, today),
-    fixedItemHighlights(db, today),
     listTransactions(db, isNull(transactions.deletedAt), { limit: RECENT_TRANSACTIONS, offset: 0 }),
   ])
   return {
@@ -258,7 +244,6 @@ export async function dashboardOverview(db: DbExecutor, date: IsoDate, today: Is
       uncategorizedCount,
       pendingCount,
       budgetsExceeded: budgets.exceeded,
-      overdueOccurrences: fixed.overdue,
     },
     monthlySeries: series,
     categoryBreakdown: breakdown,
@@ -268,7 +253,6 @@ export async function dashboardOverview(db: DbExecutor, date: IsoDate, today: Is
       balance,
     })),
     budgets: budgets.top,
-    upcomingOccurrences: fixed.upcoming,
     recentTransactions: recent,
   }
 }

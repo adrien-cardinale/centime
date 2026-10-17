@@ -28,3 +28,11 @@
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
+
+# ML Kit (scanner de QR code) résout ses composants par réflexion ; élagués par R8,
+# l'analyse de la première image crash en release (NullPointerException dans analyze).
+-keep class com.google.mlkit.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_barcode.** { *; }
+-keep class com.google.android.gms.internal.mlkit_vision_common.** { *; }
+-keep class com.google.android.gms.internal.mlkit_common.** { *; }
+-keep class com.google.firebase.components.** { *; }

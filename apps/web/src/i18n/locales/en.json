@@ -410,7 +410,8 @@
       "search": "Search for a category…",
       "notFound": "No category found.",
       "create": "Create \"{{name}}\"",
-      "new": "New category…"
+      "new": "New category…",
+      "none": "No category"
     },
     "export": {
       "label": "Export",

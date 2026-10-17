@@ -410,7 +410,8 @@
       "search": "Rechercher une catégorie…",
       "notFound": "Aucune catégorie trouvée.",
       "create": "Créer « {{name}} »",
-      "new": "Nouvelle catégorie…"
+      "new": "Nouvelle catégorie…",
+      "none": "Aucune catégorie"
     },
     "export": {
       "label": "Exporter",

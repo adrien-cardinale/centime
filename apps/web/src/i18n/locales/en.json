@@ -275,6 +275,7 @@
     "invalidServer": "Invalid server address",
     "saveFailed": "Unable to save the key",
     "invalidKey": "Invalid key",
+    "accountExists": "This account is already on this device",
     "warningTitle": "Your key is the only way to recover your data",
     "warningDescription": "It encrypts your data before it is sent: the server cannot read it and nobody can give the key back to you. Keep it in a password manager or on paper.",
     "copyKey": "Copy key",

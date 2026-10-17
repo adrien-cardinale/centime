@@ -275,6 +275,7 @@
     "invalidServer": "Adresse du serveur invalide",
     "saveFailed": "Enregistrement de la clé impossible",
     "invalidKey": "Clé invalide",
+    "accountExists": "Ce compte est déjà sur cet appareil",
     "warningTitle": "Votre clé est la seule façon de retrouver vos données",
     "warningDescription": "Elle chiffre vos données avant leur envoi : le serveur ne peut pas les lire et personne ne peut vous la redonner. Conservez-la dans un gestionnaire de mots de passe ou sur papier.",
     "copyKey": "Copier la clé",

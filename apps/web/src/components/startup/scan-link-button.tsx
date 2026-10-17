@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button"
 import i18n from "@/i18n"
 import { parseDeviceLink } from "@/lib/crypto/device-link"
-import { completeOnboarding } from "@/lib/crypto/onboarding"
+import { AccountAlreadyAddedError, completeOnboarding } from "@/lib/crypto/onboarding"
 
 type CameraAccess = "granted" | "refused" | "blocked"
 
@@ -28,6 +28,7 @@ async function requestCameraAccess(): Promise<CameraAccess> {
 }
 
 function showScanError(error: unknown) {
+  if (error instanceof AccountAlreadyAddedError) return void toast.error(error.message)
   const detail = error instanceof Error ? error.message : typeof error === "string" ? error : ""
   toast.error(i18n.t("boot.scan.failed"), detail === "" ? undefined : { description: detail })
 }

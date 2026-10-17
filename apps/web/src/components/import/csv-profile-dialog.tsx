@@ -79,15 +79,17 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>{profile ? t("csvProfiles.dialog.editTitle") : t("csvProfiles.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("csvProfiles.dialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-6">
-            <ProfileSections control={form.control} sourceFile={sourceFile} />
-            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
+          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 pb-6">
+              <ProfileSections control={form.control} sourceFile={sourceFile} />
+            </div>
+            <DialogFooter className="border-t px-6 py-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   {t("common.cancel")}

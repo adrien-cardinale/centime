@@ -117,72 +117,74 @@ export function FixedItemDialog({ item, trigger }: FixedItemDialogProps) {
   return (
     <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
+      <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
+        <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>{item ? t("fixedItemsUi.dialog.editTitle") : t("fixedItemsUi.dialog.newTitle")}</DialogTitle>
           <DialogDescription>{t("fixedItemsUi.dialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2">
-                    <FormLabel>{t("fixedItemsUi.dialog.name")}</FormLabel>
-                    <FormControl>
-                      <Input placeholder={t("fixedItemsUi.dialog.namePlaceholder")} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="space-y-2">
-                <Label>{t("fixedItemsUi.dialog.type")}</Label>
-                <DirectionToggle value={direction} onChange={(next) => updateAmount(next, amountText)} />
+          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-6 pb-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>{t("fixedItemsUi.dialog.name")}</FormLabel>
+                      <FormControl>
+                        <Input placeholder={t("fixedItemsUi.dialog.namePlaceholder")} {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="space-y-2">
+                  <Label>{t("fixedItemsUi.dialog.type")}</Label>
+                  <DirectionToggle value={direction} onChange={(next) => updateAmount(next, amountText)} />
+                </div>
+                <FormField
+                  control={form.control}
+                  name="expectedAmount"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>{t("fixedItemsUi.dialog.expectedAmount")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="text"
+                          inputMode="decimal"
+                          autoComplete="off"
+                          placeholder="0.00"
+                          value={amountText}
+                          onChange={(event) => updateAmount(direction, event.target.value)}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
+              <ScheduleFields control={form.control} onPeriodicityChange={changePeriodicity} />
               <FormField
                 control={form.control}
-                name="expectedAmount"
-                render={() => (
+                name="categoryId"
+                render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{t("fixedItemsUi.dialog.expectedAmount")}</FormLabel>
+                    <FormLabel>{t("fixedItemsUi.dialog.category")}</FormLabel>
                     <FormControl>
-                      <Input
-                        type="text"
-                        inputMode="decimal"
-                        autoComplete="off"
-                        placeholder="0.00"
-                        value={amountText}
-                        onChange={(event) => updateAmount(direction, event.target.value)}
+                      <CreatableCategorySelect
+                        value={field.value ?? NO_CATEGORY}
+                        onChange={(value) => field.onChange(value === NO_CATEGORY ? null : value)}
+                        extraOptions={[{ value: NO_CATEGORY, label: t("fixedItemsUi.dialog.noCategory") }]}
                       />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
+              <FixedItemRuleSection control={form.control} tester={tester} onToggle={toggleRule} />
             </div>
-            <ScheduleFields control={form.control} onPeriodicityChange={changePeriodicity} />
-            <FormField
-              control={form.control}
-              name="categoryId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("fixedItemsUi.dialog.category")}</FormLabel>
-                  <FormControl>
-                    <CreatableCategorySelect
-                      value={field.value ?? NO_CATEGORY}
-                      onChange={(value) => field.onChange(value === NO_CATEGORY ? null : value)}
-                      extraOptions={[{ value: NO_CATEGORY, label: t("fixedItemsUi.dialog.noCategory") }]}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FixedItemRuleSection control={form.control} tester={tester} onToggle={toggleRule} />
-            <DialogFooter className="sticky bottom-0 -mx-6 -mb-6 border-t bg-background px-6 py-4">
+            <DialogFooter className="border-t px-6 py-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">
                   {t("common.cancel")}

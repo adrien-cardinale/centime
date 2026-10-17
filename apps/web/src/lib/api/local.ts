@@ -19,6 +19,7 @@ import {
   accountInputSchema,
   apiSurface,
   applyRulesInputSchema,
+  autoRuleInputSchema,
   bulkTransactionUpdateSchema,
   type ImportSource,
   ServiceError,
@@ -247,6 +248,7 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       remove: (id) => call((db) => surface.rules.remove(db, { id: parseInput(idSchema, id) })),
       test: (matcher) => call((db) => surface.rules.test(db, parseInput(ruleMatcherSchema, matcher))),
       apply: (scope) => call((db) => surface.rules.apply(db, parseInput(applyRulesInputSchema, { scope }))),
+      autoCreate: (input) => call((db) => surface.rules.autoCreate(db, parseInput(autoRuleInputSchema, input))),
     },
     budgets: {
       list: () => call((db) => surface.budgets.list(db)),

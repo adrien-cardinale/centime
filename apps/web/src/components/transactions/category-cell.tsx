@@ -6,6 +6,7 @@ import { CategoryBadge } from "@/components/categories/category-badge"
 import { ColorDot } from "@/components/categories/color-dot"
 import { Badge } from "@/components/ui/badge"
 import { CategoryDialog } from "@/components/categories/category-dialog"
+import { useAutoRules } from "@/hooks/use-auto-rules"
 import { useUpdateTransaction } from "@/hooks/use-transaction-updates"
 import type { TransactionItem } from "@/lib/api"
 import { CategoryCommand } from "./category-command"
@@ -31,6 +32,7 @@ function CategoryChooser({ transaction, onCreateRule }: CategoryChooserProps) {
   const [open, setOpen] = useState(false)
   const [newName, setNewName] = useState<string | null>(null)
   const update = useUpdateTransaction()
+  const createAutoRules = useAutoRules()
 
   const offerRule = (categoryId: string) =>
     toast(t("transactionsPage.category.changed"), {
@@ -41,13 +43,18 @@ function CategoryChooser({ transaction, onCreateRule }: CategoryChooserProps) {
       },
     })
 
-  const choose = (categoryId: string | null) => {
+  const learnFrom = async (categoryId: string) => {
+    if (!(await createAutoRules([transaction.id]))) offerRule(categoryId)
+  }
+
+  const choose = async (categoryId: string | null) => {
     setOpen(false)
     if (categoryId === transaction.categoryId) return
-    update.mutate(
-      { id: transaction.id, changes: { categoryId } },
-      { onSuccess: () => categoryId && offerRule(categoryId) },
+    const succeeded = await update.mutateAsync({ id: transaction.id, changes: { categoryId } }).then(
+      () => true,
+      () => false,
     )
+    if (succeeded && categoryId !== null) await learnFrom(categoryId)
   }
 
   const startCreating = (name: string) => {

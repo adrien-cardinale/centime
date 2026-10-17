@@ -1,5 +1,6 @@
 export * from "./accounts"
 export * from "./api-surface"
+export * from "./auto-rules"
 export * from "./budgets"
 export * from "./categories"
 export * from "./categorize"

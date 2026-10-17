@@ -11,7 +11,7 @@ import type {
   ThemeInput,
   TransactionSplitInput,
 } from "@centime/core"
-import type { accountInputSchema, apiSurface, applyRulesInputSchema } from "@centime/services"
+import type { AutoRuleInput, accountInputSchema, apiSurface, applyRulesInputSchema } from "@centime/services"
 import type { z } from "zod"
 import type { TransactionFilters, TransactionPageFilters } from "./filters"
 import type { ImportUpload, ReceiptCandidateOptions, ReceiptFileUpload, TransactionChanges } from "./inputs"
@@ -80,6 +80,7 @@ export type Api = {
     remove(id: string): Out<Surface["rules"]["remove"]>
     test(matcher: RuleMatcherInput): Out<Surface["rules"]["test"]>
     apply(scope: ApplyScopeInput): Out<Surface["rules"]["apply"]>
+    autoCreate(input: AutoRuleInput): Out<Surface["rules"]["autoCreate"]>
   }
   budgets: {
     list(): Out<Surface["budgets"]["list"]>
@@ -113,6 +114,7 @@ export type Rule = Result<Api["rules"]["list"]>[number]
 export type RuleTestResult = Result<Api["rules"]["test"]>
 export type ApplyRulesScope = Parameters<Api["rules"]["apply"]>[0]
 export type ApplyRulesResult = Result<Api["rules"]["apply"]>
+export type AutoRuleResult = Result<Api["rules"]["autoCreate"]>
 
 export type Budget = Result<Api["budgets"]["list"]>[number]
 export type BudgetsOverview = Result<Api["budgets"]["overview"]>

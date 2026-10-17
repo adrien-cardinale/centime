@@ -140,6 +140,13 @@
       "deleteConfirm": "Supprimer définitivement",
       "deleteFailed": "Suppression du compte impossible"
     },
+    "autoRules": {
+      "title": "Règles automatiques",
+      "description_one": "Crée une règle quand vous classez manuellement {{count}} transaction similaire dans la même catégorie.",
+      "description_other": "Crée une règle quand vous classez manuellement {{count}} transactions similaires dans la même catégorie.",
+      "enable": "Créer les règles automatiquement",
+      "saveFailed": "Enregistrement du réglage impossible"
+    },
     "ai": {
       "title": "Lecture des tickets par IA",
       "description": "Option : Claude, l'IA d'Anthropic, lit la photo du ticket et remplit le formulaire.",
@@ -878,6 +885,11 @@
     "moreActions": "Plus d'actions"
   },
   "rules": {
+    "auto": {
+      "created_one": "Règle créée : {{pattern}}",
+      "created_other": "{{count}} règles créées : {{pattern}}",
+      "failed": "Création automatique de règle impossible"
+    },
     "empty": "Aucune règle pour cette catégorie.",
     "add": "Ajouter une règle",
     "priorityValue": "· priorité {{priority}}",

@@ -140,6 +140,13 @@
       "deleteConfirm": "Delete for good",
       "deleteFailed": "Unable to delete the account"
     },
+    "autoRules": {
+      "title": "Automatic rules",
+      "description_one": "Creates a rule when you manually file {{count}} similar transaction under the same category.",
+      "description_other": "Creates a rule when you manually file {{count}} similar transactions under the same category.",
+      "enable": "Create rules automatically",
+      "saveFailed": "Unable to save the setting"
+    },
     "ai": {
       "title": "AI receipt reading",
       "description": "Option: Claude, Anthropic's AI, reads the receipt photo and fills in the form.",
@@ -878,6 +885,11 @@
     "moreActions": "More actions"
   },
   "rules": {
+    "auto": {
+      "created_one": "Rule created: {{pattern}}",
+      "created_other": "{{count}} rules created: {{pattern}}",
+      "failed": "Unable to create a rule automatically"
+    },
     "empty": "No rules for this category.",
     "add": "Add a rule",
     "priorityValue": "· priority {{priority}}",

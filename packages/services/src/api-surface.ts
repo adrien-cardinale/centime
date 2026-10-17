@@ -2,6 +2,7 @@ import { createAccount, listAccounts } from "./accounts"
 import { createBudget, deleteBudget, getBudgetsOverview, listBudgets, updateBudget } from "./budgets"
 import { createCategory, deleteCategory, listCategories, updateCategory } from "./categories"
 import { createCsvProfile, deleteCsvProfile, listCsvProfiles, updateCsvProfile } from "./csv-profiles"
+import { createRulesFromRepeatedCategorization } from "./auto-rules"
 import { getDashboard } from "./dashboard"
 import { commitImport, deleteImport, listImports, previewImport } from "./imports"
 import {
@@ -81,6 +82,7 @@ export const apiSurface = {
     remove: deleteRule,
     test: testRule,
     apply: applyRules,
+    autoCreate: createRulesFromRepeatedCategorization,
   },
   budgets: {
     list: listBudgets,

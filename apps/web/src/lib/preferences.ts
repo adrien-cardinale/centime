@@ -4,6 +4,7 @@ import { and, eq, isNull } from "@centime/db/orm"
 // Un id fixe par clé : tous les appareils écrivent la même ligne, la plus récente gagne à la synchronisation.
 const PREFERENCE_IDS = {
   "receipts.ai": "64a2e8cc-ced4-4753-bacf-34e21c2e3d97",
+  "rules.auto": "11923d92-f69c-4987-bed7-7e932e47c729",
 } as const
 
 export type PreferenceKey = keyof typeof PREFERENCE_IDS

@@ -1,0 +1,8 @@
+*.md
+*.html
+*.yml
+bun.lock
+apps/web/src/routeTree.gen.ts
+apps/desktop/src-tauri/gen
+apps/desktop/src-tauri/target
+packages/db/drizzle

@@ -1,8 +1,8 @@
-import { type CsvColumnChoice, type CsvProfileInput, listCsvColumns } from "@centime/core"
+import { type CsvColumnChoice, type CsvProfileInput, detectCsvFormat, listCsvColumns } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import { type ReactNode, useState } from "react"
-import { useForm, useWatch } from "react-hook-form"
+import { type ReactNode, useEffect, useState } from "react"
+import { type UseFormReturn, useForm, useWatch } from "react-hook-form"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
@@ -60,6 +60,7 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
     resolver: zodResolver(csvProfileFormSchema),
     defaultValues: initialValues,
   })
+  useDetectedFormat(form, open && !profile ? sourceFile : undefined)
 
   const save = useMutation({
     mutationFn: (input: CsvProfileInput) => saveProfile(profile, input),
@@ -105,6 +106,19 @@ export function CsvProfileDialog({ profile, trigger, sourceFile, onSaved }: CsvP
       </DialogContent>
     </Dialog>
   )
+}
+
+function useDetectedFormat(
+  form: UseFormReturn<CsvProfileFormValues, unknown, CsvProfileInput>,
+  file: File | undefined,
+) {
+  const { data: bytes } = useQuery(csvSampleQuery(file))
+  useEffect(() => {
+    if (!file || !bytes) return
+    const { encoding, delimiter } = detectCsvFormat(bytes)
+    if (!form.getFieldState("encoding").isDirty) form.setValue("encoding", encoding)
+    if (!form.getFieldState("delimiter").isDirty) form.setValue("delimiter", delimiter)
+  }, [form, file, bytes])
 }
 
 function useFileColumns(control: CsvProfileControl, file: File | undefined): CsvColumnChoice[] {

@@ -36,11 +36,14 @@ function DashboardPage() {
   const { date = todayIso() } = Route.useSearch()
   const navigate = Route.useNavigate()
   const { data, error } = useQuery(dashboardQuery(date))
-  const changeDate = (next: string) => void navigate({ search: { date: next }, replace: true })
+  const changeDate = (next: string) => void navigate({ search: { date: next }, replace: true, resetScroll: false })
 
   return (
     <div className="space-y-6">
-      <PageHeader title={t("nav.dashboard")} actions={<PeriodNavigator date={date} onChange={changeDate} />} />
+      <PageHeader title={t("nav.dashboard")} />
+      <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-[5] -mx-4 -mt-2 border-b bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6">
+        <PeriodNavigator date={date} onChange={changeDate} />
+      </div>
       {error && <p className="text-sm text-destructive">{error.message}</p>}
       {data ? <DashboardContent overview={data} /> : !error && <DashboardSkeleton />}
     </div>

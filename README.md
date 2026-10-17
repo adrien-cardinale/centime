@@ -16,7 +16,7 @@ Personal, single-user budget management app. Data is end-to-end encrypted: the s
 - **Receipts**: photograph till receipts (or attach a PDF), enter the merchant, total and lines, link them to a transaction with suggested matches, and split the transaction by category from the receipt lines. Text is read on the device; an optional, off-by-default AI reading sends the photo to Anthropic with your own API key. Images are encrypted and stored on the device.
 - **Budgets**: one budget per category, of two kinds. An envelope caps spending, with balance carry-over, projection at the current pace and history. An income sets the amount a category should receive per period (monthly, quarterly, yearly).
 - **Month plan**: all budgets on a single page, grouped by theme, with the remainder of the month (income − envelopes).
-- **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets, due dates and latest transactions.
+- **Dashboard**: bank balance, spending, income and net for the month compared with the previous month, points of attention, 12-month income and spending, spending by category, balance trend, budgets and latest transactions.
 - **Updates**: Settings shows the installed version, then installs the new release (desktop) or downloads the APK (Android).
 - **Export**: CSV export (`;` separator, UTF-8 with BOM) of transactions, one row per part for split transactions, following the filters of the Transactions page (saved in the app's Download folder on Android).
 

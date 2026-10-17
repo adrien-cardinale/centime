@@ -4,6 +4,24 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.6.0] - 2026-10-17
+
+**Update every device together.** The synchronized data no longer contains fixed items, so an older version cannot sync with this one.
+
+### Added
+
+- Import: the CSV profile dialog shows each column of the file with its first data row, so mapping columns no longer means guessing from the header.
+- Import: creating a CSV profile from a file detects its encoding and delimiter.
+
+### Changed
+
+- Budgets: each category now holds at most one budget, of two kinds. An **envelope** caps spending; an **income** sets the amount the category should receive per period (monthly, quarterly, yearly). Filing a transaction under its category is all it takes.
+- Budgets: the **Budget** page shows income and envelopes together, with a single **Add** button for both kinds. The remainder of the month is now income − envelopes.
+
+### Removed
+
+- Fixed items are gone. On update, each fixed item gets its own category, its linked transactions are filed under it, fixed incomes become income budgets and fixed expenses become envelopes. Due dates, the upcoming card on the dashboard, the overdue alert and the fixed item filter on **Transactions** are removed with them.
+
 ## [0.5.3] - 2026-10-17
 
 ### Fixed

@@ -9,7 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import type { CategoryBreakdownEntry } from "@/lib/api"
 import { CATEGORY_LABEL_MAX_LENGTH, CHART_HEIGHT_CLASS, money, truncateLabel, wholeMoney } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
-import { entryKey, isNamedEntry, type MonthRange, transactionsSearchOf } from "./category-breakdown"
+import { entryColor, entryKey, type MonthRange, transactionsSearchOf } from "./category-breakdown"
 import { CategoryBreakdownList } from "./category-breakdown-list"
 import { ChartCard } from "./chart-card"
 
@@ -18,10 +18,6 @@ const VALUE_LABEL_WIDTH = 76
 
 function chartConfigOf(label: string) {
   return { amount: { label, color: "var(--chart-neutral)" } } satisfies ChartConfig
-}
-
-function barFill(entry: CategoryBreakdownEntry): string {
-  return isNamedEntry(entry) ? "var(--color-amount)" : "var(--chart-muted)"
 }
 
 type CategoryBreakdownChartProps = { entries: CategoryBreakdownEntry[]; month: MonthRange }
@@ -50,7 +46,7 @@ export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChar
 function BreakdownBarChart({ entries, month }: CategoryBreakdownChartProps) {
   const { t } = useTranslation()
   const navigate = useNavigate()
-  const data = entries.map((entry) => ({ ...entry, fill: barFill(entry) }))
+  const data = entries.map((entry) => ({ ...entry, fill: entryColor(entry) }))
   const openTransactions = (index: number) => {
     const entry = entries[index]
     const search = entry ? transactionsSearchOf(entry, month) : null

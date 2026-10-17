@@ -14,8 +14,13 @@ export function transactionsSearchOf(entry: CategoryBreakdownEntry, month: Month
   return null
 }
 
-export function isNamedEntry(entry: CategoryBreakdownEntry): boolean {
+function isNamedEntry(entry: CategoryBreakdownEntry): boolean {
   return entry.kind === "category" || entry.kind === "theme"
+}
+
+export function entryColor(entry: CategoryBreakdownEntry): string {
+  if (!isNamedEntry(entry)) return "var(--chart-muted)"
+  return entry.color ?? "var(--chart-neutral)"
 }
 
 export function entryKey(entry: CategoryBreakdownEntry): string {

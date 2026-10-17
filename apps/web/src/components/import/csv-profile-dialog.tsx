@@ -142,10 +142,30 @@ function GeneralSection({ control }: { control: CsvProfileControl }) {
   return (
     <Section title={t("csvProfiles.sections.general")}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <TextField control={control} name="name" label={t("csvProfiles.general.name")} placeholder={t("csvProfiles.general.namePlaceholder")} />
-        <SelectField control={control} name="accountKind" label={t("csvProfiles.general.accountKind")} options={accountKindLabels} />
-        <SelectField control={control} name="encoding" label={t("csvProfiles.general.encoding")} options={csvEncodingLabels} />
-        <SelectField control={control} name="delimiter" label={t("csvProfiles.general.delimiter")} options={csvDelimiterLabels} />
+        <TextField
+          control={control}
+          name="name"
+          label={t("csvProfiles.general.name")}
+          placeholder={t("csvProfiles.general.namePlaceholder")}
+        />
+        <SelectField
+          control={control}
+          name="accountKind"
+          label={t("csvProfiles.general.accountKind")}
+          options={accountKindLabels}
+        />
+        <SelectField
+          control={control}
+          name="encoding"
+          label={t("csvProfiles.general.encoding")}
+          options={csvEncodingLabels}
+        />
+        <SelectField
+          control={control}
+          name="delimiter"
+          label={t("csvProfiles.general.delimiter")}
+          options={csvDelimiterLabels}
+        />
         <TextField
           control={control}
           name="dateFormat"
@@ -159,7 +179,12 @@ function GeneralSection({ control }: { control: CsvProfileControl }) {
           label={t("csvProfiles.general.decimalSeparator")}
           options={decimalSeparatorLabels}
         />
-        <TextField control={control} name="defaultCurrency" label={t("csvProfiles.general.defaultCurrency")} placeholder="CHF" />
+        <TextField
+          control={control}
+          name="defaultCurrency"
+          label={t("csvProfiles.general.defaultCurrency")}
+          placeholder="CHF"
+        />
         <HasHeaderField control={control} />
       </div>
     </Section>
@@ -191,20 +216,60 @@ function ColumnsSection({ control, columns }: ColumnsProps) {
   return (
     <Section title={t("csvProfiles.sections.columns")}>
       <p className="text-sm text-muted-foreground">
-        {columns.length > 0
-          ? t("csvProfiles.columns.fromFile")
-          : t("csvProfiles.columns.manual")}
+        {columns.length > 0 ? t("csvProfiles.columns.fromFile") : t("csvProfiles.columns.manual")}
       </p>
       <div className="grid gap-4 sm:grid-cols-2">
         <ColumnField control={control} columns={columns} name="columns.date" label={t("csvProfiles.columns.date")} />
         <ColumnField control={control} columns={columns} name="columns.label" label={t("csvProfiles.columns.label")} />
-        <ColumnField control={control} columns={columns} name="columns.valueDate" label={t("csvProfiles.columns.valueDate")} optional />
-        <ColumnField control={control} columns={columns} name="columns.merchant" label={t("csvProfiles.columns.merchant")} optional />
-        <ColumnField control={control} columns={columns} name="columns.account" label={t("csvProfiles.columns.account")} optional />
-        <ColumnField control={control} columns={columns} name="columns.currency" label={t("csvProfiles.columns.currency")} optional />
-        <ColumnField control={control} columns={columns} name="columns.balance" label={t("csvProfiles.columns.balance")} optional />
-        <ColumnField control={control} columns={columns} name="columns.category" label={t("csvProfiles.columns.category")} optional />
-        <ColumnField control={control} columns={columns} name="columns.status" label={t("csvProfiles.columns.status")} optional />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.valueDate"
+          label={t("csvProfiles.columns.valueDate")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.merchant"
+          label={t("csvProfiles.columns.merchant")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.account"
+          label={t("csvProfiles.columns.account")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.currency"
+          label={t("csvProfiles.columns.currency")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.balance"
+          label={t("csvProfiles.columns.balance")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.category"
+          label={t("csvProfiles.columns.category")}
+          optional
+        />
+        <ColumnField
+          control={control}
+          columns={columns}
+          name="columns.status"
+          label={t("csvProfiles.columns.status")}
+          optional
+        />
       </div>
     </Section>
   )
@@ -217,11 +282,21 @@ function AmountSection({ control, columns }: ColumnsProps) {
   return (
     <Section title={t("csvProfiles.sections.amount")}>
       <div className="grid gap-4 sm:grid-cols-2">
-        <SelectField control={control} name="amount.mode" label={t("csvProfiles.amount.mode")} options={amountModeLabels} />
+        <SelectField
+          control={control}
+          name="amount.mode"
+          label={t("csvProfiles.amount.mode")}
+          options={amountModeLabels}
+        />
         <ColumnField control={control} columns={columns} name="amount.column" label={t("csvProfiles.amount.column")} />
         {mode === "debitCredit" && (
           <>
-            <ColumnField control={control} columns={columns} name="amount.indicatorColumn" label={t("csvProfiles.amount.indicatorColumn")} />
+            <ColumnField
+              control={control}
+              columns={columns}
+              name="amount.indicatorColumn"
+              label={t("csvProfiles.amount.indicatorColumn")}
+            />
             <TextField
               control={control}
               name="amount.debitValue"

@@ -163,5 +163,7 @@ function ImagePreview({ image }: { image: PreparedReceiptImage }) {
     )
   }
   if (url === null) return <Skeleton className="h-64 w-full" />
-  return <img src={url} alt={t("receipts.image.alt")} className="max-h-[50dvh] w-full rounded-md bg-muted object-contain" />
+  return (
+    <img src={url} alt={t("receipts.image.alt")} className="max-h-[50dvh] w-full rounded-md bg-muted object-contain" />
+  )
 }

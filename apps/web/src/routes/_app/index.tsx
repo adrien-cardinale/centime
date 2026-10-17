@@ -78,9 +78,7 @@ function EmptyDashboard() {
         <Upload className="size-8 text-muted-foreground" />
         <div className="space-y-1">
           <p className="font-medium">{t("dashboardPage.emptyTitle")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("dashboardPage.emptyDescription")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("dashboardPage.emptyDescription")}</p>
         </div>
         <Button asChild>
           <Link to="/import">{t("dashboardPage.importStatement")}</Link>

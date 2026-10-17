@@ -84,9 +84,7 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
         <Alert>
           <KeyRound />
           <AlertTitle>{t("boot.warningTitle")}</AlertTitle>
-          <AlertDescription>
-            {t("boot.warningDescription")}
-          </AlertDescription>
+          <AlertDescription>{t("boot.warningDescription")}</AlertDescription>
         </Alert>
         <div className="space-y-2">
           <p className="rounded-md border bg-muted/40 p-3 font-mono text-sm leading-relaxed break-words select-all">
@@ -107,7 +105,11 @@ function CreateKeyStep({ onDone, onBack }: StepProps) {
         <Button variant="outline" className={STEP_BUTTON_CLASS} onClick={onBack} disabled={pending}>
           {t("boot.back")}
         </Button>
-        <Button className={STEP_BUTTON_CLASS} onClick={() => void submit()} disabled={!saved || phrase === "" || pending}>
+        <Button
+          className={STEP_BUTTON_CLASS}
+          onClick={() => void submit()}
+          disabled={!saved || phrase === "" || pending}
+        >
           <Check />
           {t("boot.continue")}
         </Button>
@@ -203,9 +205,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle className="text-xl">centime</CardTitle>
-          <CardDescription>
-            {t("boot.intro")}
-          </CardDescription>
+          <CardDescription>{t("boot.intro")}</CardDescription>
         </CardHeader>
         <OnboardingSteps onDone={onDone} />
       </Card>

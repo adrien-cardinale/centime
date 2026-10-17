@@ -114,10 +114,7 @@ function fixDigitConfusions(value: string): string {
 }
 
 function foldText(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .toUpperCase()
+  return value.normalize("NFD").replace(/[̀-ͯ]/g, "").toUpperCase()
 }
 
 function findAmounts(line: string): AmountMatch[] {
@@ -310,7 +307,10 @@ function isMerchantCandidate(row: ReceiptRow): boolean {
 }
 
 function cleanMerchantName(line: string): string {
-  return line.replace(STORE_NUMBER_SUFFIX, "").replace(EDGE_PUNCTUATION, "").replace(/^[^\p{L}\d]+|[^\p{L}\d'’.)]+$/gu, "")
+  return line
+    .replace(STORE_NUMBER_SUFFIX, "")
+    .replace(EDGE_PUNCTUATION, "")
+    .replace(/^[^\p{L}\d]+|[^\p{L}\d'’.)]+$/gu, "")
 }
 
 type DateCandidate = { iso: string; hasFullYear: boolean }
@@ -359,7 +359,6 @@ function expandYear(year: string): number {
 
 function toDateCandidate(year: number, month: number, day: number, hasFullYear: boolean): DateCandidate | null {
   const date = new Date(Date.UTC(year, month - 1, day))
-  const isRealDate =
-    date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
+  const isRealDate = date.getUTCFullYear() === year && date.getUTCMonth() === month - 1 && date.getUTCDate() === day
   return isRealDate ? { iso: formatIsoDate(year, month, day), hasFullYear } : null
 }

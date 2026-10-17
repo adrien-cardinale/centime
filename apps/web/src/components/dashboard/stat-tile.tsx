@@ -17,7 +17,9 @@ export function StatTile({ label, value, negative = false, footer }: StatTilePro
     <Card className="min-w-0 gap-1 py-3 sm:py-4">
       <CardHeader className="gap-1 px-3 sm:px-4">
         <CardDescription className="truncate">{label}</CardDescription>
-        <CardTitle className={cn("flex items-center gap-2 text-xl tabular-nums sm:text-2xl", negative && "text-destructive")}>
+        <CardTitle
+          className={cn("flex items-center gap-2 text-xl tabular-nums sm:text-2xl", negative && "text-destructive")}
+        >
           <span className="truncate">{value}</span>
           {negative && <NegativeMarker />}
         </CardTitle>
@@ -32,7 +34,12 @@ export function MonthDelta({ current, previous }: { current: number; previous: n
   const change = relativeChange(current, previous)
   if (change === null) return <span>{t("dashboardPage.delta.none")}</span>
   const Icon = change > 0 ? ArrowUp : change < 0 ? ArrowDown : ArrowRight
-  const direction = change > 0 ? t("dashboardPage.delta.up") : change < 0 ? t("dashboardPage.delta.down") : t("dashboardPage.delta.stable")
+  const direction =
+    change > 0
+      ? t("dashboardPage.delta.up")
+      : change < 0
+        ? t("dashboardPage.delta.down")
+        : t("dashboardPage.delta.stable")
   return (
     <span className="inline-flex items-center gap-1 tabular-nums">
       <Icon className="size-3" aria-hidden />
@@ -45,7 +52,11 @@ export function MonthDelta({ current, previous }: { current: number; previous: n
 function NegativeMarker() {
   const { t } = useTranslation()
   return (
-    <span role="img" aria-label={t("dashboardPage.delta.negativeBalance")} className="inline-flex shrink-0 items-center">
+    <span
+      role="img"
+      aria-label={t("dashboardPage.delta.negativeBalance")}
+      className="inline-flex shrink-0 items-center"
+    >
       <span className="size-2 rounded-full bg-destructive/70" />
     </span>
   )

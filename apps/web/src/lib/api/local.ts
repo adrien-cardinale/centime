@@ -224,7 +224,9 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       list: () => call((db) => surface.themes.list(db)),
       create: (input) => call((db) => surface.themes.create(db, parseInput(themeInputSchema, input))),
       update: (id, input) =>
-        call((db) => surface.themes.update(db, { ...parseInput(themeInputSchema, input), id: parseInput(idSchema, id) })),
+        call((db) =>
+          surface.themes.update(db, { ...parseInput(themeInputSchema, input), id: parseInput(idSchema, id) }),
+        ),
       remove: (id) => call((db) => surface.themes.remove(db, { id: parseInput(idSchema, id) })),
     },
     categories: {
@@ -240,7 +242,9 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       list: () => call((db) => surface.rules.list(db)),
       create: (input) => call((db) => surface.rules.create(db, parseInput(rulePayloadSchema, input))),
       update: (id, input) =>
-        call((db) => surface.rules.update(db, { ...parseInput(rulePayloadSchema, input), id: parseInput(idSchema, id) })),
+        call((db) =>
+          surface.rules.update(db, { ...parseInput(rulePayloadSchema, input), id: parseInput(idSchema, id) }),
+        ),
       remove: (id) => call((db) => surface.rules.remove(db, { id: parseInput(idSchema, id) })),
       test: (matcher) => call((db) => surface.rules.test(db, parseInput(ruleMatcherSchema, matcher))),
       apply: (scope) => call((db) => surface.rules.apply(db, parseInput(applyRulesInputSchema, { scope }))),
@@ -255,7 +259,10 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
       remove: (id) => call((db) => surface.fixedItems.remove(db, { id: parseInput(idSchema, id) })),
       overview: (from, to) =>
         call((db) =>
-          surface.fixedItems.overview(db, { from: parseInput(optionalIsoDate, from), to: parseInput(optionalIsoDate, to) }),
+          surface.fixedItems.overview(db, {
+            from: parseInput(optionalIsoDate, from),
+            to: parseInput(optionalIsoDate, to),
+          }),
         ),
       transactions: (id) => call((db) => surface.fixedItems.transactions(db, { id: parseInput(idSchema, id) })),
     },

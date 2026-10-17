@@ -54,7 +54,10 @@ async function loadMonthTotals(db: DbExecutor, from: IsoDate, to: IsoDate): Prom
     .where(countedCondition(from, to))
     .groupBy(monthKey)
   return new Map(
-    rows.map((row) => [row.month, { income: roundCents(Number(row.income)), expenses: roundCents(Number(row.expenses)) }]),
+    rows.map((row) => [
+      row.month,
+      { income: roundCents(Number(row.income)), expenses: roundCents(Number(row.expenses)) },
+    ]),
   )
 }
 
@@ -145,7 +148,14 @@ function toBreakdownEntry(key: string | null, amount: number, labels: Map<string
   const [kind, id = ""] = key === null ? [null] : key.split(":")
   const label = labels.get(key ?? "")
   if (!label || (kind !== "theme" && kind !== "category")) {
-    return { themeId: null, categoryId: null, name: UNCATEGORIZED_LABEL, color: null, amount: rounded, kind: "uncategorized" }
+    return {
+      themeId: null,
+      categoryId: null,
+      name: UNCATEGORIZED_LABEL,
+      color: null,
+      amount: rounded,
+      kind: "uncategorized",
+    }
   }
   return {
     themeId: kind === "theme" ? id : null,
@@ -158,7 +168,10 @@ function toBreakdownEntry(key: string | null, amount: number, labels: Map<string
 }
 
 function loadThemes(db: DbExecutor) {
-  return db.select({ id: themes.id, name: themes.name, color: themes.color }).from(themes).where(isNull(themes.deletedAt))
+  return db
+    .select({ id: themes.id, name: themes.name, color: themes.color })
+    .from(themes)
+    .where(isNull(themes.deletedAt))
 }
 
 export async function categoryBreakdown(db: DbExecutor, month: PeriodRange): Promise<BreakdownEntry[]> {

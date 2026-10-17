@@ -1,4 +1,13 @@
-import { addDays, addMonths, differenceInCalendarDays, format, lastDayOfMonth, parseISO, setDate, startOfMonth } from "date-fns"
+import {
+  addDays,
+  addMonths,
+  differenceInCalendarDays,
+  format,
+  lastDayOfMonth,
+  parseISO,
+  setDate,
+  startOfMonth,
+} from "date-fns"
 import type { FixedItem, IsoDate, Periodicity } from "./types"
 
 export type FixedItemInput = Pick<

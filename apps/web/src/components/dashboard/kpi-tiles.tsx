@@ -12,8 +12,16 @@ export function KpiTiles({ kpis }: { kpis: DashboardKpis }) {
         value={kpis.bankBalance === null ? "—" : money(kpis.bankBalance)}
         footer={kpis.bankBalance === null ? t("dashboardPage.kpi.noBalance") : t("dashboardPage.kpi.lastKnownBalance")}
       />
-      <StatTile label={t("dashboardPage.kpi.expenses")} value={money(kpis.expenses.current)} footer={<MonthDelta {...kpis.expenses} />} />
-      <StatTile label={t("dashboardPage.kpi.income")} value={money(kpis.income.current)} footer={<MonthDelta {...kpis.income} />} />
+      <StatTile
+        label={t("dashboardPage.kpi.expenses")}
+        value={money(kpis.expenses.current)}
+        footer={<MonthDelta {...kpis.expenses} />}
+      />
+      <StatTile
+        label={t("dashboardPage.kpi.income")}
+        value={money(kpis.income.current)}
+        footer={<MonthDelta {...kpis.income} />}
+      />
       <StatTile
         label={t("dashboardPage.kpi.net")}
         value={money(kpis.net.current)}

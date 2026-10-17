@@ -107,7 +107,10 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
             <FormItem>
               <FormLabel>{t("transactionsPage.create.account")}</FormLabel>
               <FormControl>
-                <AccountSelect value={field.value || undefined} onChange={(accountId) => field.onChange(accountId ?? "")} />
+                <AccountSelect
+                  value={field.value || undefined}
+                  onChange={(accountId) => field.onChange(accountId ?? "")}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -170,7 +173,11 @@ function CreateTransactionForm({ onCreated }: { onCreated: () => void }) {
             <FormItem>
               <FormLabel>{t("transactionsPage.create.merchant")}</FormLabel>
               <FormControl>
-                <Input placeholder={t("transactionsPage.create.merchantPlaceholder")} {...field} value={field.value ?? ""} />
+                <Input
+                  placeholder={t("transactionsPage.create.merchantPlaceholder")}
+                  {...field}
+                  value={field.value ?? ""}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

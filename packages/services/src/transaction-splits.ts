@@ -42,7 +42,11 @@ export async function loadTransactionSplits(
   return grouped
 }
 
-export async function discardSplits(db: DbExecutor, transactionIds: string[], clock: Clock = systemClock): Promise<void> {
+export async function discardSplits(
+  db: DbExecutor,
+  transactionIds: string[],
+  clock: Clock = systemClock,
+): Promise<void> {
   if (transactionIds.length === 0) return
   await db
     .update(transactionSplits)

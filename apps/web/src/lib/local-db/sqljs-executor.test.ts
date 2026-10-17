@@ -30,7 +30,12 @@ describe("sql.js executor", () => {
       currency: "CHF",
     })
     await expect(
-      apiSurface.accounts.create(db, { name: "Doublon", kind: "bank", identifier: account.identifier, currency: "CHF" }),
+      apiSurface.accounts.create(db, {
+        name: "Doublon",
+        kind: "bank",
+        identifier: account.identifier,
+        currency: "CHF",
+      }),
     ).rejects.toBeInstanceOf(ServiceError)
     await apiSurface.categories.create(db, { name: "Loisirs", color: "#c46a9e" })
 

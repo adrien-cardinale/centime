@@ -41,7 +41,12 @@ export function DeleteFixedItemButton({ item, trigger, onDeleted }: DeleteFixedI
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {trigger ?? (
-          <Button variant="ghost" size="icon" aria-label={t("fixedItemsUi.delete.label", { name: item.name })} disabled={remove.isPending}>
+          <Button
+            variant="ghost"
+            size="icon"
+            aria-label={t("fixedItemsUi.delete.label", { name: item.name })}
+            disabled={remove.isPending}
+          >
             <Trash2 />
           </Button>
         )}
@@ -49,9 +54,7 @@ export function DeleteFixedItemButton({ item, trigger, onDeleted }: DeleteFixedI
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("fixedItemsUi.delete.title", { name: item.name })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("fixedItemsUi.delete.description")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("fixedItemsUi.delete.description")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

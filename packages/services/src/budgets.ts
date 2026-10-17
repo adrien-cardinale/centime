@@ -246,7 +246,12 @@ function breakdownOf(members: CategoryNode[], rows: EligibleTransaction[], range
   const netSpent = (categoryId: string) =>
     roundCents(-booked.filter((row) => row.categoryId === categoryId).reduce((sum, row) => sum + row.amount, 0))
   return members
-    .map((node) => ({ categoryId: node.id, categoryName: node.name, categoryColor: node.color, spent: netSpent(node.id) }))
+    .map((node) => ({
+      categoryId: node.id,
+      categoryName: node.name,
+      categoryColor: node.color,
+      spent: netSpent(node.id),
+    }))
     .filter((entry) => entry.spent !== 0)
     .sort((left, right) => right.spent - left.spent)
 }
@@ -285,7 +290,11 @@ function overviewTotals(items: BudgetOverviewItem[]): Record<Periodicity, Budget
   }
 }
 
-function monthEnvelopes(plans: BudgetPlan[], grouped: Map<string, EligibleTransaction[]>, month: PeriodRange): PlanLine {
+function monthEnvelopes(
+  plans: BudgetPlan[],
+  grouped: Map<string, EligibleTransaction[]>,
+  month: PeriodRange,
+): PlanLine {
   const sum = (pick: (budget: BudgetEntry) => number) =>
     roundCents(plans.reduce((total, { budget }) => total + pick(budget), 0))
   return {

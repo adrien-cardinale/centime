@@ -15,9 +15,7 @@ export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) 
 
   return (
     <div className="space-y-3">
-      {fields.length === 0 && (
-        <p className="text-sm text-muted-foreground">{t("csvProfiles.statuses.empty")}</p>
-      )}
+      {fields.length === 0 && <p className="text-sm text-muted-foreground">{t("csvProfiles.statuses.empty")}</p>}
       {fields.map((entry, index) => (
         <div key={entry.id} className="grid grid-cols-[1fr_auto] items-start gap-2 sm:flex">
           <FormField
@@ -26,7 +24,11 @@ export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) 
             render={({ field }) => (
               <FormItem className="min-w-0 sm:flex-1">
                 <FormControl>
-                  <Input placeholder={t("csvProfiles.statuses.value")} aria-label={t("csvProfiles.statuses.value")} {...field} />
+                  <Input
+                    placeholder={t("csvProfiles.statuses.value")}
+                    aria-label={t("csvProfiles.statuses.value")}
+                    {...field}
+                  />
                 </FormControl>
               </FormItem>
             )}
@@ -53,7 +55,13 @@ export function CsvProfileStatuses({ control }: { control: CsvProfileControl }) 
               </FormItem>
             )}
           />
-          <Button type="button" variant="ghost" size="icon" aria-label={t("csvProfiles.statuses.remove")} onClick={() => remove(index)}>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label={t("csvProfiles.statuses.remove")}
+            onClick={() => remove(index)}
+          >
             <Trash2 />
           </Button>
         </div>

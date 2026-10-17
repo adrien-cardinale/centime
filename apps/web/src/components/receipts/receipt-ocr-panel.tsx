@@ -51,7 +51,12 @@ export function ReceiptOcrPanel({
   )
 }
 
-function RunningPanel({ label, cancelLabel, onCancel, children }: {
+function RunningPanel({
+  label,
+  cancelLabel,
+  onCancel,
+  children,
+}: {
   label: string
   cancelLabel: string
   onCancel: () => void
@@ -75,7 +80,11 @@ function OcrRunning({ progress, onCancel }: { progress: number; onCancel: () => 
   const { t } = useTranslation()
   const percent = Math.round(progress * 100)
   return (
-    <RunningPanel label={t("receipts.ocr.reading", { percent })} cancelLabel={t("receipts.ocr.cancel")} onCancel={onCancel}>
+    <RunningPanel
+      label={t("receipts.ocr.reading", { percent })}
+      cancelLabel={t("receipts.ocr.cancel")}
+      onCancel={onCancel}
+    >
       <Progress value={percent} aria-label={t("receipts.ocr.read")} />
     </RunningPanel>
   )

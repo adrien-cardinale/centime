@@ -5,7 +5,14 @@ import { beforeEach, describe, expect, it } from "bun:test"
 import { deriveVault, type Vault } from "../crypto/envelope"
 import { generateMasterKey } from "../crypto/master-key"
 import { applyConnectionPragmas, createSqlJsExecutor } from "../local-db/sqljs-executor"
-import { type BlobRow, type BlobStore, MAX_BLOB_BYTES, MAX_BLOB_TRANSFERS, planBlobSync, synchronizeBlobs } from "./blob-sync"
+import {
+  type BlobRow,
+  type BlobStore,
+  MAX_BLOB_BYTES,
+  MAX_BLOB_TRANSFERS,
+  planBlobSync,
+  synchronizeBlobs,
+} from "./blob-sync"
 import type { FetchLike, SyncConfig } from "./sync-client"
 
 const SERVER_URL = "https://centime.test"

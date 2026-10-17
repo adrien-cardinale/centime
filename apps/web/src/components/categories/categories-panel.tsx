@@ -15,12 +15,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ApplyRulesButton, ApplyRulesDialog } from "@/components/rules/apply-rules-button"
@@ -45,9 +40,7 @@ export function CategoriesPanel() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          {t("categories.intro")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("categories.intro")}</p>
         <CategoriesActions />
       </div>
       <Card className="py-0">
@@ -153,15 +146,7 @@ function OtherRules({ rules, categories }: { rules: Rule[]; categories: Category
   )
 }
 
-function CategoriesTable({
-  categories,
-  themes,
-  rules,
-}: {
-  categories: Category[]
-  themes: Theme[]
-  rules: Rule[]
-}) {
+function CategoriesTable({ categories, themes, rules }: { categories: Category[]; themes: Theme[]; rules: Rule[] }) {
   const { t } = useTranslation()
   const groups = groupCategoriesByTheme(categories, themes)
   const rulesByCategory = groupRulesByCategory(rules)
@@ -220,7 +205,11 @@ function CategoryGroupRows({ group, rulesByCategory, categoriesById }: CategoryG
               <ThemeDialog
                 theme={group.theme}
                 trigger={
-                  <Button variant="ghost" size="icon" aria-label={t("categories.editTheme", { name: group.theme.name })}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label={t("categories.editTheme", { name: group.theme.name })}
+                  >
                     <Pencil />
                   </Button>
                 }
@@ -255,48 +244,50 @@ function CategoryRows({
   const [open, setOpen] = useState(false)
   return (
     <>
-        <TableRow>
-          <TableCell className="w-full max-w-0 pl-4 font-medium sm:pl-8">
-            <button
-              type="button"
-              aria-expanded={open}
-              onClick={() => setOpen(!open)}
-              className="flex min-h-11 w-full items-center gap-2 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-            >
-              <ChevronRight className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")} />
-              <ColorDot color={category.color} className="size-3 shrink-0" />
-              <span className="min-w-0">
-                <span className="block truncate">{category.name}</span>
-                {rules.length > 0 && (
-                  <span className="block text-xs font-normal text-muted-foreground">
-                    {t("categories.ruleCount", { count: rules.length })}
-                  </span>
-                )}
-              </span>
-            </button>
-          </TableCell>
-          <TableCell className="text-right tabular-nums">{category.transactionCount}</TableCell>
-          <TableCell className="pr-6">
-            <div className="flex justify-end gap-1">
-              <CategoryDialog
-                category={category}
-                trigger={
-                  <Button variant="ghost" size="icon" aria-label={t("categories.edit", { name: category.name })}>
-                    <Pencil />
-                  </Button>
-                }
-              />
-              <DeleteCategoryButton category={category} />
-            </div>
+      <TableRow>
+        <TableCell className="w-full max-w-0 pl-4 font-medium sm:pl-8">
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen(!open)}
+            className="flex min-h-11 w-full items-center gap-2 rounded-sm text-left focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <ChevronRight
+              className={cn("size-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+            />
+            <ColorDot color={category.color} className="size-3 shrink-0" />
+            <span className="min-w-0">
+              <span className="block truncate">{category.name}</span>
+              {rules.length > 0 && (
+                <span className="block text-xs font-normal text-muted-foreground">
+                  {t("categories.ruleCount", { count: rules.length })}
+                </span>
+              )}
+            </span>
+          </button>
+        </TableCell>
+        <TableCell className="text-right tabular-nums">{category.transactionCount}</TableCell>
+        <TableCell className="pr-6">
+          <div className="flex justify-end gap-1">
+            <CategoryDialog
+              category={category}
+              trigger={
+                <Button variant="ghost" size="icon" aria-label={t("categories.edit", { name: category.name })}>
+                  <Pencil />
+                </Button>
+              }
+            />
+            <DeleteCategoryButton category={category} />
+          </div>
+        </TableCell>
+      </TableRow>
+      {open && (
+        <TableRow className="hover:bg-transparent">
+          <TableCell colSpan={3} className="pr-4 pl-4 whitespace-normal sm:pr-6 sm:pl-14">
+            <RuleList rules={rules} categoriesById={categoriesById} categoryId={category.id} />
           </TableCell>
         </TableRow>
-        {open && (
-          <TableRow className="hover:bg-transparent">
-            <TableCell colSpan={3} className="pr-4 pl-4 whitespace-normal sm:pr-6 sm:pl-14">
-              <RuleList rules={rules} categoriesById={categoriesById} categoryId={category.id} />
-            </TableCell>
-          </TableRow>
-        )}
+      )}
     </>
   )
 }

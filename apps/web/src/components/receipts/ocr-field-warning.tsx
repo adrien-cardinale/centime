@@ -20,7 +20,11 @@ export function OcrFieldWarning({ control, name, filled }: OcrFieldWarningProps)
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span className="inline-flex text-amber-600 dark:text-amber-500" tabIndex={0} aria-label={t("receipts.ocr.uncertain")}>
+          <span
+            className="inline-flex text-amber-600 dark:text-amber-500"
+            tabIndex={0}
+            aria-label={t("receipts.ocr.uncertain")}
+          >
             <TriangleAlert className="size-3.5" aria-hidden />
           </span>
         </TooltipTrigger>

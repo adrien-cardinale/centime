@@ -6,7 +6,10 @@ const result: ReceiptOcrResult = {
   merchant: "Migros",
   total: 12.5,
   receiptDate: "2026-10-01",
-  lines: [{ label: "Pain", amount: 2.5 }, { label: "Lait", amount: 10 }],
+  lines: [
+    { label: "Pain", amount: 2.5 },
+    { label: "Lait", amount: 10 },
+  ],
   confidence: { merchant: 0.9, total: 0.4, receiptDate: 0.8 },
 }
 

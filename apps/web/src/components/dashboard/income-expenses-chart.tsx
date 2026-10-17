@@ -32,10 +32,23 @@ export function IncomeExpensesChart({ series: fullSeries }: { series: MonthlyPoi
       title={t("dashboardPage.incomeExpenses.title", { count: series.length })}
       description={t("dashboardPage.incomeExpenses.description")}
       chart={
-        <ChartContainer config={chartConfigOf({ income: t("dashboardPage.table.income"), expenses: t("dashboardPage.table.expenses") })} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+        <ChartContainer
+          config={chartConfigOf({
+            income: t("dashboardPage.table.income"),
+            expenses: t("dashboardPage.table.expenses"),
+          })}
+          className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}
+        >
           <BarChart data={series} barGap={2} margin={{ top: 4, right: 0, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
-            <XAxis dataKey="month" tickFormatter={shortMonth} axisLine={false} tickLine={false} tickMargin={8} minTickGap={4} />
+            <XAxis
+              dataKey="month"
+              tickFormatter={shortMonth}
+              axisLine={false}
+              tickLine={false}
+              tickMargin={8}
+              minTickGap={4}
+            />
             <YAxis tickFormatter={compactAmount} axisLine={false} tickLine={false} width={44} />
             <ChartTooltip
               cursor={{ fill: "var(--muted)", opacity: 0.5 }}

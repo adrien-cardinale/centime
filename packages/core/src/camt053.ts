@@ -87,7 +87,8 @@ function readLabel(entry: unknown): string | null {
 
 function readAmount(entry: unknown): number {
   const amount = text(child(entry, "Amt"))
-  if (amount === null || !AMOUNT_PATTERN.test(amount)) throw new CamtEntryError(`Montant invalide : « ${amount ?? ""} »`)
+  if (amount === null || !AMOUNT_PATTERN.test(amount))
+    throw new CamtEntryError(`Montant invalide : « ${amount ?? ""} »`)
   const isDebit = text(child(entry, "CdtDbtInd")) === "DBIT"
   const isReversal = text(child(entry, "RvslInd")) === "true"
   return isDebit !== isReversal ? -Number(amount) : Number(amount)

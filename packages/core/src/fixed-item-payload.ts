@@ -30,13 +30,13 @@ export const fixedItemPayloadSchema = z
       .refine(Number.isFinite, "Montant attendu invalide")
       .refine((amount) => amount !== 0, "Le montant doit être différent de zéro"),
     periodicity: z.enum(PERIODICITIES),
-    dueDay: z
+    dueDay: z.number().int("Jour entier attendu").min(1, "Jour entre 1 et 31").max(31, "Jour entre 1 et 31").nullable(),
+    dueMonth: z
       .number()
-      .int("Jour entier attendu")
-      .min(1, "Jour entre 1 et 31")
-      .max(31, "Jour entre 1 et 31")
+      .int("Mois entier attendu")
+      .min(1, "Mois d'échéance invalide")
+      .max(12, "Mois d'échéance invalide")
       .nullable(),
-    dueMonth: z.number().int("Mois entier attendu").min(1, "Mois d'échéance invalide").max(12, "Mois d'échéance invalide").nullable(),
     categoryId: z.string().min(1).nullable(),
     startDate: isoDateSchema,
     endDate: isoDateSchema.nullable(),

@@ -93,7 +93,11 @@ async function applyChanges(db: Db, ids: string[], changes: TransactionChanges) 
       .set(toUpdate(changes))
       .where(and(inArray(transactions.id, ids), isNull(transactions.deletedAt)))
       .returning({ id: transactions.id })
-    if (dropsSplit(changes)) await discardSplits(tx, updated.map((row) => row.id))
+    if (dropsSplit(changes))
+      await discardSplits(
+        tx,
+        updated.map((row) => row.id),
+      )
     if (inheritedCategoryId !== null && changes.categoryId === undefined) {
       await inheritFixedItemCategory(tx, ids, inheritedCategoryId)
     }

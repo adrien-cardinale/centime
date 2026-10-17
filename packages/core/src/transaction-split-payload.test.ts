@@ -32,7 +32,10 @@ describe("transactionSplitSchema", () => {
   it("normalises an empty note to null", () => {
     const parsed = transactionSplitSchema.parse({
       transactionId: TRANSACTION_ID,
-      splits: [{ ...line, note: "  " }, { ...line, categoryId: null }],
+      splits: [
+        { ...line, note: "  " },
+        { ...line, categoryId: null },
+      ],
     })
     expect(parsed.splits.map((split) => split.note)).toEqual([null, null])
   })

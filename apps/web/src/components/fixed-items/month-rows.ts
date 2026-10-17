@@ -13,11 +13,19 @@ function byDueDate(left: MonthRow, right: MonthRow): number {
   return Number(right.occurrence !== undefined) - Number(left.occurrence !== undefined)
 }
 
-export function monthRows(items: FixedItem[], overviews: Map<string, FixedItemOverview>, month: PeriodRange): MonthRow[] {
+export function monthRows(
+  items: FixedItem[],
+  overviews: Map<string, FixedItemOverview>,
+  month: PeriodRange,
+): MonthRow[] {
   return items
     .map((item) => {
       const overview = overviews.get(item.id)
-      return { item, occurrence: occurrenceIn(overview?.occurrences ?? [], month), next: overview?.nextOccurrence ?? null }
+      return {
+        item,
+        occurrence: occurrenceIn(overview?.occurrences ?? [], month),
+        next: overview?.nextOccurrence ?? null,
+      }
     })
     .sort(byDueDate)
 }

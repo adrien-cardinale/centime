@@ -16,4 +16,3 @@ export function csvProfileFromRow(row: Pick<CsvProfileRow, "id" | "name" | "conf
   const parsed = csvProfileSchema.safeParse({ ...(typeof config === "object" ? config : {}), name: row.name })
   return parsed.success ? { ...parsed.data, id: row.id } : null
 }
-

@@ -62,12 +62,17 @@ function RuleItem({
   const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-center gap-2 rounded-md py-1 text-sm">
-      <span className="max-w-[60vw] font-mono text-sm break-all sm:max-w-72 sm:truncate sm:break-normal" title={rule.pattern}>
+      <span
+        className="max-w-[60vw] font-mono text-sm break-all sm:max-w-72 sm:truncate sm:break-normal"
+        title={rule.pattern}
+      >
         {rule.pattern}
       </span>
       <Badge variant="outline">{ruleMatchKindLabels[rule.matchKind]}</Badge>
       <span className="text-muted-foreground">{ruleFieldLabels[rule.field]}</span>
-      <span className="text-muted-foreground tabular-nums">{t("rules.priorityValue", { priority: rule.priority })}</span>
+      <span className="text-muted-foreground tabular-nums">
+        {t("rules.priorityValue", { priority: rule.priority })}
+      </span>
       {showTarget && <RuleTarget rule={rule} categoriesById={categoriesById} />}
       <div className="ml-auto flex gap-1">
         <RuleDialog
@@ -106,9 +111,7 @@ function DeleteRuleButton({ rule }: { rule: Rule }) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("rules.deleteTitle", { pattern: rule.pattern })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("rules.deleteDescription")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("rules.deleteDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

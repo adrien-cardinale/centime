@@ -44,7 +44,10 @@ async function readAlias(db: DbExecutor, id: string): Promise<string | null> {
 
 async function writeAlias(db: DbExecutor, loserId: string, winnerId: string): Promise<void> {
   const key = `${ALIAS_PREFIX}${loserId}`
-  await db.insert(settings).values({ key, value: winnerId }).onConflictDoUpdate({ target: settings.key, set: { value: winnerId } })
+  await db
+    .insert(settings)
+    .values({ key, value: winnerId })
+    .onConflictDoUpdate({ target: settings.key, set: { value: winnerId } })
 }
 
 async function reassignTransactions(db: DbExecutor, fromAccountId: string, toAccountId: string): Promise<void> {
@@ -56,10 +59,7 @@ async function reassignAccountReceipts(db: DbExecutor, fromAccountId: string, to
 }
 
 async function reassignTransactionReceipts(db: DbExecutor, fromTransactionId: string, toTransactionId: string) {
-  await db
-    .update(receipts)
-    .set({ transactionId: toTransactionId })
-    .where(eq(receipts.transactionId, fromTransactionId))
+  await db.update(receipts).set({ transactionId: toTransactionId }).where(eq(receipts.transactionId, fromTransactionId))
 }
 
 async function reassignSplits(db: DbExecutor, fromTransactionId: string, toTransactionId: string): Promise<void> {
@@ -92,7 +92,11 @@ async function removeLoser(db: DbExecutor, entry: SyncTableEntry, loserId: strin
  * ligne. Si la ligne locale sacrifiée est plus récente (modifiée hors ligne), son contenu survit sous l'id gagnant
  * et reste à re-pousser, pour converger sans perdre les modifications de l'utilisateur.
  */
-async function resolveCollisions(db: DbExecutor, entry: SyncTableEntry, row: IncomingRow): Promise<IncomingRow | "skip"> {
+async function resolveCollisions(
+  db: DbExecutor,
+  entry: SyncTableEntry,
+  row: IncomingRow,
+): Promise<IncomingRow | "skip"> {
   const { table } = entry
   const columns: Record<string, SQLiteColumn> = getTableColumns(table)
   const values: Record<string, unknown> = row

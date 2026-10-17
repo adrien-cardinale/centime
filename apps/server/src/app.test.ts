@@ -139,7 +139,10 @@ describe("POST /api/log", () => {
       expect(reopened.append(USER_A, credentials.secretHash, "QUJD")).toEqual({ kind: "ok", seq: 2 })
       reopened.close()
     } finally {
-      for (const suffix of ["", "-wal", "-shm"]) await Bun.file(`${path}${suffix}`).delete().catch(() => undefined)
+      for (const suffix of ["", "-wal", "-shm"])
+        await Bun.file(`${path}${suffix}`)
+          .delete()
+          .catch(() => undefined)
     }
   })
 })

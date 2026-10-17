@@ -25,7 +25,9 @@ function dueMonthLabel(periodicity: Periodicity, dueMonth: number | null): strin
 
 export function dueDescription(item: Pick<FixedItem, "periodicity" | "dueDay" | "dueMonth">): string {
   const day =
-    item.dueDay === null || item.dueDay === 1 ? i18n.t("fixedItems.dueFirst") : i18n.t("fixedItems.dueDay", { day: item.dueDay })
+    item.dueDay === null || item.dueDay === 1
+      ? i18n.t("fixedItems.dueFirst")
+      : i18n.t("fixedItems.dueDay", { day: item.dueDay })
   const month = dueMonthLabel(item.periodicity, item.dueMonth)
   return [periodicityLabels[item.periodicity], month ? `${day}, ${month}` : day].join(" · ")
 }

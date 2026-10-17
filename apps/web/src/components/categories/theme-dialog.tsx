@@ -73,9 +73,7 @@ export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogP
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{theme ? t("categories.themeDialog.editTitle") : t("categories.newTheme")}</DialogTitle>
-          <DialogDescription>
-            {t("categories.themeDialog.description")}
-          </DialogDescription>
+          <DialogDescription>{t("categories.themeDialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-5">

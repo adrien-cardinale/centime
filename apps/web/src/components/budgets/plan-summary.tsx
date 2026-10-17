@@ -33,9 +33,21 @@ export function PlanSummary({ plan }: { plan: MonthPlan }) {
   const { income, fixedExpenses, envelopes, remaining } = plan
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
-      <PlanTile title={t("budgets.planSummary.income")} value={income.expected} hint={t("budgets.planSummary.received", { amount: money(income.actual) })} />
-      <PlanTile title={t("budgets.planSummary.fixedExpenses")} value={fixedExpenses.expected} hint={t("budgets.planSummary.paid", { amount: money(fixedExpenses.actual) })} />
-      <PlanTile title={t("budgets.planSummary.envelopes")} value={envelopes.expected} hint={t("budgets.planSummary.spent", { amount: money(envelopes.actual) })} />
+      <PlanTile
+        title={t("budgets.planSummary.income")}
+        value={income.expected}
+        hint={t("budgets.planSummary.received", { amount: money(income.actual) })}
+      />
+      <PlanTile
+        title={t("budgets.planSummary.fixedExpenses")}
+        value={fixedExpenses.expected}
+        hint={t("budgets.planSummary.paid", { amount: money(fixedExpenses.actual) })}
+      />
+      <PlanTile
+        title={t("budgets.planSummary.envelopes")}
+        value={envelopes.expected}
+        hint={t("budgets.planSummary.spent", { amount: money(envelopes.actual) })}
+      />
       <PlanTile
         title={t("budgets.planSummary.remaining")}
         value={remaining}

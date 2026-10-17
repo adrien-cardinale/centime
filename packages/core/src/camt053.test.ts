@@ -48,10 +48,24 @@ describe("parseCamt053", () => {
   it("handles several statements with a single entry each", () => {
     const document = camtDocument([
       statement("CH5604835012345678009", [
-        { amount: "10", indicator: "DBIT", bookingDate: "2026-04-01", valueDate: "2026-04-01", reference: "A1", label: "Premier" },
+        {
+          amount: "10",
+          indicator: "DBIT",
+          bookingDate: "2026-04-01",
+          valueDate: "2026-04-01",
+          reference: "A1",
+          label: "Premier",
+        },
       ]),
       statement("CH 93 0076 2011 6238 5295 7", [
-        { amount: "5", indicator: "CRDT", bookingDate: "2026-04-02", valueDate: "2026-04-02", reference: "B1", label: "Second" },
+        {
+          amount: "5",
+          indicator: "CRDT",
+          bookingDate: "2026-04-02",
+          valueDate: "2026-04-02",
+          reference: "B1",
+          label: "Second",
+        },
       ]),
     ])
     const { transactions } = parseCamt053(encodeUtf8(document))
@@ -62,7 +76,7 @@ describe("parseCamt053", () => {
   })
 
   it("reports invalid XML", () => {
-    const { transactions, errors } = parseCamt053(encodeUtf8("<?xml version=\"1.0\"?><Document><BkToCstmrStmt>"))
+    const { transactions, errors } = parseCamt053(encodeUtf8('<?xml version="1.0"?><Document><BkToCstmrStmt>'))
     expect(transactions).toEqual([])
     expect(errors).toHaveLength(1)
   })

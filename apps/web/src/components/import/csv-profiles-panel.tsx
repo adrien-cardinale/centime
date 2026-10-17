@@ -31,9 +31,7 @@ export function CsvProfilesPanel() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <p className="text-sm text-muted-foreground">
-          {t("csvProfiles.panel.intro")}
-        </p>
+        <p className="text-sm text-muted-foreground">{t("csvProfiles.panel.intro")}</p>
         <CsvProfileDialog
           trigger={
             <Button>
@@ -89,7 +87,11 @@ function CsvProfilesTable({ profiles }: { profiles: CsvProfile[] }) {
                 <CsvProfileDialog
                   profile={profile}
                   trigger={
-                    <Button variant="ghost" size="icon" aria-label={t("csvProfiles.panel.edit", { name: profile.name })}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t("csvProfiles.panel.edit", { name: profile.name })}
+                    >
                       <Pencil />
                     </Button>
                   }
@@ -126,9 +128,7 @@ function DeleteProfileButton({ profile }: { profile: CsvProfile }) {
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("csvProfiles.panel.deleteTitle", { name: profile.name })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("csvProfiles.panel.deleteDescription")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("csvProfiles.panel.deleteDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

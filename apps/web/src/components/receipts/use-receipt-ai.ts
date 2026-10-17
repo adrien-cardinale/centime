@@ -1,9 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react"
-import {
-  type AiExtractionCategory,
-  type AiExtractionResult,
-  extractReceiptWithAi,
-} from "@/lib/receipts/ai-extract"
+import { type AiExtractionCategory, type AiExtractionResult, extractReceiptWithAi } from "@/lib/receipts/ai-extract"
 import type { AiExtractionSettings } from "@/lib/receipts/ai-settings"
 import type { PreparedReceiptImage } from "@/lib/receipts/prepare-image"
 import { type AiFailureKind, aiFailureKind } from "./ai-failure"

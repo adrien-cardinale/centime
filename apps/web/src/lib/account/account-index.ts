@@ -58,7 +58,10 @@ export function withActiveIfNone(index: AccountIndex, id: string): AccountIndex 
 }
 
 function withAccountChange(index: AccountIndex, id: string, change: Partial<DeviceAccount>): AccountIndex {
-  return { ...index, accounts: index.accounts.map((account) => (account.id === id ? { ...account, ...change } : account)) }
+  return {
+    ...index,
+    accounts: index.accounts.map((account) => (account.id === id ? { ...account, ...change } : account)),
+  }
 }
 
 export function withLabel(index: AccountIndex, id: string, label: string): AccountIndex {

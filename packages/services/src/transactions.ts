@@ -66,7 +66,9 @@ function themeCondition(themeId: string): SQL | undefined {
 }
 
 function fixedItemCondition(fixedItemId: string): SQL {
-  return fixedItemId === WITHOUT_FIXED_ITEM ? isNull(transactions.fixedItemId) : eq(transactions.fixedItemId, fixedItemId)
+  return fixedItemId === WITHOUT_FIXED_ITEM
+    ? isNull(transactions.fixedItemId)
+    : eq(transactions.fixedItemId, fixedItemId)
 }
 
 export async function transactionCondition(db: DbExecutor, filter: TransactionFilter): Promise<SQL | undefined> {

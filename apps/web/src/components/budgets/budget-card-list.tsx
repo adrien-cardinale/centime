@@ -71,7 +71,9 @@ function BudgetCard({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (b
           indicatorClassName={budgetStateIndicatorClasses[status.state]}
         />
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm">
-          <span className={cn("font-medium", budgetStateTextClasses[status.state])}>{budgetStateLabels[status.state]}</span>
+          <span className={cn("font-medium", budgetStateTextClasses[status.state])}>
+            {budgetStateLabels[status.state]}
+          </span>
           <span className={cn("tabular-nums", status.remaining < 0 && budgetStateTextClasses.exceeded)}>
             {t("budgets.card.remaining", { amount: money(status.remaining) })}
           </span>

@@ -26,7 +26,11 @@ function sampleLabel(sample: RuleTestSample): string {
 }
 
 function SampleAmount({ amount }: { amount: number }) {
-  return <span className={cn("tabular-nums whitespace-nowrap", amount < 0 && "text-destructive")}>{formatDecimal(amount)}</span>
+  return (
+    <span className={cn("tabular-nums whitespace-nowrap", amount < 0 && "text-destructive")}>
+      {formatDecimal(amount)}
+    </span>
+  )
 }
 
 function SampleList({ samples }: { samples: RuleTestSample[] }) {

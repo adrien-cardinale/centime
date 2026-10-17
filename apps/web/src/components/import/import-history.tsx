@@ -72,7 +72,9 @@ function ImportHistoryTable({ entries }: { entries: ImportHistoryEntry[] }) {
               <div className="max-w-40 truncate font-medium sm:max-w-72" title={entry.fileName}>
                 {entry.fileName}
               </div>
-              <div className="text-xs text-muted-foreground tabular-nums sm:hidden">{formatDateTime(entry.importedAt)}</div>
+              <div className="text-xs text-muted-foreground tabular-nums sm:hidden">
+                {formatDateTime(entry.importedAt)}
+              </div>
             </TableCell>
             <TableCell className="hidden sm:table-cell">{formatLabel(entry)}</TableCell>
             <TableCell className="hidden tabular-nums sm:table-cell">{formatDateTime(entry.importedAt)}</TableCell>
@@ -109,16 +111,19 @@ function DeleteImportButton({ entry }: { entry: ImportHistoryEntry }) {
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="ghost" size="icon" aria-label={t("importHistory.deleteAria", { name: entry.fileName })} disabled={remove.isPending}>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={t("importHistory.deleteAria", { name: entry.fileName })}
+          disabled={remove.isPending}
+        >
           <Trash2 />
         </Button>
       </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("importHistory.deleteTitle", { name: entry.fileName })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("importHistory.deleteDescription")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("importHistory.deleteDescription")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

@@ -57,6 +57,6 @@ console.log(
       platforms,
     },
     null,
-    2
-  )
+    2,
+  ),
 )

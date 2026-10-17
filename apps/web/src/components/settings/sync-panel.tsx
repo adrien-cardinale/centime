@@ -20,9 +20,7 @@ export default function SyncPanel() {
         <CardHeader>
           <CardTitle>{t("settings.sync.title")}</CardTitle>
           <CardDescription>
-            {state.configured
-              ? t("settings.sync.configuredDescription")
-              : t("settings.sync.unconfiguredDescription")}
+            {state.configured ? t("settings.sync.configuredDescription") : t("settings.sync.unconfiguredDescription")}
           </CardDescription>
         </CardHeader>
         <CardContent>{state.configured ? <SyncStatusCard state={state} /> : <SyncConnectForm />}</CardContent>

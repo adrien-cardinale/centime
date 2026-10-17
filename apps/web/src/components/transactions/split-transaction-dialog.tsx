@@ -254,7 +254,9 @@ function RemainderInfo({ remainder, total, currency, onFill }: RemainderInfoProp
   return (
     <div className="flex items-center gap-2 text-sm">
       <span className={cn("tabular-nums", balanced ? "text-muted-foreground" : "font-medium text-destructive")}>
-        {exceeded ? t("transactionsPage.split.exceeded", { amount }) : t("transactionsPage.split.remaining", { amount })}
+        {exceeded
+          ? t("transactionsPage.split.exceeded", { amount })
+          : t("transactionsPage.split.remaining", { amount })}
       </span>
       {!balanced && (
         <Button type="button" variant="link" size="sm" className="h-auto px-0" onClick={onFill}>

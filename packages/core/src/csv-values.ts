@@ -39,7 +39,10 @@ export function isCurrencyCode(value: string): boolean {
   return CURRENCY_PATTERN.test(value)
 }
 
-export function resolveStatus(value: string | null, statusMap: Record<string, TransactionStatus> | undefined): TransactionStatus {
+export function resolveStatus(
+  value: string | null,
+  statusMap: Record<string, TransactionStatus> | undefined,
+): TransactionStatus {
   if (value === null || !statusMap) return "booked"
   const wanted = normalizeText(value)
   const match = Object.entries(statusMap).find(([key]) => normalizeText(key) === wanted)

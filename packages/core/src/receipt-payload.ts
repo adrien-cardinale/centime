@@ -35,7 +35,10 @@ const merchantSchema = optionalText(MAX_RECEIPT_MERCHANT_LENGTH, "Commerçant tr
 const noteSchema = optionalText(MAX_RECEIPT_NOTE_LENGTH, "Note trop longue")
 const totalSchema = amountSchema.nullable()
 const receiptDateSchema = isoDateSchema.nullable()
-const linesSchema = z.array(receiptLineSchema).max(MAX_RECEIPT_LINES, `${MAX_RECEIPT_LINES} lignes au maximum`).nullable()
+const linesSchema = z
+  .array(receiptLineSchema)
+  .max(MAX_RECEIPT_LINES, `${MAX_RECEIPT_LINES} lignes au maximum`)
+  .nullable()
 
 export const receiptCreateSchema = z.object({
   accountId: z.string({ error: "Choisissez un compte" }).min(1, "Choisissez un compte"),

@@ -48,7 +48,11 @@ function decodeBase32(text: string): Uint8Array | null {
 }
 
 function normalizePhrase(phrase: string): string {
-  return phrase.toUpperCase().replace(/[\s-]+/g, "").replace(/O/g, "0").replace(/[IL]/g, "1")
+  return phrase
+    .toUpperCase()
+    .replace(/[\s-]+/g, "")
+    .replace(/O/g, "0")
+    .replace(/[IL]/g, "1")
 }
 
 export async function formatMasterKey(key: Uint8Array): Promise<string> {

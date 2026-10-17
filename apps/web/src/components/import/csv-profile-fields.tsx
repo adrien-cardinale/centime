@@ -101,7 +101,9 @@ export function ColumnField({ control, name, label, columns, optional = false }:
             >
               <FormControl>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder={optional ? t("csvProfiles.fields.none") : t("csvProfiles.fields.chooseColumn")} />
+                  <SelectValue
+                    placeholder={optional ? t("csvProfiles.fields.none") : t("csvProfiles.fields.chooseColumn")}
+                  />
                 </SelectTrigger>
               </FormControl>
               <SelectContent className="max-w-[calc(100vw-2rem)]">
@@ -112,7 +114,11 @@ export function ColumnField({ control, name, label, columns, optional = false }:
                     {column.sample && <span className="max-w-32 truncate text-muted-foreground">{column.sample}</span>}
                   </SelectItem>
                 ))}
-                {isMissing && <SelectItem value={field.value}>{t("csvProfiles.fields.missingFromFile", { name: field.value })}</SelectItem>}
+                {isMissing && (
+                  <SelectItem value={field.value}>
+                    {t("csvProfiles.fields.missingFromFile", { name: field.value })}
+                  </SelectItem>
+                )}
               </SelectContent>
             </Select>
             <FormMessage />

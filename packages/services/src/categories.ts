@@ -69,7 +69,10 @@ export async function listCategories(db: Db) {
 
 async function assertActiveTheme(db: DbExecutor, themeId: string | null): Promise<void> {
   if (themeId === null) return
-  const [row] = await db.select({ id: themes.id }).from(themes).where(and(eq(themes.id, themeId), isNull(themes.deletedAt)))
+  const [row] = await db
+    .select({ id: themes.id })
+    .from(themes)
+    .where(and(eq(themes.id, themeId), isNull(themes.deletedAt)))
   if (!row) throw new ServiceError("Thème introuvable")
 }
 

@@ -12,7 +12,9 @@ const API_PROXY = { "/api": "http://localhost:3000" }
 const MOBILE_HMR_PORT = 5175
 
 // La version affichée est celle de la release, déclarée une seule fois côté desktop (Tauri la lit dans Cargo.toml).
-const { version } = JSON.parse(readFileSync(new URL("../desktop/package.json", import.meta.url), "utf8")) as { version: string }
+const { version } = JSON.parse(readFileSync(new URL("../desktop/package.json", import.meta.url), "utf8")) as {
+  version: string
+}
 
 // GitHub Pages sert 404.html pour toute URL inconnue : une copie de index.html y fait démarrer la SPA.
 function spaFallback(): Plugin {

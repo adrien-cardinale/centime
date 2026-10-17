@@ -25,11 +25,7 @@ export function PreviewTable({ rows, total, fallbackAccountName }: PreviewTableP
 
   return (
     <div>
-      {isMobile ? (
-        <PreviewList rows={rows} />
-      ) : (
-        <PreviewGrid rows={rows} fallbackAccountName={fallbackAccountName} />
-      )}
+      {isMobile ? <PreviewList rows={rows} /> : <PreviewGrid rows={rows} fallbackAccountName={fallbackAccountName} />}
       {total > rows.length && (
         <p className="border-t p-3 text-center text-sm text-muted-foreground">
           {t("importWorkspace.preview.limited", { shown: rows.length, total })}

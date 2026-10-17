@@ -115,9 +115,7 @@ export function RuleDialog({ rule, initialValues, trigger, applyAfterCreate, ope
       <DialogContent className="flex flex-col gap-0 overflow-hidden p-0 sm:max-w-2xl">
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle>{rule ? t("rules.dialog.editTitle") : t("rules.dialog.newTitle")}</DialogTitle>
-          <DialogDescription>
-            {t("rules.dialog.description")}
-          </DialogDescription>
+          <DialogDescription>{t("rules.dialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="flex min-h-0 flex-1 flex-col">

@@ -18,11 +18,23 @@ export function PeriodNavigator({ date, onChange }: PeriodNavigatorProps) {
   return (
     <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto sm:justify-start">
       <div className="flex items-center gap-1 sm:gap-2">
-        <Button variant="outline" size="icon" aria-label={t("periodNavigator.previous")} onClick={() => onChange(shiftMonths(date, -1))}>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={t("periodNavigator.previous")}
+          onClick={() => onChange(shiftMonths(date, -1))}
+        >
           <ChevronLeft />
         </Button>
-        <span aria-live="polite" className="min-w-28 text-center text-sm font-medium sm:min-w-36 sm:text-base">{month.label}</span>
-        <Button variant="outline" size="icon" aria-label={t("periodNavigator.next")} onClick={() => onChange(shiftMonths(date, 1))}>
+        <span aria-live="polite" className="min-w-28 text-center text-sm font-medium sm:min-w-36 sm:text-base">
+          {month.label}
+        </span>
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label={t("periodNavigator.next")}
+          onClick={() => onChange(shiftMonths(date, 1))}
+        >
           <ChevronRight />
         </Button>
       </div>

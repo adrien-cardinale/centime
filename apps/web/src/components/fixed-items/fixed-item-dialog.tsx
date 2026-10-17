@@ -328,7 +328,10 @@ function DueMonthField({ control, periodicity }: { control: FixedItemControl; pe
       render={({ field }) => (
         <FormItem>
           <FormLabel>{t("fixedItemsUi.dialog.dueMonth")}</FormLabel>
-          <Select value={field.value === null ? "" : String(field.value)} onValueChange={(value) => field.onChange(Number(value))}>
+          <Select
+            value={field.value === null ? "" : String(field.value)}
+            onValueChange={(value) => field.onChange(Number(value))}
+          >
             <FormControl>
               <SelectTrigger className="w-full">
                 <SelectValue placeholder={t("fixedItemsUi.dialog.chooseMonth")} />

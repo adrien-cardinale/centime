@@ -11,7 +11,13 @@ import {
   shiftPeriod,
 } from "./budgets"
 
-const groceries: BudgetInput = { id: "groceries", amount: 500, period: "monthly", rollover: false, startDate: "2026-01-01" }
+const groceries: BudgetInput = {
+  id: "groceries",
+  amount: 500,
+  period: "monthly",
+  rollover: false,
+  startDate: "2026-01-01",
+}
 
 function budget(overrides: Partial<BudgetInput>): BudgetInput {
   return { ...groceries, ...overrides }
@@ -40,8 +46,16 @@ describe("periodContaining", () => {
   })
 
   it("bounds a quarter", () => {
-    expect(periodContaining("quarterly", "2026-08-10")).toEqual({ start: "2026-07-01", end: "2026-09-30", label: "T3 2026" })
-    expect(periodContaining("quarterly", "2026-12-31")).toMatchObject({ start: "2026-10-01", end: "2026-12-31", label: "T4 2026" })
+    expect(periodContaining("quarterly", "2026-08-10")).toEqual({
+      start: "2026-07-01",
+      end: "2026-09-30",
+      label: "T3 2026",
+    })
+    expect(periodContaining("quarterly", "2026-12-31")).toMatchObject({
+      start: "2026-10-01",
+      end: "2026-12-31",
+      label: "T4 2026",
+    })
     expect(periodContaining("quarterly", "2026-01-01").label).toBe("T1 2026")
   })
 
@@ -63,10 +77,9 @@ describe("shiftPeriod and previousPeriods", () => {
   it("lists previous periods from oldest to newest", () => {
     const labels = previousPeriods("monthly", september, 3).map((range) => range.label)
     expect(labels).toEqual(["Juin 2026", "Juillet 2026", "Août 2026"])
-    expect(previousPeriods("quarterly", periodContaining("quarterly", "2026-02-01"), 2).map((range) => range.label)).toEqual([
-      "T3 2025",
-      "T4 2025",
-    ])
+    expect(
+      previousPeriods("quarterly", periodContaining("quarterly", "2026-02-01"), 2).map((range) => range.label),
+    ).toEqual(["T3 2025", "T4 2025"])
   })
 })
 
@@ -87,7 +100,12 @@ describe("budgetStateOf", () => {
 
 describe("computeBudgetStatus", () => {
   it("computes remaining and ratio without rollover", () => {
-    const status = computeBudgetStatus(groceries, spending(september, 200, 30), monthsBefore("2026-09-15", 3, 100), AFTER_SEPTEMBER)
+    const status = computeBudgetStatus(
+      groceries,
+      spending(september, 200, 30),
+      monthsBefore("2026-09-15", 3, 100),
+      AFTER_SEPTEMBER,
+    )
     expect(status).toMatchObject({
       carry: 0,
       available: 500,

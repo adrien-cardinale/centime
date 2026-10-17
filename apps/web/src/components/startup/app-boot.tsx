@@ -24,7 +24,11 @@ export function AppBoot({ boot, children }: AppBootProps) {
     boot().then(
       () => setState({ kind: "ready" }),
       (error: unknown) =>
-        setState(error instanceof KeyRequiredError ? { kind: "onboarding" } : { kind: "failed", message: failureMessage(error) }),
+        setState(
+          error instanceof KeyRequiredError
+            ? { kind: "onboarding" }
+            : { kind: "failed", message: failureMessage(error) },
+        ),
     )
   }, [boot])
 

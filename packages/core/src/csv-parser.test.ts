@@ -62,7 +62,11 @@ describe("parseCsv with the card test profile", () => {
   })
 
   it("reads quoted labels with doubled quotes and thousands separators", () => {
-    expect(result.transactions[1]).toMatchObject({ rawLabel: 'MAGASIN "LE COIN", NYON', amount: -1234.5, status: "booked" })
+    expect(result.transactions[1]).toMatchObject({
+      rawLabel: 'MAGASIN "LE COIN", NYON',
+      amount: -1234.5,
+      status: "booked",
+    })
   })
 
   it("keeps credits positive", () => {
@@ -99,7 +103,9 @@ describe("parseCsv with a custom profile", () => {
     const bytes = encodeUtf8("01/02/2026\tLoyer\t-1 200,50\n02/02/2026\tSalaire\t3 000,00\n")
     const { transactions, errors } = parseCsv(bytes, profile)
     expect(errors).toEqual([])
-    expect(transactions.map((transaction) => [transaction.bookingDate, transaction.amount, transaction.currency])).toEqual([
+    expect(
+      transactions.map((transaction) => [transaction.bookingDate, transaction.amount, transaction.currency]),
+    ).toEqual([
       ["2026-02-01", -1200.5, "EUR"],
       ["2026-02-02", 3000, "EUR"],
     ])

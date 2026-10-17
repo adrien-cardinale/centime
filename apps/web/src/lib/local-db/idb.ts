@@ -10,7 +10,10 @@ function open(): Promise<IDBDatabase> {
   })
 }
 
-async function run<Result>(mode: IDBTransactionMode, task: (store: IDBObjectStore) => IDBRequest<Result>): Promise<Result> {
+async function run<Result>(
+  mode: IDBTransactionMode,
+  task: (store: IDBObjectStore) => IDBRequest<Result>,
+): Promise<Result> {
   const database = await open()
   try {
     return await new Promise<Result>((resolve, reject) => {

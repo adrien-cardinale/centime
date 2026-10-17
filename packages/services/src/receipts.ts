@@ -241,7 +241,10 @@ export async function detachReceipts(db: DbExecutor, transactionIds: string[]): 
       .update(receipts)
       .set({ transactionId: null, status: "pending" })
       .where(
-        and(inArray(receipts.transactionId, transactionIds.slice(start, start + QUERY_CHUNK_SIZE)), isNull(receipts.deletedAt)),
+        and(
+          inArray(receipts.transactionId, transactionIds.slice(start, start + QUERY_CHUNK_SIZE)),
+          isNull(receipts.deletedAt),
+        ),
       )
   }
 }

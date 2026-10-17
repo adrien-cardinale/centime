@@ -30,7 +30,12 @@ export function MobileTransactionFilters({ values, onChange, actions }: Transact
             <TransactionFilterFields values={values} onChange={onChange} />
           </div>
           <SheetFooter className="flex-row">
-            <Button variant="outline" className="flex-1" disabled={activeCount === 0} onClick={() => onChange(NO_FILTERS)}>
+            <Button
+              variant="outline"
+              className="flex-1"
+              disabled={activeCount === 0}
+              onClick={() => onChange(NO_FILTERS)}
+            >
               {t("transactionsPage.filters.reset")}
             </Button>
             <Button className="flex-1" onClick={() => setOpen(false)}>

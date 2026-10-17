@@ -1,4 +1,11 @@
-import { type Db, type DbExecutor, SYNC_TABLES, type SyncRow, type SyncTableEntry, type SyncTableName } from "@centime/db"
+import {
+  type Db,
+  type DbExecutor,
+  SYNC_TABLES,
+  type SyncRow,
+  type SyncTableEntry,
+  type SyncTableName,
+} from "@centime/db"
 import { SYNC_ROW_SCHEMAS } from "@centime/services"
 import { and, asc, gt, isNull, sql } from "@centime/db/orm"
 import { z } from "zod"
@@ -35,7 +42,6 @@ export class SyncError extends Error {
     super(message)
   }
 }
-
 
 const tableRowsSchema = z.record(z.string(), z.array(z.unknown()))
 
@@ -205,7 +211,12 @@ async function pullAll(context: SyncContext, since: number): Promise<PullSummary
   }
 }
 
-async function readTableBatch(db: DbExecutor, entry: SyncTableEntry, afterId: string, limit: number): Promise<SyncRow[]> {
+async function readTableBatch(
+  db: DbExecutor,
+  entry: SyncTableEntry,
+  afterId: string,
+  limit: number,
+): Promise<SyncRow[]> {
   const { table } = entry
   return db
     .select()

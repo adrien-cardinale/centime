@@ -102,7 +102,11 @@ describe("occurrencesBetween", () => {
   it("computes the matching window from the tolerance", () => {
     const [monthly] = occurrencesBetween(rent, "2026-03-01", "2026-03-31")
     expect(monthly).toMatchObject({ dueDate: "2026-03-25", windowStart: "2026-03-15", windowEnd: "2026-04-04" })
-    const [yearly] = occurrencesBetween(item({ periodicity: "yearly", dueMonth: 1, dueDay: 15 }), "2026-01-01", "2026-12-31")
+    const [yearly] = occurrencesBetween(
+      item({ periodicity: "yearly", dueMonth: 1, dueDay: 15 }),
+      "2026-01-01",
+      "2026-12-31",
+    )
     expect(yearly).toMatchObject({ windowStart: "2025-12-16", windowEnd: "2026-02-14" })
   })
 
@@ -258,7 +262,10 @@ describe("fixedItemPayloadSchema", () => {
   })
 
   it("rejects an invalid rule regex", () => {
-    const parsed = fixedItemPayloadSchema.safeParse({ ...valid, rule: { pattern: "(", matchKind: "regex", field: "raw_label" } })
+    const parsed = fixedItemPayloadSchema.safeParse({
+      ...valid,
+      rule: { pattern: "(", matchKind: "regex", field: "raw_label" },
+    })
     expect(parsed.success).toBe(false)
   })
 })

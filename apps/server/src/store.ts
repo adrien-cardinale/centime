@@ -61,7 +61,10 @@ export function hashesMatch(expected: string, actual: string): boolean {
   return left.length === right.length && crypto.timingSafeEqual(left, right)
 }
 
-export function openStore(path: string, { allowSignup = true, maxUserBytes = DEFAULT_MAX_USER_BYTES }: StoreOptions = {}): Store {
+export function openStore(
+  path: string,
+  { allowSignup = true, maxUserBytes = DEFAULT_MAX_USER_BYTES }: StoreOptions = {},
+): Store {
   if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true })
   const db = new Database(path, { create: true })
   db.run("pragma journal_mode = wal")
@@ -70,7 +73,9 @@ export function openStore(path: string, { allowSignup = true, maxUserBytes = DEF
 
   const findUser = db.query<UserRow, [string]>("select secret_hash from users where id = ?")
   const insertUser = db.query("insert into users (id, secret_hash, created_at) values (?, ?, ?)")
-  const nextSeq = db.query<{ next: number }, [string]>("select coalesce(max(seq), 0) + 1 as next from log where user_id = ?")
+  const nextSeq = db.query<{ next: number }, [string]>(
+    "select coalesce(max(seq), 0) + 1 as next from log where user_id = ?",
+  )
   const usedBytes = db.query<{ used: number }, [string, string]>(
     `select (select coalesce(sum(length(data)), 0) from log where user_id = ?)
           + (select coalesce(sum(size), 0) from blobs where user_id = ?) as used`,
@@ -83,12 +88,16 @@ export function openStore(path: string, { allowSignup = true, maxUserBytes = DEF
     "select seq, data from log where user_id = ? and seq >= ? and seq <= ? order by seq",
   )
   const removeUser = db.query("delete from users where id = ?")
-  const findBlobSize = db.query<{ size: number }, [string, string]>("select size from blobs where user_id = ? and id = ?")
+  const findBlobSize = db.query<{ size: number }, [string, string]>(
+    "select size from blobs where user_id = ? and id = ?",
+  )
   const upsertBlob = db.query(
     `insert into blobs (user_id, id, data, size, created_at, updated_at) values (?, ?, ?, ?, ?, ?)
      on conflict (user_id, id) do update set data = excluded.data, size = excluded.size, updated_at = excluded.updated_at`,
   )
-  const findBlob = db.query<{ data: Uint8Array }, [string, string]>("select data from blobs where user_id = ? and id = ?")
+  const findBlob = db.query<{ data: Uint8Array }, [string, string]>(
+    "select data from blobs where user_id = ? and id = ?",
+  )
   const removeBlob = db.query("delete from blobs where user_id = ? and id = ?")
   const listBlobIds = db.query<{ id: string }, [string]>("select id from blobs where user_id = ? order by id")
 

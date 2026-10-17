@@ -193,7 +193,10 @@ export function ReceiptDetailsForm({
               <FormItem>
                 <FormLabel>{t("receipts.details.account")}</FormLabel>
                 <FormControl>
-                  <AccountSelect value={field.value || undefined} onChange={(accountId) => field.onChange(accountId ?? "")} />
+                  <AccountSelect
+                    value={field.value || undefined}
+                    onChange={(accountId) => field.onChange(accountId ?? "")}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>

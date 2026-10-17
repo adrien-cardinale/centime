@@ -20,15 +20,7 @@ export type AiExtractionLine = ReceiptAiLine
 export type AiExtractionResult = ReceiptAiResult
 
 export type AiExtractionErrorKind =
-  | "auth"
-  | "rate-limit"
-  | "network"
-  | "refused"
-  | "rejected"
-  | "model"
-  | "invalid"
-  | "aborted"
-  | "unsupported"
+  "auth" | "rate-limit" | "network" | "refused" | "rejected" | "model" | "invalid" | "aborted" | "unsupported"
 
 export type AiExtractionInput = {
   bytes: Uint8Array

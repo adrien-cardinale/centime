@@ -2,12 +2,7 @@ import { useRef } from "react"
 import { ArrowLeftRight, MoreHorizontal, Receipt, Repeat, Split, Wand2 } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useUpdateTransaction } from "@/hooks/use-transaction-updates"
 import type { TransactionItem } from "@/lib/api"
 
@@ -29,8 +24,7 @@ export function TransactionRowActions({
   const { t } = useTranslation()
   const update = useUpdateTransaction()
   const opensOverlay = useRef(false)
-  const toggleTransfer = () =>
-    update.mutate({ id: transaction.id, changes: { isTransfer: !transaction.isTransfer } })
+  const toggleTransfer = () => update.mutate({ id: transaction.id, changes: { isTransfer: !transaction.isTransfer } })
 
   return (
     <DropdownMenu modal={false}>
@@ -39,40 +33,51 @@ export function TransactionRowActions({
           <MoreHorizontal />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" onCloseAutoFocus={(event) => {
+      <DropdownMenuContent
+        align="end"
+        onCloseAutoFocus={(event) => {
           // Quand l'action ouvre un dialogue ou une liste, c'est eux qui reprennent le focus.
           if (opensOverlay.current) event.preventDefault()
           opensOverlay.current = false
-        }}>
+        }}
+      >
         <DropdownMenuItem onSelect={toggleTransfer} disabled={update.isPending}>
           <ArrowLeftRight />
           {transaction.isTransfer ? t("transactionsPage.removeTransfer") : t("transactionsPage.markTransfer")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => {
+        <DropdownMenuItem
+          onSelect={() => {
             opensOverlay.current = true
             onLinkFixedItem(transaction)
-          }}>
+          }}
+        >
           <Repeat />
           {t("transactionsPage.linkFixedItem")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => {
+        <DropdownMenuItem
+          onSelect={() => {
             opensOverlay.current = true
             onSplit(transaction)
-          }}>
+          }}
+        >
           <Split />
           {t("transactionsPage.split.action")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => {
+        <DropdownMenuItem
+          onSelect={() => {
             opensOverlay.current = true
             onAttachReceipt(transaction)
-          }}>
+          }}
+        >
           <Receipt />
           {t("receipts.attach")}
         </DropdownMenuItem>
-        <DropdownMenuItem onSelect={() => {
+        <DropdownMenuItem
+          onSelect={() => {
             opensOverlay.current = true
             onCreateRule(transaction)
-          }}>
+          }}
+        >
           <Wand2 />
           {t("transactionsPage.createRule")}
         </DropdownMenuItem>

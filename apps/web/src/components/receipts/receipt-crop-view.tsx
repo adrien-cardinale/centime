@@ -124,7 +124,10 @@ function CropArea({ url, rect, onChange }: CropAreaProps) {
     >
       <img src={url} alt={t("receipts.image.alt")} draggable={false} className="block max-h-[50dvh] max-w-full" />
       <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute border-2 border-primary shadow-[0_0_0_9999px_rgb(0_0_0/0.5)]" style={frameStyle(rect)} />
+        <div
+          className="absolute border-2 border-primary shadow-[0_0_0_9999px_rgb(0_0_0/0.5)]"
+          style={frameStyle(rect)}
+        />
       </div>
       <div
         className="absolute cursor-move"

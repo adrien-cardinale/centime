@@ -34,9 +34,7 @@ function DesktopBulkActionsBar({ selectedIds, onClear }: BulkActionsBarProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/50 px-4 py-3">
-      <p className="text-sm font-medium">
-        {t("transactionsPage.bulk.selected", { count })}
-      </p>
+      <p className="text-sm font-medium">{t("transactionsPage.bulk.selected", { count })}</p>
       <CategorySelect
         value={undefined}
         onChange={(value) => actions.assignCategory(value === NO_CATEGORY ? null : value)}

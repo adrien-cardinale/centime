@@ -37,9 +37,7 @@ export function DeleteBudgetDialog({ budget, open, onOpenChange }: DeleteBudgetD
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("budgets.delete.title", { name: budget.categoryName })}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("budgets.delete.description")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("budgets.delete.description")}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>

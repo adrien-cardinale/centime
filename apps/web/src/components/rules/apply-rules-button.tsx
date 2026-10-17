@@ -67,9 +67,7 @@ export function ApplyRulesDialog({ withTrigger = false, open, onOpenChange }: Ap
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>{t("rules.apply.title")}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t("rules.apply.description")}
-          </AlertDialogDescription>
+          <AlertDialogDescription>{t("rules.apply.description")}</AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-2">
           <Label htmlFor="apply-scope">{t("rules.apply.scope")}</Label>

@@ -12,7 +12,11 @@ function summaryItems(summary: ImportPreview["summary"], t: TFunction): SummaryI
     { label: t("importWorkspace.summary.new"), value: summary.new },
     { label: t("importWorkspace.summary.duplicates"), value: summary.duplicates, tone: "muted" },
     { label: t("importWorkspace.summary.updated"), value: summary.pendingToBooked },
-    { label: t("importWorkspace.summary.errors"), value: summary.errors, tone: summary.errors > 0 ? "destructive" : "muted" },
+    {
+      label: t("importWorkspace.summary.errors"),
+      value: summary.errors,
+      tone: summary.errors > 0 ? "destructive" : "muted",
+    },
   ]
 }
 

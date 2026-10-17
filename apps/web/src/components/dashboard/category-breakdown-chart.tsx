@@ -35,7 +35,13 @@ export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChar
     <ChartCard
       title={t("dashboardPage.categories.title")}
       description={description}
-      chart={isMobile ? <CategoryBreakdownList entries={entries} month={month} /> : <BreakdownBarChart entries={entries} month={month} />}
+      chart={
+        isMobile ? (
+          <CategoryBreakdownList entries={entries} month={month} />
+        ) : (
+          <BreakdownBarChart entries={entries} month={month} />
+        )
+      }
       table={isMobile ? undefined : <BreakdownTable entries={entries} month={month} />}
     />
   )
@@ -51,7 +57,10 @@ function BreakdownBarChart({ entries, month }: CategoryBreakdownChartProps) {
     if (search) void navigate({ to: "/transactions", search })
   }
   return (
-    <ChartContainer config={chartConfigOf(t("dashboardPage.table.expenses"))} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+    <ChartContainer
+      config={chartConfigOf(t("dashboardPage.table.expenses"))}
+      className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}
+    >
       <BarChart data={data} layout="vertical" margin={{ top: 0, right: VALUE_LABEL_WIDTH, bottom: 0, left: 0 }}>
         <XAxis type="number" dataKey="amount" hide />
         <YAxis
@@ -62,7 +71,10 @@ function BreakdownBarChart({ entries, month }: CategoryBreakdownChartProps) {
           tickLine={false}
           tick={<CategoryTick />}
         />
-        <ChartTooltip cursor={{ fill: "var(--muted)", opacity: 0.5 }} content={<ChartTooltipContent valueFormatter={money} />} />
+        <ChartTooltip
+          cursor={{ fill: "var(--muted)", opacity: 0.5 }}
+          content={<ChartTooltipContent valueFormatter={money} />}
+        />
         <Bar
           dataKey="amount"
           radius={[0, 4, 4, 0]}

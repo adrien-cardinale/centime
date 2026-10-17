@@ -28,7 +28,9 @@ export function UnbudgetedSpending({ categories, monthLabel, onCreate }: Unbudge
             <li key={category.categoryId} className="flex flex-wrap items-center justify-between gap-2 py-2">
               <CategoryBadge name={category.categoryName} color={category.categoryColor} className="min-w-0 shrink" />
               <div className="flex items-center gap-2 sm:gap-3">
-                <span className="text-sm whitespace-nowrap tabular-nums">{formatAmount(category.spent, BUDGET_CURRENCY)}</span>
+                <span className="text-sm whitespace-nowrap tabular-nums">
+                  {formatAmount(category.spent, BUDGET_CURRENCY)}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"

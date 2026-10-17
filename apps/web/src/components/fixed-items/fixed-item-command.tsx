@@ -21,7 +21,11 @@ export function FixedItemCommand({ selectedId, onSelect }: FixedItemCommandProps
       <CommandList>
         <CommandEmpty>{t("fixedItemsUi.command.empty")}</CommandEmpty>
         <CommandGroup>
-          <CommandItem value={NO_FIXED_ITEM} keywords={[t("fixedItemsUi.command.none")]} onSelect={() => onSelect(null)}>
+          <CommandItem
+            value={NO_FIXED_ITEM}
+            keywords={[t("fixedItemsUi.command.none")]}
+            onSelect={() => onSelect(null)}
+          >
             <span className="text-muted-foreground">{t("fixedItemsUi.command.none")}</span>
             <SelectedMark visible={selectedId === null} />
           </CommandItem>

@@ -97,7 +97,9 @@ function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (bu
         >
           <CategoryBadge name={budget.categoryName} color={budget.categoryColor} />
         </button>
-        {details.length > 0 && <p className="mt-1 text-xs whitespace-normal text-muted-foreground">{details.join(" · ")}</p>}
+        {details.length > 0 && (
+          <p className="mt-1 text-xs whitespace-normal text-muted-foreground">{details.join(" · ")}</p>
+        )}
       </TableCell>
       <TableCell className="text-muted-foreground">{status.range.label}</TableCell>
       <TableCell className="text-right">
@@ -135,7 +137,12 @@ function BudgetRowActions({ budget }: { budget: BudgetOverviewItem }) {
   const [confirmOpen, setConfirmOpen] = useState(false)
   return (
     <div className="flex justify-end gap-1">
-      <Button variant="ghost" size="icon" aria-label={t("budgets.table.viewTransactions", { name: budget.categoryName })} asChild>
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label={t("budgets.table.viewTransactions", { name: budget.categoryName })}
+        asChild
+      >
         <Link to="/transactions" search={transactionsSearchOf(budget)}>
           <List />
         </Link>

@@ -64,11 +64,7 @@ export function buildReceiptAiInstruction(categories: ReadonlyArray<{ name: stri
 }
 
 function foldName(value: string): string {
-  return value
-    .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
-    .trim()
-    .toLocaleLowerCase()
+  return value.normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLocaleLowerCase()
 }
 
 function roundToCents(value: number): number {

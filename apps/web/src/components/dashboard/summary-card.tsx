@@ -24,9 +24,7 @@ export function SummaryCard({ title, to, isEmpty, emptyMessage, children }: Summ
           </Button>
         </CardAction>
       </CardHeader>
-      <CardContent>
-        {isEmpty ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : children}
-      </CardContent>
+      <CardContent>{isEmpty ? <p className="text-sm text-muted-foreground">{emptyMessage}</p> : children}</CardContent>
     </Card>
   )
 }

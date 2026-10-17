@@ -94,7 +94,11 @@ function ProfileSelect({ file, value, detected, onChange }: ProfileSelectProps) 
             sourceFile={file}
             onSaved={selectSaved}
             trigger={
-              <Button variant="ghost" size="icon" aria-label={t("importWorkspace.options.edit", { name: selected.name })}>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={t("importWorkspace.options.edit", { name: selected.name })}
+              >
                 <Pencil />
               </Button>
             }

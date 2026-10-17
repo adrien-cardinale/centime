@@ -74,12 +74,12 @@ export const Route = createFileRoute("/_app/transactions")({
 function hasActiveFilters(filters: TransactionFilterValues): boolean {
   return Boolean(
     filters.accountId ||
-      filters.from ||
-      filters.to ||
-      filters.search.trim() ||
-      filters.categoryId ||
-      filters.fixedItemId ||
-      filters.transfer,
+    filters.from ||
+    filters.to ||
+    filters.search.trim() ||
+    filters.categoryId ||
+    filters.fixedItemId ||
+    filters.transfer,
   )
 }
 

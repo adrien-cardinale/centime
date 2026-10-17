@@ -47,7 +47,10 @@ export function SyncStatusCard({ state }: { state: SyncState }) {
     <div className="space-y-4">
       <dl className="space-y-2">
         <SyncDetail label={t("settings.sync.server")} value={state.serverUrl ?? ""} />
-        <SyncDetail label={t("settings.sync.lastSync")} value={state.lastAt ? formatDateTime(state.lastAt) : t("common.never")} />
+        <SyncDetail
+          label={t("settings.sync.lastSync")}
+          value={state.lastAt ? formatDateTime(state.lastAt) : t("common.never")}
+        />
         <SyncDetail label={t("settings.sync.localChanges")} value={formatPendingChanges(state.dirtyCount)} />
       </dl>
       {state.lastError && (

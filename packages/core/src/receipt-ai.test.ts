@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test"
-import { buildReceiptAiInstruction, type ReceiptAiOutput, receiptAiOutputSchema, toAiExtractionResult } from "./receipt-ai"
+import {
+  buildReceiptAiInstruction,
+  type ReceiptAiOutput,
+  receiptAiOutputSchema,
+  toAiExtractionResult,
+} from "./receipt-ai"
 
 const categories = [
   { id: "cat-food", name: "Alimentation" },

@@ -27,7 +27,9 @@ function AppShell({ children }: { children: ReactNode }) {
             {title}
           </span>
         </header>
-        <div className="flex-1 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">{children}</div>
+        <div className="flex-1 p-4 pb-[calc(1rem+env(safe-area-inset-bottom))] sm:p-6 sm:pb-[calc(1.5rem+env(safe-area-inset-bottom))]">
+          {children}
+        </div>
       </SidebarInset>
     </SidebarProvider>
   )

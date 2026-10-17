@@ -2,7 +2,14 @@ import { Plus } from "lucide-react"
 import { useTranslation } from "react-i18next"
 import { OnboardingSteps } from "@/components/startup/onboarding"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
 
 function reloadOnNewAccount() {

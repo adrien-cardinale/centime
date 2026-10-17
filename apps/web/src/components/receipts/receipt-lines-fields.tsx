@@ -90,7 +90,13 @@ function LineFields({ control, index, onRemove }: LineFieldsProps) {
           </FormItem>
         )}
       />
-      <Button type="button" variant="ghost" size="icon" aria-label={t("receipts.details.removeLine")} onClick={onRemove}>
+      <Button
+        type="button"
+        variant="ghost"
+        size="icon"
+        aria-label={t("receipts.details.removeLine")}
+        onClick={onRemove}
+      >
         <Trash2 />
       </Button>
       <FormField

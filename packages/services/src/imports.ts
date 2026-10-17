@@ -141,7 +141,10 @@ async function locateTransactions(
   })
 }
 
-async function findExistingTransactions(db: DbExecutor, fingerprints: string[]): Promise<Map<string, ExistingTransaction>> {
+async function findExistingTransactions(
+  db: DbExecutor,
+  fingerprints: string[],
+): Promise<Map<string, ExistingTransaction>> {
   const existing = new Map<string, ExistingTransaction>()
   for (const fingerprintChunk of chunk(fingerprints, QUERY_CHUNK_SIZE)) {
     const rows = await db
@@ -368,8 +371,15 @@ export async function commitImport(db: Db, source: ImportSource): Promise<Import
     const accountsCreated = await createMissingAccounts(tx, preliminary)
     const analysis = accountsCreated > 0 ? await analyzeImport(tx, source) : preliminary
     const recorded = await recordImport(tx, source, analysis)
-    await insertNewTransactions(tx, analysis.rows.filter((row) => row.state === "new"), recorded.importId)
-    await promotePendingTransactions(tx, analysis.rows.filter((row) => row.state === "pendingToBooked"))
+    await insertNewTransactions(
+      tx,
+      analysis.rows.filter((row) => row.state === "new"),
+      recorded.importId,
+    )
+    await promotePendingTransactions(
+      tx,
+      analysis.rows.filter((row) => row.state === "pendingToBooked"),
+    )
     return { outcome: { ...recorded, accountsCreated }, accountIds: importedAccountIds(analysis.rows) }
   })
   await matchReceiptsQuietly(db, accountIds)
@@ -394,7 +404,10 @@ export async function deleteImport(db: Db, { id }: { id: string }, clock: Clock 
       .set({ deletedAt })
       .where(and(eq(transactions.importId, id), isNull(transactions.deletedAt)))
       .returning({ id: transactions.id })
-    await detachReceipts(tx, removed.map((row) => row.id))
+    await detachReceipts(
+      tx,
+      removed.map((row) => row.id),
+    )
     return { id: deleted.id, deletedTransactions: removed.length }
   })
 }

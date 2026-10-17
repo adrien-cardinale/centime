@@ -111,7 +111,10 @@ function RuleSummary({ rule }: { rule: FixedItem["rule"] }) {
   return (
     <p className="text-sm">
       <span className="text-muted-foreground">
-        {t("fixedItemsUi.sheet.rule", { field: ruleFieldLabels[rule.field], matchKind: ruleMatchKindLabels[rule.matchKind] })}{" "}
+        {t("fixedItemsUi.sheet.rule", {
+          field: ruleFieldLabels[rule.field],
+          matchKind: ruleMatchKindLabels[rule.matchKind],
+        })}{" "}
       </span>
       <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">{rule.pattern}</code>
     </p>
@@ -169,7 +172,10 @@ function MatchedTransactions({ report }: { report: OccurrenceReport }) {
   if (report.transactions.length === 0) {
     return (
       <p className="text-sm text-muted-foreground">
-        {t("fixedItemsUi.sheet.noTransactions", { start: formatDate(report.windowStart), end: formatDate(report.windowEnd) })}
+        {t("fixedItemsUi.sheet.noTransactions", {
+          start: formatDate(report.windowStart),
+          end: formatDate(report.windowEnd),
+        })}
       </p>
     )
   }

@@ -51,7 +51,12 @@ function blankToUndefined(value: string): string | undefined {
 
 function toAmount(amount: CsvProfileFields["amount"]): CsvProfileSchemaInput["amount"] {
   if (amount.mode === "signed") return { mode: "signed", column: amount.column }
-  return { mode: "debitCredit", column: amount.column, indicatorColumn: amount.indicatorColumn, debitValue: amount.debitValue }
+  return {
+    mode: "debitCredit",
+    column: amount.column,
+    indicatorColumn: amount.indicatorColumn,
+    debitValue: amount.debitValue,
+  }
 }
 
 function toStatusMap(statuses: CsvProfileFields["statuses"]): CsvProfileSchemaInput["statusMap"] {

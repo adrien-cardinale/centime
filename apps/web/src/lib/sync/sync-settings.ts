@@ -41,5 +41,10 @@ export async function writeSyncSetting(db: DbExecutor, name: SyncSettingName, va
 }
 
 export async function clearSyncSetting(db: DbExecutor, ...names: SyncSettingName[]): Promise<void> {
-  await db.delete(settings).where(inArray(settings.key, names.map((name) => SYNC_SETTING_KEYS[name])))
+  await db.delete(settings).where(
+    inArray(
+      settings.key,
+      names.map((name) => SYNC_SETTING_KEYS[name]),
+    ),
+  )
 }

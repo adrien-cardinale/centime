@@ -31,7 +31,10 @@ function otherEntry(rest: BreakdownEntry[]): BreakdownEntry[] {
   return [{ themeId: null, categoryId: null, name: OTHER_CATEGORIES_LABEL, color: null, amount, kind: "other" }]
 }
 
-export function limitBreakdown(entries: readonly BreakdownEntry[], visible = BREAKDOWN_VISIBLE_ENTRIES): BreakdownEntry[] {
+export function limitBreakdown(
+  entries: readonly BreakdownEntry[],
+  visible = BREAKDOWN_VISIBLE_ENTRIES,
+): BreakdownEntry[] {
   const sorted = entries.filter((entry) => entry.amount > 0).sort((left, right) => right.amount - left.amount)
   return [...sorted.slice(0, visible), ...otherEntry(sorted.slice(visible))]
 }
@@ -42,7 +45,10 @@ function sumLatestBalances(chronologicalPoints: readonly BalancePoint[]): number
   return roundCents([...latestByAccount.values()].reduce((sum, balance) => sum + balance, 0))
 }
 
-export function balanceSeries(chronologicalPoints: readonly BalancePoint[], months: readonly PeriodRange[]): MonthBalance[] {
+export function balanceSeries(
+  chronologicalPoints: readonly BalancePoint[],
+  months: readonly PeriodRange[],
+): MonthBalance[] {
   return months.flatMap((range) => {
     const balance = sumLatestBalances(chronologicalPoints.filter((point) => point.bookingDate <= range.end))
     return balance === null ? [] : [{ range, balance }]

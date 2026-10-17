@@ -31,7 +31,13 @@ export function TransactionChoice({ transaction, badge, disabled, onLink }: Tran
           {badge}
         </div>
       </div>
-      <Button type="button" size="sm" className="min-h-10 md:min-h-8" disabled={disabled} onClick={() => onLink(transaction.id)}>
+      <Button
+        type="button"
+        size="sm"
+        className="min-h-10 md:min-h-8"
+        disabled={disabled}
+        onClick={() => onLink(transaction.id)}
+      >
         {t("receipts.link.link")}
       </Button>
     </li>

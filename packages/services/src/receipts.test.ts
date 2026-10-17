@@ -317,7 +317,9 @@ describe("applyReceiptLinesAsSplits", () => {
 
 describe("receipts and imports", () => {
   beforeEach(async () => {
-    await db.insert(csvProfiles).values(TEST_CSV_PROFILES.map((profile) => ({ id: profile.id, ...csvProfileToRow(profile) })))
+    await db
+      .insert(csvProfiles)
+      .values(TEST_CSV_PROFILES.map((profile) => ({ id: profile.id, ...csvProfileToRow(profile) })))
     accountId = await createTestAccount(db, IBAN)
   })
 

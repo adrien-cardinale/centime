@@ -27,9 +27,15 @@ import { useTranslation } from "react-i18next"
 
 // Messages résolus à la validation (pas au chargement du module) pour suivre la langue courante.
 const accountFormSchema = z.object({
-  name: z.string().trim().min(1, { error: () => i18n.t("accounts.dialog.errors.nameRequired") }),
+  name: z
+    .string()
+    .trim()
+    .min(1, { error: () => i18n.t("accounts.dialog.errors.nameRequired") }),
   kind: z.enum(ACCOUNT_KINDS),
-  identifier: z.string().trim().min(1, { error: () => i18n.t("accounts.dialog.errors.identifierRequired") }),
+  identifier: z
+    .string()
+    .trim()
+    .min(1, { error: () => i18n.t("accounts.dialog.errors.identifierRequired") }),
   currency: z
     .string()
     .trim()
@@ -140,7 +146,15 @@ export function CreateAccountDialog() {
                 <FormItem>
                   <FormLabel>{t("accounts.dialog.currency")}</FormLabel>
                   <FormControl>
-                    <Input maxLength={3} className="uppercase" autoCapitalize="characters" autoCorrect="off" spellCheck={false} autoComplete="off" {...field} />
+                    <Input
+                      maxLength={3}
+                      className="uppercase"
+                      autoCapitalize="characters"
+                      autoCorrect="off"
+                      spellCheck={false}
+                      autoComplete="off"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

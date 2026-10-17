@@ -14,12 +14,7 @@ const DIACRITICS_PATTERN = /\p{Diacritic}/gu
 const WHITESPACE_PATTERN = /\s+/g
 
 export function normalizeLabel(label: string): string {
-  return label
-    .normalize("NFKD")
-    .replace(DIACRITICS_PATTERN, "")
-    .toLowerCase()
-    .replace(WHITESPACE_PATTERN, " ")
-    .trim()
+  return label.normalize("NFKD").replace(DIACRITICS_PATTERN, "").toLowerCase().replace(WHITESPACE_PATTERN, " ").trim()
 }
 
 export function formatAmountForFingerprint(amount: number): string {

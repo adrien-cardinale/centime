@@ -29,7 +29,10 @@ export async function createAccount(db: Db, input: AccountInput) {
   if (rows.some((row) => normalizeAccountIdentifier(row.identifier) === identifier)) {
     throw new ServiceError("Un compte avec cet identifiant existe déjà", 409)
   }
-  const [created] = await db.insert(accounts).values({ ...input, identifier }).returning()
+  const [created] = await db
+    .insert(accounts)
+    .values({ ...input, identifier })
+    .returning()
   if (!created) throw new Error("Insertion du compte impossible")
   return created
 }

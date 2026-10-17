@@ -14,7 +14,16 @@ import {
   shiftDays,
   summarizeItem,
 } from "@centime/core"
-import { accounts, categories, type Db, type DbExecutor, type FixedItemRow, fixedItems, rules, transactions } from "@centime/db"
+import {
+  accounts,
+  categories,
+  type Db,
+  type DbExecutor,
+  type FixedItemRow,
+  fixedItems,
+  rules,
+  transactions,
+} from "@centime/db"
 import { and, asc, count, desc, eq, gte, isNotNull, isNull, lte } from "drizzle-orm"
 import { isActiveCategory } from "./categories"
 import { categorizeTransactions, loadCategorizableTransactions } from "./categorize"
@@ -150,7 +159,12 @@ async function removeLinkedRules(db: DbExecutor, fixedItemId: string, deletedAt:
   await db.update(rules).set({ deletedAt }).where(linkedRulesCondition(fixedItemId))
 }
 
-async function upsertLinkedRule(db: DbExecutor, fixedItemId: string, categoryId: string | null, matcher: RuleMatcherInput) {
+async function upsertLinkedRule(
+  db: DbExecutor,
+  fixedItemId: string,
+  categoryId: string | null,
+  matcher: RuleMatcherInput,
+) {
   const [existing] = await db
     .select({ id: rules.id })
     .from(rules)
@@ -162,7 +176,12 @@ async function upsertLinkedRule(db: DbExecutor, fixedItemId: string, categoryId:
   await linkMatchingTransactions(db)
 }
 
-async function syncLinkedRules(db: DbExecutor, fixedItemId: string, payload: FixedItemPayload, clock: Clock): Promise<void> {
+async function syncLinkedRules(
+  db: DbExecutor,
+  fixedItemId: string,
+  payload: FixedItemPayload,
+  clock: Clock,
+): Promise<void> {
   if (payload.rule === null) return removeLinkedRules(db, fixedItemId, nowIso(clock))
   await db.update(rules).set({ categoryId: payload.categoryId }).where(linkedRulesCondition(fixedItemId))
   if (payload.rule) await upsertLinkedRule(db, fixedItemId, payload.categoryId, payload.rule)

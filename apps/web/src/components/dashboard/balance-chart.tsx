@@ -24,10 +24,20 @@ export function BalanceChart({ series: fullSeries }: { series: BalancePoint[] })
       title={t("dashboardPage.balance.title")}
       description={t("dashboardPage.balance.description")}
       chart={
-        <ChartContainer config={chartConfigOf(t("dashboardPage.balance.series"))} className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}>
+        <ChartContainer
+          config={chartConfigOf(t("dashboardPage.balance.series"))}
+          className={cn("aspect-auto w-full", CHART_HEIGHT_CLASS)}
+        >
           <LineChart data={series} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <CartesianGrid vertical={false} stroke="var(--chart-grid)" />
-            <XAxis dataKey="month" tickFormatter={shortMonth} axisLine={false} tickLine={false} tickMargin={8} minTickGap={4} />
+            <XAxis
+              dataKey="month"
+              tickFormatter={shortMonth}
+              axisLine={false}
+              tickLine={false}
+              tickMargin={8}
+              minTickGap={4}
+            />
             <YAxis
               tickFormatter={compactAmount}
               axisLine={false}

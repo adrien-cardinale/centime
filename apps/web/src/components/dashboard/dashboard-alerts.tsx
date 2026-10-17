@@ -17,10 +17,18 @@ function alertsOf(kpis: DashboardKpis, t: (key: string, options: { count: number
     })
   }
   if (kpis.budgetsExceeded > 0) {
-    alerts.push({ key: "budgets", label: t("dashboard.budgetsExceeded", { count: kpis.budgetsExceeded }), link: { to: "/budgets" } })
+    alerts.push({
+      key: "budgets",
+      label: t("dashboard.budgetsExceeded", { count: kpis.budgetsExceeded }),
+      link: { to: "/budgets" },
+    })
   }
   if (kpis.overdueOccurrences > 0) {
-    alerts.push({ key: "overdue", label: t("dashboard.overdue", { count: kpis.overdueOccurrences }), link: { to: "/budgets" } })
+    alerts.push({
+      key: "overdue",
+      label: t("dashboard.overdue", { count: kpis.overdueOccurrences }),
+      link: { to: "/budgets" },
+    })
   }
   if (kpis.pendingCount > 0) {
     alerts.push({ key: "pending", label: t("dashboard.pending", { count: kpis.pendingCount }) })

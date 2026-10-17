@@ -51,7 +51,9 @@ describe("index des comptes", () => {
   test("garde le compte actif lors d'une migration", () => {
     const index = withActiveIfNone(twoAccounts(), SECOND_ID)
     expect(activeAccount(index)?.id).toBe(FIRST_ID)
-    expect(withActiveIfNone(withAccount(EMPTY_ACCOUNT_INDEX, account(SECOND_ID, "Pro")), SECOND_ID).activeId).toBe(SECOND_ID)
+    expect(withActiveIfNone(withAccount(EMPTY_ACCOUNT_INDEX, account(SECOND_ID, "Pro")), SECOND_ID).activeId).toBe(
+      SECOND_ID,
+    )
   })
 
   test("renomme un compte", () => {
@@ -66,7 +68,10 @@ describe("index des comptes", () => {
 
   test("propose le premier nom par défaut libre", () => {
     expect(nextDefaultLabel(EMPTY_ACCOUNT_INDEX, label)).toBe("Compte 1")
-    const index = withAccount(withAccount(EMPTY_ACCOUNT_INDEX, account(FIRST_ID, "Compte 1")), account(SECOND_ID, "Compte 3"))
+    const index = withAccount(
+      withAccount(EMPTY_ACCOUNT_INDEX, account(FIRST_ID, "Compte 1")),
+      account(SECOND_ID, "Compte 3"),
+    )
     expect(nextDefaultLabel(index, label)).toBe("Compte 2")
   })
 })

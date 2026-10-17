@@ -62,7 +62,9 @@ let db: Db
 
 beforeEach(async () => {
   db = await createTestDb()
-  await db.insert(csvProfiles).values(TEST_CSV_PROFILES.map((profile) => ({ id: profile.id, ...csvProfileToRow(profile) })))
+  await db
+    .insert(csvProfiles)
+    .values(TEST_CSV_PROFILES.map((profile) => ({ id: profile.id, ...csvProfileToRow(profile) })))
 })
 
 describe("import service", () => {
@@ -126,7 +128,9 @@ describe("import service", () => {
     expect(second).toMatchObject({ inserted: 3, skipped: 0 })
     const stored = await db.select().from(transactions)
     expect(stored).toHaveLength(3)
-    expect(stored.every((transaction) => transaction.deletedAt === null && transaction.importId === second.importId)).toBe(true)
+    expect(
+      stored.every((transaction) => transaction.deletedAt === null && transaction.importId === second.importId),
+    ).toBe(true)
   })
 
   it("categorizes new transactions with the active rules", async () => {

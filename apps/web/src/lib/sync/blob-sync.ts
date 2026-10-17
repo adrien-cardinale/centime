@@ -39,7 +39,15 @@ export function isBlobId(id: string): boolean {
   return BLOB_ID_PATTERN.test(id)
 }
 
-export function planBlobSync({ remote, local, rows }: { remote: string[]; local: string[]; rows: BlobRow[] }): BlobPlan {
+export function planBlobSync({
+  remote,
+  local,
+  rows,
+}: {
+  remote: string[]
+  local: string[]
+  rows: BlobRow[]
+}): BlobPlan {
   const remoteIds = new Set(remote.filter(isBlobId))
   const localIds = new Set(local.filter(isBlobId))
   const knownIds = new Set(rows.map((row) => row.id))

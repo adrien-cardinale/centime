@@ -30,14 +30,18 @@ export function groupByTheme(budgets: BudgetOverviewItem[], themes: Theme[]): Th
     ...themes.map((theme) => ({ theme, budgets: budgets.filter((budget) => budget.themeId === theme.id) })),
     { theme: null, budgets: budgets.filter((budget) => budget.themeId === null || !known.has(budget.themeId)) },
   ]
-  return groups.filter((group) => group.budgets.length > 0).map((group) => ({ ...group, totals: sumTotals(group.budgets) }))
+  return groups
+    .filter((group) => group.budgets.length > 0)
+    .map((group) => ({ ...group, totals: sumTotals(group.budgets) }))
 }
 
 export function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
   return [
     status.carry !== 0 && i18n.t("budgets.table.carry", { amount: signedMoney(status.carry) }),
     status.pending > 0 && i18n.t("budgets.table.pending", { amount: money(status.pending) }),
-    status.projected !== null && status.projected !== 0 && i18n.t("budgets.table.projected", { amount: money(status.projected) }),
+    status.projected !== null &&
+      status.projected !== 0 &&
+      i18n.t("budgets.table.projected", { amount: money(status.projected) }),
   ].filter((detail) => detail !== false)
 }
 

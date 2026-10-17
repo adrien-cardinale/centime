@@ -5,7 +5,10 @@ const read = (path: string) => readFileSync(new URL(path, root), "utf8")
 
 // tauri.conf.json ne déclare pas de version : Tauri la lit dans Cargo.toml, une source de vérité de moins.
 const packageJson = JSON.parse(read("package.json")).version
-const packageSection = read("src-tauri/Cargo.toml").split(/^\[/m).find((section) => section.startsWith("package]")) ?? ""
+const packageSection =
+  read("src-tauri/Cargo.toml")
+    .split(/^\[/m)
+    .find((section) => section.startsWith("package]")) ?? ""
 const cargoToml = packageSection.match(/^version = "([^"]+)"/m)?.[1]
 const cargoLock = read("src-tauri/Cargo.lock").match(/name = "centime-desktop"\r?\nversion = "([^"]+)"/)?.[1]
 

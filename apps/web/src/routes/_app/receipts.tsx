@@ -19,10 +19,7 @@ const STATUSES = ["pending", "linked", "ignored"] as const satisfies readonly Re
 
 export const Route = createFileRoute("/_app/receipts")({
   loader: ({ context }) =>
-    Promise.all([
-      context.queryClient.prefetchQuery(accountsQuery),
-      context.queryClient.prefetchQuery(categoriesQuery),
-    ]),
+    Promise.all([context.queryClient.prefetchQuery(accountsQuery), context.queryClient.prefetchQuery(categoriesQuery)]),
   component: ReceiptsPage,
 })
 

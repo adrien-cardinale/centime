@@ -42,11 +42,7 @@ function toRow(input: RulePayload) {
 }
 
 export function listRules(db: Db) {
-  return db
-    .select()
-    .from(rules)
-    .where(isNull(rules.deletedAt))
-    .orderBy(desc(rules.priority), asc(rules.createdAt))
+  return db.select().from(rules).where(isNull(rules.deletedAt)).orderBy(desc(rules.priority), asc(rules.createdAt))
 }
 
 export async function createRule(db: Db, input: RulePayload) {

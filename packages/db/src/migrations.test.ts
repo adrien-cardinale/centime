@@ -56,10 +56,7 @@ describe("runMigrations", () => {
     await runMigrations(db)
     await runMigrations(db)
     expect(await appliedTags(db)).toEqual(MIGRATIONS.map((migration) => migration.tag))
-    const [account] = await db
-      .insert(accounts)
-      .values({ name: "Compte", kind: "bank", identifier: "CH00" })
-      .returning()
+    const [account] = await db.insert(accounts).values({ name: "Compte", kind: "bank", identifier: "CH00" }).returning()
     expect(account?.syncVersion).toBeNull()
     expect(await db.query.accounts.findFirst()).toMatchObject({ identifier: "CH00" })
     expect(await db.query.apiTokens.findFirst()).toBeUndefined()
@@ -84,7 +81,10 @@ describe("runMigrations", () => {
 
   it("turns parent categories into themes", async () => {
     const db = createDb(":memory:")
-    await simulateDrizzleMigratedDatabase(db, MIGRATIONS.findIndex((migration) => migration.tag === "0006_drop_category_parent"))
+    await simulateDrizzleMigratedDatabase(
+      db,
+      MIGRATIONS.findIndex((migration) => migration.tag === "0006_drop_category_parent"),
+    )
     const stamp = "2026-01-01T00:00:00.000Z"
     const insert = (id: string, name: string, parentId: string | null) =>
       db.run(
@@ -104,7 +104,9 @@ describe("runMigrations", () => {
 
     await runMigrations(db)
 
-    expect((await db.select({ id: themes.id, name: themes.name }).from(themes)).sort((a, b) => a.id.localeCompare(b.id))).toEqual([
+    expect(
+      (await db.select({ id: themes.id, name: themes.name }).from(themes)).sort((a, b) => a.id.localeCompare(b.id)),
+    ).toEqual([
       { id: "food", name: "Alimentation" },
       { id: "housing", name: "Logement" },
     ])

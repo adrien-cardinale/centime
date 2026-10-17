@@ -1,16 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "lib": [
-      "ES2023",
-      "DOM"
-    ],
-    "types": [
-      "bun"
-    ]
+    "lib": ["ES2023", "DOM"],
+    "types": ["bun"]
   },
-  "include": [
-    "src/**/*.test.ts",
-    "src/test-support"
-  ]
+  "include": ["src/**/*.test.ts", "src/test-support"]
 }

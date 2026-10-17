@@ -12,9 +12,7 @@ export function Pagination({ page, pageCount, onPageChange }: PaginationProps) {
   const { t } = useTranslation()
   return (
     <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-t px-4 py-3 sm:px-6">
-      <p className="text-sm text-muted-foreground">
-        {t("transactionsPage.pagination.pageOf", { page, pageCount })}
-      </p>
+      <p className="text-sm text-muted-foreground">{t("transactionsPage.pagination.pageOf", { page, pageCount })}</p>
       <div className="flex gap-2">
         <Button
           variant="outline"

@@ -78,7 +78,11 @@ function isEligible(transaction: CategorizableTransaction, scope: ApplyScope): b
 }
 
 function currentAssignment(transaction: CategorizableTransaction): Assignment {
-  return { categoryId: transaction.categoryId, fixedItemId: transaction.fixedItemId, isTransfer: transaction.isTransfer }
+  return {
+    categoryId: transaction.categoryId,
+    fixedItemId: transaction.fixedItemId,
+    isTransfer: transaction.isTransfer,
+  }
 }
 
 function nextAssignment(transaction: CategorizableTransaction, scope: ApplyScope, engine: RuleEngine): Assignment {

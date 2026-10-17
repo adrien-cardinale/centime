@@ -31,11 +31,19 @@ function StatusIcon({ healthy, description }: { healthy: boolean; description: s
   return <Icon role="img" aria-label={description} className="size-4 shrink-0" />
 }
 
-function StatusSummary({ state, description, showDescription, ...props }: StatusSummaryProps & React.ComponentProps<"div">) {
+function StatusSummary({
+  state,
+  description,
+  showDescription,
+  ...props
+}: StatusSummaryProps & React.ComponentProps<"div">) {
   const lastTime = state.configured && state.lastAt ? format(parseISO(state.lastAt), "HH:mm") : null
   return (
     <div
-      className={cn("flex min-w-0 flex-1 items-center gap-2 text-sm", state.configured && "group-data-[collapsible=icon]:hidden")}
+      className={cn(
+        "flex min-w-0 flex-1 items-center gap-2 text-sm",
+        state.configured && "group-data-[collapsible=icon]:hidden",
+      )}
       {...props}
     >
       <StatusIcon healthy={isHealthy(state)} description={description} />
@@ -50,7 +58,15 @@ function StatusSummary({ state, description, showDescription, ...props }: Status
   )
 }
 
-function DesktopTooltip({ enabled, content, children }: { enabled: boolean; content: string; children: React.ReactElement }) {
+function DesktopTooltip({
+  enabled,
+  content,
+  children,
+}: {
+  enabled: boolean
+  content: string
+  children: React.ReactElement
+}) {
   if (!enabled) return children
   return (
     <Tooltip>

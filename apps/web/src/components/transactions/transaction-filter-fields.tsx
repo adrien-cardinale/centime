@@ -79,11 +79,21 @@ export function TransactionFilterFields({ values, onChange }: TransactionFilterF
     <>
       <div className="space-y-2">
         <Label htmlFor="filter-account">{t("transactionsPage.columns.account")}</Label>
-        <AccountSelect id="filter-account" allowAll value={values.accountId} onChange={(accountId) => update({ accountId })} />
+        <AccountSelect
+          id="filter-account"
+          allowAll
+          value={values.accountId}
+          onChange={(accountId) => update({ accountId })}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="filter-from">{t("transactionsPage.filters.from")}</Label>
-        <Input id="filter-from" type="date" value={values.from} onChange={(event) => update({ from: event.target.value })} />
+        <Input
+          id="filter-from"
+          type="date"
+          value={values.from}
+          onChange={(event) => update({ from: event.target.value })}
+        />
       </div>
       <div className="space-y-2">
         <Label htmlFor="filter-to">{t("transactionsPage.filters.to")}</Label>
@@ -112,7 +122,10 @@ export function TransactionFilterFields({ values, onChange }: TransactionFilterF
           extraOptions={[
             { value: ALL, label: t("transactionsPage.filters.all") },
             { value: UNCATEGORIZED_FILTER, label: t("transactionsPage.filters.uncategorized") },
-            ...themes.map((theme) => ({ value: `${THEME_PREFIX}${theme.id}`, label: t("transactionsPage.filters.theme", { name: theme.name }) })),
+            ...themes.map((theme) => ({
+              value: `${THEME_PREFIX}${theme.id}`,
+              label: t("transactionsPage.filters.theme", { name: theme.name }),
+            })),
           ]}
         />
       </div>
@@ -139,7 +152,13 @@ export function TransactionFilterFields({ values, onChange }: TransactionFilterF
   )
 }
 
-function FixedItemFilter({ value, onChange }: { value: string | undefined; onChange: (value: string | undefined) => void }) {
+function FixedItemFilter({
+  value,
+  onChange,
+}: {
+  value: string | undefined
+  onChange: (value: string | undefined) => void
+}) {
   const { t } = useTranslation()
   const { data: items = [] } = useQuery(fixedItemsQuery)
   return (

@@ -8,7 +8,14 @@ import { toast } from "sonner"
 import type { z } from "zod"
 import { CreatableCategorySelect } from "@/components/categories/creatable-category-select"
 import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -36,7 +43,13 @@ function formValuesFor({ budget, categoryId }: BudgetDialogTarget): BudgetFormVa
     const { id: _id, ...values } = budget
     return values
   }
-  return { categoryId: categoryId ?? "", amount: 0, period: "monthly", rollover: false, startDate: defaultStartDate("monthly") }
+  return {
+    categoryId: categoryId ?? "",
+    amount: 0,
+    period: "monthly",
+    rollover: false,
+    startDate: defaultStartDate("monthly"),
+  }
 }
 
 function isPeriodicity(value: string): value is Periodicity {
@@ -108,7 +121,11 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
             <FormItem>
               <FormLabel>{t("budgets.dialog.category")}</FormLabel>
               <FormControl>
-                <CreatableCategorySelect value={field.value || undefined} onChange={field.onChange} excludeIds={excludedIds} />
+                <CreatableCategorySelect
+                  value={field.value || undefined}
+                  onChange={field.onChange}
+                  excludeIds={excludedIds}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -179,10 +196,10 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
           render={({ field }) => (
             <FormItem className="relative flex min-h-11 items-start justify-between gap-4 rounded-md border p-3">
               <div className="space-y-1">
-                <FormLabel className="cursor-pointer after:absolute after:inset-0">{t("budgets.dialog.rollover")}</FormLabel>
-                <FormDescription>
-                  {t("budgets.dialog.rolloverHint")}
-                </FormDescription>
+                <FormLabel className="cursor-pointer after:absolute after:inset-0">
+                  {t("budgets.dialog.rollover")}
+                </FormLabel>
+                <FormDescription>{t("budgets.dialog.rolloverHint")}</FormDescription>
               </div>
               <FormControl>
                 <Switch className="relative" checked={field.value} onCheckedChange={field.onChange} />

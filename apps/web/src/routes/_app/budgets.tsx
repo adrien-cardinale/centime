@@ -1,10 +1,4 @@
-import {
-  defaultOverviewRange,
-  monthPlanOf,
-  type PeriodRange,
-  type PlanLine,
-  periodContaining,
-} from "@centime/core"
+import { defaultOverviewRange, monthPlanOf, type PeriodRange, type PlanLine, periodContaining } from "@centime/core"
 import { useQuery } from "@tanstack/react-query"
 import { createFileRoute } from "@tanstack/react-router"
 import { PiggyBank, Plus } from "lucide-react"
@@ -29,7 +23,14 @@ import { BUDGET_CURRENCY, isIsoDate, todayIso } from "@/lib/budgets"
 import { directionOf, occurrenceIn } from "@/lib/fixed-items"
 import i18n from "@/i18n"
 import { formatAmount } from "@/lib/format"
-import { budgetsOverviewQuery, budgetsQuery, categoriesQuery, fixedItemsOverviewQuery, fixedItemsQuery, themesQuery } from "@/lib/queries"
+import {
+  budgetsOverviewQuery,
+  budgetsQuery,
+  categoriesQuery,
+  fixedItemsOverviewQuery,
+  fixedItemsQuery,
+  themesQuery,
+} from "@/lib/queries"
 
 type BudgetsSearch = { date?: string }
 
@@ -134,7 +135,15 @@ type PlanContentProps = {
   onCreateBudget: (categoryId?: string) => void
 }
 
-function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, onEditBudget, onCreateBudget }: PlanContentProps) {
+function PlanContent({
+  month,
+  budgets,
+  fixedItems,
+  occurrences,
+  onSelectDate,
+  onEditBudget,
+  onCreateBudget,
+}: PlanContentProps) {
   const { t } = useTranslation()
   const [viewedId, setViewedId] = useState<string | null>(null)
   const { data: themes = [] } = useQuery(themesQuery)
@@ -152,7 +161,10 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
         <EarlierOverdue overviews={occurrences.items} month={month} onSelect={onSelectDate} />
       </div>
       <UnbudgetedSpending categories={budgets.unbudgeted} monthLabel={month.label} onCreate={onCreateBudget} />
-      <PlanSection title={t("budgetsPage.variableEnvelopes")} aside={progressText("budgetsPage.progressSpent", plan.envelopes)}>
+      <PlanSection
+        title={t("budgetsPage.variableEnvelopes")}
+        aside={progressText("budgetsPage.progressSpent", plan.envelopes)}
+      >
         {budgets.budgets.length === 0 && <EmptyEnvelopes onCreate={() => onCreateBudget()} />}
         {budgets.budgets.length > 0 && (
           <Card className="py-0">
@@ -162,7 +174,10 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
           </Card>
         )}
       </PlanSection>
-      <PlanSection title={t("budgetsPage.fixedExpenses")} aside={progressText("budgetsPage.progressPaid", plan.fixedExpenses)}>
+      <PlanSection
+        title={t("budgetsPage.fixedExpenses")}
+        aside={progressText("budgetsPage.progressPaid", plan.fixedExpenses)}
+      >
         <Card className="py-0">
           <CardContent className="px-0">
             <FixedItemsTable
@@ -175,7 +190,10 @@ function PlanContent({ month, budgets, fixedItems, occurrences, onSelectDate, on
           </CardContent>
         </Card>
       </PlanSection>
-      <PlanSection title={t("budgetsPage.fixedIncome")} aside={progressText("budgetsPage.progressReceived", plan.income)}>
+      <PlanSection
+        title={t("budgetsPage.fixedIncome")}
+        aside={progressText("budgetsPage.progressReceived", plan.income)}
+      >
         <Card className="py-0">
           <CardContent className="px-0">
             <FixedItemsTable
@@ -221,9 +239,7 @@ function EmptyEnvelopes({ onCreate }: { onCreate: () => void }) {
         <PiggyBank className="size-8 text-muted-foreground" />
         <div className="space-y-1">
           <p className="font-medium">{t("budgetsPage.emptyBudgetsTitle")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("budgetsPage.emptyBudgetsDescription")}
-          </p>
+          <p className="text-sm text-muted-foreground">{t("budgetsPage.emptyBudgetsDescription")}</p>
         </div>
         <Button onClick={onCreate}>
           <Plus />

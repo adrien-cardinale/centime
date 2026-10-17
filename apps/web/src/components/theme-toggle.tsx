@@ -1,12 +1,7 @@
 import { Monitor, Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useTranslation } from "react-i18next"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { SidebarMenuButton } from "@/components/ui/sidebar"
 
 export function ThemeToggle() {

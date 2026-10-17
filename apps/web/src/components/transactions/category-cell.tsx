@@ -89,9 +89,15 @@ function CategoryChooser({ transaction, onCreateRule }: CategoryChooserProps) {
 function CurrentCategory({ transaction }: { transaction: TransactionItem }) {
   const { t } = useTranslation()
   if (transaction.categoryName && transaction.categoryColor) {
-    return <CategoryBadge name={transaction.categoryName} color={transaction.categoryColor} className="cursor-pointer" />
+    return (
+      <CategoryBadge name={transaction.categoryName} color={transaction.categoryColor} className="cursor-pointer" />
+    )
   }
-  return <span className="cursor-pointer px-2 text-muted-foreground hover:text-foreground">{t("transactionsPage.category.none")}</span>
+  return (
+    <span className="cursor-pointer px-2 text-muted-foreground hover:text-foreground">
+      {t("transactionsPage.category.none")}
+    </span>
+  )
 }
 
 function SplitSummary({ transaction, onOpen }: { transaction: TransactionItem; onOpen: () => void }) {

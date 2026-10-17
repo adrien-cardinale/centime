@@ -17,9 +17,14 @@ const section = (title: string) => console.log(`\n=== ${title}\n`)
 // --- Versions -----------------------------------------------------------------------------------
 // Les trois fichiers doivent coïncider : le job check-version du workflow refuse le tag sinon.
 const packageJson = JSON.parse(read("apps/desktop/package.json")).version as string
-const cargoPackage = read("apps/desktop/src-tauri/Cargo.toml").split(/^\[/m).find((s) => s.startsWith("package]")) ?? ""
+const cargoPackage =
+  read("apps/desktop/src-tauri/Cargo.toml")
+    .split(/^\[/m)
+    .find((s) => s.startsWith("package]")) ?? ""
 const cargoToml = cargoPackage.match(/^version = "([^"]+)"/m)?.[1]
-const cargoLock = read("apps/desktop/src-tauri/Cargo.lock").match(/name = "centime-desktop"\r?\nversion = "([^"]+)"/)?.[1]
+const cargoLock = read("apps/desktop/src-tauri/Cargo.lock").match(
+  /name = "centime-desktop"\r?\nversion = "([^"]+)"/,
+)?.[1]
 
 section("Versions")
 console.log(`apps/desktop/package.json        ${packageJson}`)
@@ -55,10 +60,18 @@ if (!changed.length) console.log("(aucun fichier modifié, ou pas de tag de réf
 // Le verdict reste humain : un refactor interne ne change pas forcément l'image.
 const screens: Record<string, string[]> = {
   dashboard: ["apps/web/src/components/dashboard", "apps/web/src/routes/_app/index.tsx"],
-  budgets: ["apps/web/src/components/budgets", "apps/web/src/components/fixed-items", "apps/web/src/routes/_app/budgets.tsx"],
+  budgets: [
+    "apps/web/src/components/budgets",
+    "apps/web/src/components/fixed-items",
+    "apps/web/src/routes/_app/budgets.tsx",
+  ],
   transactions: ["apps/web/src/components/transactions", "apps/web/src/routes/_app/transactions.tsx"],
   import: ["apps/web/src/components/import", "apps/web/src/routes/_app/import.tsx"],
-  categories: ["apps/web/src/components/categories", "apps/web/src/components/rules", "apps/web/src/routes/_app/categories.tsx"],
+  categories: [
+    "apps/web/src/components/categories",
+    "apps/web/src/components/rules",
+    "apps/web/src/routes/_app/categories.tsx",
+  ],
   onboarding: ["apps/web/src/components/startup"],
 }
 // Le châssis commun (barre latérale, en-têtes, primitives UI, thème) se voit sur toutes les captures.
@@ -70,7 +83,10 @@ const shared = [
 ]
 
 // Les modifications non committées comptent aussi : elles partiront dans la release.
-const pending = git("status", "--porcelain").split("\n").map((line) => line.slice(3).trim()).filter(Boolean)
+const pending = git("status", "--porcelain")
+  .split("\n")
+  .map((line) => line.slice(3).trim())
+  .filter(Boolean)
 
 section("Captures d'écran")
 for (const [screen, paths] of Object.entries(screens)) {
@@ -94,7 +110,9 @@ for (const [screen, paths] of Object.entries(screens)) {
     console.log(`${screen.padEnd(13)} ${stamp}  à jour`)
     continue
   }
-  console.log(`${screen.padEnd(13)} ${stamp}  ${unique.length} commit(s) + ${dirty.length} fichier(s) non committé(s) depuis :`)
+  console.log(
+    `${screen.padEnd(13)} ${stamp}  ${unique.length} commit(s) + ${dirty.length} fichier(s) non committé(s) depuis :`,
+  )
   for (const commit of unique.slice(0, 6)) console.log(`              - ${commit}`)
   for (const file of dirty.slice(0, 6)) console.log(`              - (non committé) ${file}`)
 }
@@ -121,9 +139,12 @@ section("Changelog")
 const changelog = read("CHANGELOG.md")
 const versionToCheck = target ?? packageJson
 const heading = changelog.match(new RegExp(`^## \\[${versionToCheck.replace(/\./g, "\\.")}\\][^\\n]*`, "m"))?.[0]
-console.log(heading ? `section trouvée : ${heading}` : `pas de section "## [${versionToCheck}]" → le tag échouerait en CI`)
+console.log(
+  heading ? `section trouvée : ${heading}` : `pas de section "## [${versionToCheck}]" → le tag échouerait en CI`,
+)
 const today = new Date().toISOString().slice(0, 10)
-if (heading && !heading.includes(today)) console.log(`date de la section différente d'aujourd'hui (${today}) : à vérifier`)
+if (heading && !heading.includes(today))
+  console.log(`date de la section différente d'aujourd'hui (${today}) : à vérifier`)
 console.log(`\nsections existantes : ${[...changelog.matchAll(/^## \[([^\]]+)\]/gm)].map((m) => m[1]).join(", ")}`)
 
 // --- État du dépôt ------------------------------------------------------------------------------

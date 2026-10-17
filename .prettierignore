@@ -6,3 +6,4 @@ apps/web/src/routeTree.gen.ts
 apps/desktop/src-tauri/gen
 apps/desktop/src-tauri/target
 packages/db/drizzle
+packages/db/src/migrations.generated.ts

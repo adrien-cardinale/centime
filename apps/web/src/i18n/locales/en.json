@@ -750,7 +750,7 @@
       "hasHeader": "First row = headers"
     },
     "columns": {
-      "fromFile": "Columns read from the imported file, using the encoding and delimiter chosen above.",
+      "fromFile": "Columns read from the imported file, using the encoding and delimiter chosen above. The table shows the first data row.",
       "manual": "Exact header name, or position starting at 1 if the file has no headers.",
       "date": "Booking date *",
       "label": "Description *",

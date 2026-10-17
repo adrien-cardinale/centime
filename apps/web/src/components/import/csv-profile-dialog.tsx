@@ -38,6 +38,7 @@ import {
 import { csvSampleQuery, invalidateCsvProfileData } from "@/lib/queries"
 import { ColumnField, type CsvProfileControl, SelectField, TextField } from "./csv-profile-fields"
 import { CsvProfileStatuses } from "./csv-profile-statuses"
+import { CsvSampleTable } from "./csv-sample-table"
 
 type CsvProfileDialogProps = {
   profile?: CsvProfile
@@ -218,6 +219,7 @@ function ColumnsSection({ control, columns }: ColumnsProps) {
       <p className="text-sm text-muted-foreground">
         {columns.length > 0 ? t("csvProfiles.columns.fromFile") : t("csvProfiles.columns.manual")}
       </p>
+      {columns.length > 0 && <CsvSampleTable columns={columns} />}
       <div className="grid gap-4 sm:grid-cols-2">
         <ColumnField control={control} columns={columns} name="columns.date" label={t("csvProfiles.columns.date")} />
         <ColumnField control={control} columns={columns} name="columns.label" label={t("csvProfiles.columns.label")} />

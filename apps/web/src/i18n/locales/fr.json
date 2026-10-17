@@ -750,7 +750,7 @@
       "hasHeader": "Première ligne = en-têtes"
     },
     "columns": {
-      "fromFile": "Colonnes lues dans le fichier importé, avec l'encodage et le séparateur choisis ci-dessus.",
+      "fromFile": "Colonnes lues dans le fichier importé, avec l'encodage et le séparateur choisis ci-dessus. Le tableau montre la première ligne de données.",
       "manual": "Nom exact de l'en-tête, ou position à partir de 1 si le fichier n'a pas d'en-têtes.",
       "date": "Date de comptabilisation *",
       "label": "Libellé *",

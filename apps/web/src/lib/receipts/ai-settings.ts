@@ -1,8 +1,8 @@
-import { type DbExecutor, settings } from "@centime/db"
-import { eq } from "@centime/db/orm"
+import type { DbExecutor } from "@centime/db"
 import { type UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
+import { readPreference, writePreference } from "@/lib/preferences"
 
 export type AiExtractionSettings = { enabled: boolean; apiKey: string; model: string }
 
@@ -16,9 +16,7 @@ export const DEFAULT_AI_EXTRACTION_SETTINGS: AiExtractionSettings = {
   model: DEFAULT_AI_MODEL,
 }
 
-const AI_SETTINGS_KEY = "receipts.ai"
-
-const aiExtractionQueryKey = ["settings", AI_SETTINGS_KEY] as const
+const aiExtractionQueryKey = ["preferences", "receipts.ai"] as const
 
 const storedSettingsSchema = z.object({
   enabled: z.boolean().catch(false),
@@ -38,8 +36,7 @@ function parseStoredSettings(value: string | undefined): AiExtractionSettings {
 }
 
 async function readAiExtractionSettings(db: DbExecutor): Promise<AiExtractionSettings> {
-  const [row] = await db.select().from(settings).where(eq(settings.key, AI_SETTINGS_KEY))
-  return parseStoredSettings(row?.value)
+  return parseStoredSettings(await readPreference(db, "receipts.ai"))
 }
 
 async function writeAiExtractionSettings(db: DbExecutor, value: AiExtractionSettings): Promise<void> {
@@ -48,10 +45,7 @@ async function writeAiExtractionSettings(db: DbExecutor, value: AiExtractionSett
     apiKey: value.apiKey.trim(),
     model: value.model.trim() || DEFAULT_AI_MODEL,
   })
-  await db
-    .insert(settings)
-    .values({ key: AI_SETTINGS_KEY, value: text })
-    .onConflictDoUpdate({ target: settings.key, set: { value: text } })
+  await writePreference(db, "receipts.ai", text)
 }
 
 export function isAiExtractionReady(value: AiExtractionSettings): boolean {

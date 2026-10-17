@@ -146,7 +146,7 @@
       "privacy": "If you turn on this option, the receipt photo leaves your device. It is sent to Anthropic with the names of your categories. Nothing else is sent.",
       "enable": "Send receipt photos to Anthropic",
       "apiKey": "Anthropic API key",
-      "apiKeyHint": "The key stays on this device, in the encrypted database. Create it on the Anthropic console:",
+      "apiKeyHint": "The key is stored in the encrypted database and synced, encrypted, with your other devices. Create it on the Anthropic console:",
       "showKey": "Show the key",
       "hideKey": "Hide the key",
       "model": "Model",

@@ -146,7 +146,7 @@
       "privacy": "Si vous activez cette option, la photo du ticket quitte votre appareil. Elle est envoyée à Anthropic avec les noms de vos catégories. Rien d'autre n'est envoyé.",
       "enable": "Envoyer les photos de tickets à Anthropic",
       "apiKey": "Clé d'API Anthropic",
-      "apiKeyHint": "La clé reste sur cet appareil, dans la base chiffrée. Créez-la sur la console Anthropic :",
+      "apiKeyHint": "La clé est stockée dans la base chiffrée et synchronisée, chiffrée, avec vos autres appareils. Créez-la sur la console Anthropic :",
       "showKey": "Afficher la clé",
       "hideKey": "Masquer la clé",
       "model": "Modèle",

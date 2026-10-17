@@ -142,4 +142,9 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     linesJson: z.string().nullable(),
     status: z.enum(RECEIPT_STATUSES),
   }),
+  preferences: z.object({
+    ...syncFields,
+    key: z.string().min(1),
+    value: z.string(),
+  }),
 }

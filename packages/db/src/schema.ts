@@ -222,6 +222,16 @@ export const settings = sqliteTable("settings", {
   value: text("value").notNull(),
 })
 
+export const preferences = sqliteTable(
+  "preferences",
+  {
+    ...syncColumns,
+    key: text("key").notNull().unique(),
+    value: text("value").notNull(),
+  },
+  (table) => [syncVersionIndex("preferences", table)],
+)
+
 export const apiTokens = sqliteTable("api_tokens", {
   id: text("id")
     .primaryKey()
@@ -259,5 +269,7 @@ export type SessionRow = typeof sessions.$inferSelect
 export type NewSessionRow = typeof sessions.$inferInsert
 export type SettingRow = typeof settings.$inferSelect
 export type NewSettingRow = typeof settings.$inferInsert
+export type PreferenceRow = typeof preferences.$inferSelect
+export type NewPreferenceRow = typeof preferences.$inferInsert
 export type ApiTokenRow = typeof apiTokens.$inferSelect
 export type NewApiTokenRow = typeof apiTokens.$inferInsert

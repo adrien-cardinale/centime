@@ -6,6 +6,7 @@ import {
   csvProfiles,
   fixedItems,
   imports,
+  preferences,
   receipts,
   rules,
   themes,
@@ -39,6 +40,7 @@ export const SYNC_TABLES = [
   syncTable("transactions", transactions, ["fingerprint"]),
   syncTable("transaction_splits", transactionSplits),
   syncTable("receipts", receipts),
+  syncTable("preferences", preferences, ["key"]),
 ] as const
 
 export type SyncTableEntry = (typeof SYNC_TABLES)[number]

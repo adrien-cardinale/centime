@@ -3,6 +3,7 @@ import { categories, type Db, themes } from "@centime/db"
 import { and, count, eq, isNull } from "drizzle-orm"
 import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound } from "./errors"
+import { pickCategoryPaletteColor } from "./palette"
 
 export type ThemeUpdate = ThemeInput & { id: string }
 
@@ -32,8 +33,17 @@ export async function listThemes(db: Db) {
   return rows.sort((left, right) => left.name.localeCompare(right.name, "fr"))
 }
 
+async function nextThemeColor(db: Db): Promise<string> {
+  const rows = await db.select({ color: themes.color }).from(themes).where(isNull(themes.deletedAt))
+  return pickCategoryPaletteColor(rows.map((row) => row.color))
+}
+
 export async function createTheme(db: Db, input: ThemeInput) {
-  const [created] = await db.insert(themes).values(toRow(input)).returning()
+  const color = input.color ?? (await nextThemeColor(db))
+  const [created] = await db
+    .insert(themes)
+    .values({ ...toRow(input), color })
+    .returning()
   if (!created) throw new Error("Insertion du thème impossible")
   return created
 }

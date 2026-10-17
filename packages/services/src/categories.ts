@@ -12,6 +12,7 @@ import {
 import { and, eq, isNull, sql } from "drizzle-orm"
 import { type Clock, nowIso, systemClock } from "./clock"
 import { notFound, ServiceError } from "./errors"
+import { pickCategoryPaletteColor } from "./palette"
 
 export type CategoryNode = { id: string; name: string; color: string; themeId: string | null }
 
@@ -79,9 +80,18 @@ function toRow(input: CategoryInput) {
   return { name: input.name, color: input.color, icon: input.icon ?? null, themeId: input.themeId ?? null }
 }
 
+async function nextCategoryColor(db: DbExecutor): Promise<string> {
+  const rows = await db.select({ color: categories.color }).from(categories).where(isNull(categories.deletedAt))
+  return pickCategoryPaletteColor(rows.map((row) => row.color))
+}
+
 export async function createCategory(db: Db, input: CategoryInput) {
   await assertActiveTheme(db, input.themeId ?? null)
-  const [created] = await db.insert(categories).values(toRow(input)).returning()
+  const color = input.color ?? (await nextCategoryColor(db))
+  const [created] = await db
+    .insert(categories)
+    .values({ ...toRow(input), color })
+    .returning()
   if (!created) throw new Error("Insertion de la catégorie impossible")
   return created
 }

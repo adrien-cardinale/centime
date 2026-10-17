@@ -21,7 +21,6 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { api, type Category } from "@/lib/api"
-import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
 import { invalidateTransactionData, themesQuery } from "@/lib/queries"
 import { ColorDot } from "./color-dot"
 import { ColorPicker } from "./color-picker"
@@ -42,7 +41,7 @@ type CategoryDialogProps = {
 }
 
 function formValuesFor(category: Category | undefined, initialName = ""): CategoryFormValues {
-  if (!category) return { name: initialName, color: DEFAULT_CATEGORY_COLOR, themeId: null }
+  if (!category) return { name: initialName, themeId: null }
   return { name: category.name, color: category.color, icon: category.icon, themeId: category.themeId }
 }
 
@@ -106,17 +105,19 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("categories.form.color")}</FormLabel>
-                  <ColorPicker value={field.value} onChange={field.onChange} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {category && (
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("categories.form.color")}</FormLabel>
+                    <ColorPicker value={field.value} onChange={field.onChange} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <FormField
               control={form.control}
               name="themeId"

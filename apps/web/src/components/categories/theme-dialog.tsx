@@ -19,7 +19,6 @@ import {
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { api, type Theme } from "@/lib/api"
-import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
 import { invalidateTransactionData } from "@/lib/queries"
 import { ColorPicker } from "./color-picker"
 import { useTranslation } from "react-i18next"
@@ -35,7 +34,7 @@ type ThemeDialogProps = {
 }
 
 function formValuesFor(theme: Theme | undefined): ThemeFormValues {
-  if (!theme) return { name: "", color: DEFAULT_CATEGORY_COLOR }
+  if (!theme) return { name: "" }
   return { name: theme.name, color: theme.color, icon: theme.icon }
 }
 
@@ -98,17 +97,19 @@ export function ThemeDialog({ theme, trigger, open, onOpenChange, onSaved }: The
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="color"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>{t("categories.form.color")}</FormLabel>
-                  <ColorPicker value={field.value} onChange={field.onChange} />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {theme && (
+              <FormField
+                control={form.control}
+                name="color"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t("categories.form.color")}</FormLabel>
+                    <ColorPicker value={field.value} onChange={field.onChange} />
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">

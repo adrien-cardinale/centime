@@ -1,7 +1,7 @@
 import { type ThemeInput, themeInputSchema } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { type ReactNode, useState } from "react"
+import { type FormEvent, type ReactNode, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import type { z } from "zod"
@@ -31,6 +31,7 @@ type ThemeDialogProps = {
   trigger?: ReactNode
   open?: boolean
   onOpenChange?: (open: boolean) => void
+  onSaved?: (themeId: string) => void
 }
 
 function formValuesFor(theme: Theme | undefined): ThemeFormValues {
@@ -42,7 +43,7 @@ function saveTheme(theme: Theme | undefined, input: ThemeInput) {
   return theme ? api.themes.update(theme.id, input) : api.themes.create(input)
 }
 
-export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogProps) {
+export function ThemeDialog({ theme, trigger, open, onOpenChange, onSaved }: ThemeDialogProps) {
   const { t } = useTranslation()
   const [internalOpen, setInternalOpen] = useState(false)
   const setOpen = onOpenChange ?? setInternalOpen
@@ -58,6 +59,7 @@ export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogP
       await invalidateTransactionData(queryClient)
       toast.success(t("categories.themeDialog.saved", { name: saved.name }))
       setOpen(false)
+      onSaved?.(saved.id)
     },
     onError: (error) => toast.error(error.message),
   })
@@ -65,6 +67,12 @@ export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogP
   const changeOpen = (next: boolean) => {
     if (next) form.reset(formValuesFor(theme))
     setOpen(next)
+  }
+
+  // Ouverte depuis un autre formulaire, la soumission ne doit pas remonter jusqu'à lui.
+  const submit = (event: FormEvent<HTMLFormElement>) => {
+    event.stopPropagation()
+    void form.handleSubmit((input) => save.mutate(input))(event)
   }
 
   return (
@@ -76,7 +84,7 @@ export function ThemeDialog({ theme, trigger, open, onOpenChange }: ThemeDialogP
           <DialogDescription>{t("categories.themeDialog.description")}</DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit((input) => save.mutate(input))} className="space-y-5">
+          <form onSubmit={submit} className="space-y-5">
             <FormField
               control={form.control}
               name="name"

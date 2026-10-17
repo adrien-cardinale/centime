@@ -1,6 +1,7 @@
 import { type CategoryInput, categoryInputSchema } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
+import { Plus } from "lucide-react"
 import { type FormEvent, type ReactNode, useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
@@ -24,6 +25,7 @@ import { DEFAULT_CATEGORY_COLOR } from "@/lib/category-colors"
 import { invalidateTransactionData, themesQuery } from "@/lib/queries"
 import { ColorDot } from "./color-dot"
 import { ColorPicker } from "./color-picker"
+import { ThemeDialog } from "./theme-dialog"
 import { useTranslation } from "react-i18next"
 
 type CategoryFormValues = z.input<typeof categoryInputSchema>
@@ -121,25 +123,42 @@ export function CategoryDialog({ category, trigger, initialName, open, onOpenCha
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>{t("categories.dialog.theme")}</FormLabel>
-                  <Select
-                    value={field.value ?? NO_THEME}
-                    onValueChange={(value) => field.onChange(value === NO_THEME ? null : value)}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value={NO_THEME}>{t("categories.dialog.noTheme")}</SelectItem>
-                      {themes.map((theme) => (
-                        <SelectItem key={theme.id} value={theme.id}>
-                          <ColorDot color={theme.color} />
-                          {theme.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={field.value ?? NO_THEME}
+                      onValueChange={(value) => field.onChange(value === NO_THEME ? null : value)}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value={NO_THEME}>{t("categories.dialog.noTheme")}</SelectItem>
+                        {themes.map((theme) => (
+                          <SelectItem key={theme.id} value={theme.id}>
+                            <ColorDot color={theme.color} />
+                            {theme.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <ThemeDialog
+                      onSaved={field.onChange}
+                      trigger={
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          className="shrink-0"
+                          aria-label={t("categories.newTheme")}
+                          title={t("categories.newTheme")}
+                        >
+                          <Plus />
+                        </Button>
+                      }
+                    />
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

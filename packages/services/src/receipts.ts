@@ -8,7 +8,6 @@ import {
   type ReceiptLink,
   type ReceiptStatus,
   type ReceiptUpdate,
-  splitsBalance,
   type TransactionSplitInput,
   transactionSplitSchema,
 } from "@centime/core"
@@ -32,6 +31,7 @@ const SINGLE_CATEGORY = "Les lignes du ticket doivent couvrir au moins deux catÃ
 const INVALID_LINES = "Lignes du ticket invalides"
 
 const AMOUNT_TOLERANCE = 0.05
+const ROUNDING_GAP_LIMIT_CENTS = 5
 const DAY_TOLERANCE = 3
 const AMOUNT_WEIGHT = 0.5
 const DATE_WEIGHT = 0.3
@@ -419,6 +419,17 @@ function splitsFromLines(lines: ReceiptLine[]): TransactionSplitInput["splits"] 
     .map(([categoryId, group]) => ({ categoryId, amount: group.cents / 100, note: noteOf(group.labels) }))
 }
 
+function withRoundingGap(splits: TransactionSplitInput["splits"], gapCents: number): TransactionSplitInput["splits"] {
+  if (gapCents === 0) return splits
+  const largest = splits.reduce(
+    (best, split, index) => (Math.abs(split.amount) > Math.abs(splits[best]?.amount ?? 0) ? index : best),
+    0,
+  )
+  return splits.map((split, index) =>
+    index === largest ? { ...split, amount: (toCents(split.amount) + gapCents) / 100 } : split,
+  )
+}
+
 function formatAmount(amount: number): string {
   return amount.toFixed(2)
 }
@@ -435,13 +446,14 @@ export async function applyReceiptLinesAsSplits(db: Db, { id }: { id: string }, 
   const lines = parseLines(receipt.linesJson)
   if (!lines || lines.length === 0) throw new ServiceError(NO_LINES)
   const transaction = await requireTransaction(db, receipt.transactionId)
-  const signedLines = lines.map((line) => ({ amount: -line.amount }))
-  if (!splitsBalance(transaction.amount, signedLines)) {
-    const linesTotal = lines.reduce((sum, line) => sum + toCents(line.amount), 0) / 100
-    throw new ServiceError(linesMismatch(linesTotal, transaction.amount))
+  const linesCents = lines.reduce((sum, line) => sum + toCents(line.amount), 0)
+  const gapCents = toCents(transaction.amount) + linesCents
+  if (Math.abs(gapCents) >= ROUNDING_GAP_LIMIT_CENTS) {
+    throw new ServiceError(linesMismatch(linesCents / 100, transaction.amount))
   }
-  const splits = splitsFromLines(lines)
-  if (splits.length < MIN_SPLITS) throw new ServiceError(SINGLE_CATEGORY)
+  const linesSplits = splitsFromLines(lines)
+  if (linesSplits.length < MIN_SPLITS) throw new ServiceError(SINGLE_CATEGORY)
+  const splits = withRoundingGap(linesSplits, gapCents)
   const parsed = transactionSplitSchema.safeParse({ transactionId: transaction.id, splits })
   if (!parsed.success) throw new ServiceError(parsed.error.issues[0]?.message ?? INVALID_LINES)
   return splitTransaction(db, parsed.data, clock)

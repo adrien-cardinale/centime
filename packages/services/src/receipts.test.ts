@@ -299,6 +299,29 @@ describe("applyReceiptLinesAsSplits", () => {
     )
   })
 
+  it("absorbs a cash rounding gap in the largest part", async () => {
+    const { receipt } = await linkedReceipt(-62.1, [
+      { label: "Pain", amount: 12.06, categoryId: groceries },
+      { label: "Lessive", amount: 50.05, categoryId: household },
+    ])
+
+    const split = await applyReceiptLinesAsSplits(db, { id: receipt.id })
+
+    expect(split.splits.map((line) => [line.categoryId, line.amount])).toEqual([
+      [groceries, -12.06],
+      [household, -50.04],
+    ])
+  })
+
+  it("refuses a gap of five cents or more", async () => {
+    const { receipt } = await linkedReceipt(-62.1, [
+      { label: "Pain", amount: 12.1, categoryId: groceries },
+      { label: "Lessive", amount: 50.05, categoryId: household },
+    ])
+
+    await expect(applyReceiptLinesAsSplits(db, { id: receipt.id })).rejects.toBeInstanceOf(ServiceError)
+  })
+
   it("refuses lines of a single category", async () => {
     const { receipt } = await linkedReceipt(-10, [
       { label: "Pain", amount: 4, categoryId: groceries },

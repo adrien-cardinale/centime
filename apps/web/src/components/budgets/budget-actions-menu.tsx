@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
-import { List, MoreHorizontal, Pencil, Trash2 } from "lucide-react"
+import type { PeriodRange } from "@centime/core"
+import { CircleStop, List, MoreHorizontal, Pencil } from "lucide-react"
 import { useRef, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Button } from "@/components/ui/button"
@@ -16,10 +17,11 @@ import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
 type BudgetActionsMenuProps = {
   budget: BudgetOverviewItem
+  month: PeriodRange
   onEdit: (budget: BudgetOverviewItem) => void
 }
 
-export function BudgetActionsMenu({ budget, onEdit }: BudgetActionsMenuProps) {
+export function BudgetActionsMenu({ budget, month, onEdit }: BudgetActionsMenuProps) {
   const { t } = useTranslation()
   const [confirmOpen, setConfirmOpen] = useState(false)
   const opensOverlay = useRef(false)
@@ -56,12 +58,12 @@ export function BudgetActionsMenu({ budget, onEdit }: BudgetActionsMenuProps) {
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem variant="destructive" onSelect={() => openOverlay(() => setConfirmOpen(true))}>
-            <Trash2 />
-            {t("budgets.actions.delete")}
+            <CircleStop />
+            {t("budgets.actions.stop")}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      <DeleteBudgetDialog budget={budget} open={confirmOpen} onOpenChange={setConfirmOpen} />
+      <DeleteBudgetDialog budget={budget} month={month} open={confirmOpen} onOpenChange={setConfirmOpen} />
     </>
   )
 }

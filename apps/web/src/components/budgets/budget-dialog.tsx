@@ -27,6 +27,7 @@ import {
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { MonthPicker } from "@/components/ui/month-picker"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -195,6 +196,7 @@ function BudgetForm({ target, onSaved }: { target: BudgetDialogTarget; onSaved: 
               )}
             />
           </div>
+          <BudgetDatesFields control={form.control} />
           {kind === "envelope" && <RolloverField control={form.control} />}
           <BudgetRuleSection control={form.control} tester={tester} onToggle={toggleRule} />
         </div>
@@ -230,6 +232,54 @@ function KindToggle({ value, onChange }: { value: BudgetKind; onChange: (value: 
         </ToggleGroupItem>
       ))}
     </ToggleGroup>
+  )
+}
+
+function BudgetDatesFields({ control }: { control: BudgetControl }) {
+  const { t } = useTranslation()
+  return (
+    <div className="grid gap-4 sm:grid-cols-2">
+      <FormField
+        control={control}
+        name="startDate"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("budgets.dialog.startDate")}</FormLabel>
+            <FormControl>
+              <MonthPicker
+                boundary="start"
+                ref={field.ref}
+                onBlur={field.onBlur}
+                value={field.value}
+                onChange={(value) => value && field.onChange(value)}
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={control}
+        name="endDate"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>{t("budgets.dialog.endDate")}</FormLabel>
+            <FormControl>
+              <MonthPicker
+                boundary="end"
+                allowEmpty
+                ref={field.ref}
+                onBlur={field.onBlur}
+                value={field.value ?? null}
+                onChange={field.onChange}
+              />
+            </FormControl>
+            <FormDescription>{t("budgets.dialog.endDateHint")}</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
   )
 }
 

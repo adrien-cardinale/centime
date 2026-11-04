@@ -14,11 +14,16 @@ export const budgetPayloadSchema = z
     period: z.enum(PERIODICITIES, { error: "Périodicité invalide" }),
     rollover: z.boolean({ error: "Report invalide" }),
     startDate: isoDateSchema,
+    endDate: isoDateSchema.nullable().default(null),
     rule: ruleMatcherSchema.nullable().optional(),
   })
   .refine((payload) => payload.kind === "envelope" || !payload.rollover, {
     path: ["rollover"],
     message: "Pas de report pour un revenu",
+  })
+  .refine((payload) => payload.endDate === null || payload.endDate >= payload.startDate, {
+    path: ["endDate"],
+    message: "La date de fin doit suivre la date de début",
   })
 
 export type BudgetPayload = z.infer<typeof budgetPayloadSchema>

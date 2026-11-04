@@ -4,7 +4,9 @@
     "never": "Jamais",
     "copy": "Copier",
     "fileSaved": "Fichier enregistré",
-    "fileSaveFailed": "Impossible d'enregistrer le fichier"
+    "fileSaveFailed": "Impossible d'enregistrer le fichier",
+    "clear": "Effacer",
+    "year": "Année"
   },
   "nav": {
     "dashboard": "Tableau de bord",
@@ -1012,7 +1014,10 @@
       "rolloverHint": "Le solde des périodes précédentes, positif ou négatif, s'ajoute au plafond de la période en cours.",
       "saving": "Enregistrement…",
       "save": "Enregistrer",
-      "kind": "Type"
+      "kind": "Type",
+      "startDate": "Depuis",
+      "endDate": "Jusqu'au",
+      "endDateHint": "Laisser vide pour un budget sans fin"
     },
     "table": {
       "noTheme": "Sans thème",
@@ -1021,13 +1026,14 @@
       "projected": "Au rythme actuel : {{amount}}",
       "viewTransactions": "Voir les transactions de {{name}}",
       "edit": "Modifier {{name}}",
-      "delete": "Supprimer {{name}}"
+      "stop": "Arrêter {{name}}",
+      "until": "Jusqu'au {{date}}"
     },
     "actions": {
       "menu": "Actions pour {{name}}",
       "viewTransactions": "Voir les transactions",
       "edit": "Modifier",
-      "delete": "Supprimer"
+      "stop": "Arrêter"
     },
     "card": {
       "remaining": "Reste : {{amount}}"
@@ -1036,7 +1042,12 @@
       "deleted": "Budget « {{name}} » supprimé",
       "title": "Supprimer le budget « {{name}} » ?",
       "description": "Les transactions de la catégorie sont conservées. Seul le plafond et son suivi disparaissent.",
-      "confirm": "Supprimer"
+      "confirm": "Supprimer",
+      "stopTitle": "Arrêter le budget « {{name}} » ?",
+      "stopDescription": "Le budget disparaît à partir de {{period}}. Les mois précédents gardent leur historique.",
+      "stop": "Arrêter",
+      "deleteForever": "Supprimer définitivement",
+      "stopped": "Budget « {{name}} » arrêté"
     },
     "latestData": {
       "message": "Aucune transaction en {{month}} : la plus récente date du {{date}}.",

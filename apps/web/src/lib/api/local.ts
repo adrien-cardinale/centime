@@ -258,6 +258,8 @@ export function createLocalApiFor(database: Pick<LocalDatabase, "run">): Api {
           surface.budgets.update(db, { ...parseInput(budgetPayloadSchema, input), id: parseInput(idSchema, id) }),
         ),
       remove: (id) => call((db) => surface.budgets.remove(db, { id: parseInput(idSchema, id) })),
+      stop: (id, date) =>
+        call((db) => surface.budgets.stop(db, { id: parseInput(idSchema, id), date: parseInput(isoDate, date) })),
       overview: (date) => call((db) => surface.budgets.overview(db, { date: parseInput(optionalIsoDate, date) })),
     },
     dashboard: {

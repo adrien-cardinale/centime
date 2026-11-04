@@ -88,6 +88,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     period: z.enum(PERIODICITIES),
     rollover: z.boolean(),
     startDate: isoDateSchema,
+    endDate: isoDateSchema.nullable().default(null),
   }),
   transactions: z.object({
     ...syncFields,

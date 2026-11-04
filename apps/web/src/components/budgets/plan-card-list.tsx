@@ -1,3 +1,4 @@
+import type { PeriodRange } from "@centime/core"
 import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Progress } from "@/components/ui/progress"
@@ -6,10 +7,10 @@ import { budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } 
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { BudgetActionsMenu } from "./budget-actions-menu"
-import { budgetDetails, groupByTheme, money, type ThemeBudgets } from "./plan-groups"
+import { budgetDetails, endDateNote, groupByTheme, money, type ThemeBudgets } from "./plan-groups"
 import type { PlanTableProps } from "./plan-table"
 
-export function PlanCardList({ budgets, themes, onEdit }: PlanTableProps) {
+export function PlanCardList({ budgets, themes, month, onEdit }: PlanTableProps) {
   return (
     <div className="divide-y">
       {groupByTheme(budgets, themes).map((group) => (
@@ -17,7 +18,7 @@ export function PlanCardList({ budgets, themes, onEdit }: PlanTableProps) {
           <ThemeHeader group={group} />
           <ul className="divide-y">
             {group.budgets.map((budget) => (
-              <BudgetCard key={budget.id} budget={budget} onEdit={onEdit} />
+              <BudgetCard key={budget.id} budget={budget} month={month} onEdit={onEdit} />
             ))}
           </ul>
         </section>
@@ -38,10 +39,16 @@ function ThemeHeader({ group }: { group: ThemeBudgets }) {
   )
 }
 
-function BudgetCard({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (budget: BudgetOverviewItem) => void }) {
+type BudgetCardProps = {
+  budget: BudgetOverviewItem
+  month: PeriodRange
+  onEdit: (budget: BudgetOverviewItem) => void
+}
+
+function BudgetCard({ budget, month, onEdit }: BudgetCardProps) {
   const { t } = useTranslation()
   const { status } = budget
-  const details = budgetDetails(status)
+  const details = [...budgetDetails(status), ...endDateNote(budget)]
   return (
     <li className="relative px-4 py-3 has-[>button:hover]:bg-muted/50">
       <button
@@ -76,7 +83,7 @@ function BudgetCard({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (b
         {details.length > 0 && <p className="text-sm whitespace-normal text-muted-foreground">{details.join(" · ")}</p>}
       </div>
       <div className="absolute top-3 right-2">
-        <BudgetActionsMenu budget={budget} onEdit={onEdit} />
+        <BudgetActionsMenu budget={budget} month={month} onEdit={onEdit} />
       </div>
     </li>
   )

@@ -85,6 +85,15 @@ export function previousPeriods(period: Periodicity, range: PeriodRange, count: 
   return Array.from({ length: count }, (_, index) => shiftPeriod(period, range, index - count))
 }
 
+export function budgetCoversRange(budget: Pick<Budget, "startDate" | "endDate">, range: PeriodRange): boolean {
+  return range.end >= budget.startDate && (budget.endDate === null || range.start <= budget.endDate)
+}
+
+export function stopDateFor(period: Periodicity, startDate: IsoDate, date: IsoDate): IsoDate | null {
+  const endDate = shiftPeriod(period, periodContaining(period, date), -1).end
+  return endDate < startDate ? null : endDate
+}
+
 export function budgetRatioOf(spent: number, available: number): number {
   if (available > 0) return spent / available
   return spent > 0 ? 1 : 0

@@ -191,6 +191,7 @@ export const budgets = sqliteTable(
     period: text("period", { enum: PERIODICITIES }).notNull(),
     rollover: integer("rollover", { mode: "boolean" }).notNull().default(false),
     startDate: text("start_date").notNull(),
+    endDate: text("end_date"),
   },
   (table) => [syncVersionIndex("budgets", table)],
 )

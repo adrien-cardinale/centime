@@ -1,11 +1,12 @@
 import type { Budget, BudgetPayloadInput, RuleMatcherInput } from "@centime/core"
+import { monthBoundaryOf } from "@/components/ui/month-picker"
 import { defaultStartDate } from "@/lib/budgets"
 
 export type BudgetFormValues = BudgetPayloadInput
 
 export type EditableBudget = Pick<
   Budget,
-  "id" | "kind" | "categoryId" | "amount" | "period" | "rollover" | "startDate"
+  "id" | "kind" | "categoryId" | "amount" | "period" | "rollover" | "startDate" | "endDate"
 > & {
   rule: RuleMatcherInput | null
 }
@@ -22,8 +23,13 @@ function toMatcher(rule: RuleMatcherInput | null): RuleMatcherInput | null {
 
 export function formValuesFor({ budget, categoryId }: BudgetDialogTarget): BudgetFormValues {
   if (budget) {
-    const { id: _id, rule, ...values } = budget
-    return { ...values, rule: toMatcher(rule) }
+    const { id: _id, rule, startDate, endDate, ...values } = budget
+    return {
+      ...values,
+      startDate: monthBoundaryOf(startDate, "start"),
+      endDate: endDate && monthBoundaryOf(endDate, "end"),
+      rule: toMatcher(rule),
+    }
   }
   return {
     kind: "envelope",
@@ -32,6 +38,7 @@ export function formValuesFor({ budget, categoryId }: BudgetDialogTarget): Budge
     period: "monthly",
     rollover: false,
     startDate: defaultStartDate("monthly"),
+    endDate: null,
     rule: null,
   }
 }

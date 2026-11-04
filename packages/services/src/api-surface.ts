@@ -1,5 +1,5 @@
 import { createAccount, listAccounts } from "./accounts"
-import { createBudget, deleteBudget, getBudgetsOverview, listBudgets, updateBudget } from "./budgets"
+import { createBudget, deleteBudget, getBudgetsOverview, listBudgets, stopBudget, updateBudget } from "./budgets"
 import { createCategory, deleteCategory, listCategories, updateCategory } from "./categories"
 import { createCsvProfile, deleteCsvProfile, listCsvProfiles, updateCsvProfile } from "./csv-profiles"
 import { createRulesFromRepeatedCategorization } from "./auto-rules"
@@ -89,6 +89,7 @@ export const apiSurface = {
     create: createBudget,
     update: updateBudget,
     remove: deleteBudget,
+    stop: stopBudget,
     overview: getBudgetsOverview,
   },
   dashboard: {

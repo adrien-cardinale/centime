@@ -4,7 +4,9 @@
     "never": "Never",
     "copy": "Copy",
     "fileSaved": "File saved",
-    "fileSaveFailed": "Could not save the file"
+    "fileSaveFailed": "Could not save the file",
+    "clear": "Clear",
+    "year": "Year"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -1012,7 +1014,10 @@
       "rolloverHint": "The balance from previous periods, positive or negative, is added to the current period's limit.",
       "saving": "Saving…",
       "save": "Save",
-      "kind": "Type"
+      "kind": "Type",
+      "startDate": "From",
+      "endDate": "Until",
+      "endDateHint": "Leave empty for a budget with no end"
     },
     "table": {
       "noTheme": "No theme",
@@ -1021,13 +1026,14 @@
       "projected": "At current pace: {{amount}}",
       "viewTransactions": "View transactions for {{name}}",
       "edit": "Edit {{name}}",
-      "delete": "Delete {{name}}"
+      "stop": "Stop {{name}}",
+      "until": "Until {{date}}"
     },
     "actions": {
       "menu": "Actions for {{name}}",
       "viewTransactions": "View transactions",
       "edit": "Edit",
-      "delete": "Delete"
+      "stop": "Stop"
     },
     "card": {
       "remaining": "Remaining: {{amount}}"
@@ -1036,7 +1042,12 @@
       "deleted": "Budget \"{{name}}\" deleted",
       "title": "Delete budget \"{{name}}\"?",
       "description": "The category's transactions are kept. Only the limit and its tracking are removed.",
-      "confirm": "Delete"
+      "confirm": "Delete",
+      "stopTitle": "Stop budget \"{{name}}\"?",
+      "stopDescription": "The budget disappears from {{period}} onward. Previous months keep their history.",
+      "stop": "Stop",
+      "deleteForever": "Delete permanently",
+      "stopped": "Budget \"{{name}}\" stopped"
     },
     "latestData": {
       "message": "No transactions in {{month}}: the most recent one is from {{date}}.",

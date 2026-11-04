@@ -2,6 +2,7 @@ import { describe, expect, it } from "bun:test"
 import { budgetPayloadSchema } from "./budget-payload"
 import {
   type BudgetInput,
+  budgetCoversRange,
   budgetStateOf,
   computeBudgetStatus,
   type PeriodRange,
@@ -9,6 +10,7 @@ import {
   periodContaining,
   previousPeriods,
   shiftPeriod,
+  stopDateFor,
 } from "./budgets"
 
 const groceries: BudgetInput = {
@@ -187,6 +189,41 @@ describe("computeBudgetStatus", () => {
   })
 })
 
+describe("budgetCoversRange", () => {
+  const bounded = { startDate: "2026-03-15", endDate: "2026-06-30" }
+
+  it("excludes the periods before the start date", () => {
+    expect(budgetCoversRange(bounded, periodContaining("monthly", "2026-02-10"))).toBe(false)
+    expect(budgetCoversRange(bounded, periodContaining("monthly", "2026-03-01"))).toBe(true)
+  })
+
+  it("excludes the periods after the end date", () => {
+    expect(budgetCoversRange(bounded, periodContaining("monthly", "2026-06-30"))).toBe(true)
+    expect(budgetCoversRange(bounded, periodContaining("monthly", "2026-07-01"))).toBe(false)
+  })
+
+  it("keeps an endless budget forever", () => {
+    expect(budgetCoversRange({ ...bounded, endDate: null }, periodContaining("yearly", "2040-05-01"))).toBe(true)
+  })
+})
+
+describe("stopDateFor", () => {
+  it("ends the budget on the last day of the previous period", () => {
+    expect(stopDateFor("monthly", "2026-01-01", "2026-11-04")).toBe("2026-10-31")
+    expect(stopDateFor("quarterly", "2026-01-01", "2026-11-04")).toBe("2026-09-30")
+    expect(stopDateFor("yearly", "2024-01-01", "2026-11-04")).toBe("2025-12-31")
+  })
+
+  it("returns null when the budget never was active", () => {
+    expect(stopDateFor("monthly", "2026-11-01", "2026-11-20")).toBeNull()
+    expect(stopDateFor("monthly", "2026-12-01", "2026-11-20")).toBeNull()
+  })
+
+  it("keeps a budget started during the previous period", () => {
+    expect(stopDateFor("monthly", "2026-10-20", "2026-11-04")).toBe("2026-10-31")
+  })
+})
+
 describe("budgetPayloadSchema", () => {
   const payload = { categoryId: "c1", amount: 300, period: "monthly", rollover: true, startDate: "2026-09-01" }
 
@@ -202,6 +239,16 @@ describe("budgetPayloadSchema", () => {
       "Le montant doit être supérieur à zéro",
     )
     expect(budgetPayloadSchema.safeParse({ ...payload, startDate: "2026-02-30" }).success).toBe(false)
+  })
+
+  it("defaults the end date to null", () => {
+    expect(budgetPayloadSchema.parse(payload).endDate).toBeNull()
+  })
+
+  it("rejects an end date before the start date", () => {
+    const parsed = budgetPayloadSchema.safeParse({ ...payload, endDate: "2026-08-31" })
+    expect(parsed.error?.issues[0]?.message).toBe("La date de fin doit suivre la date de début")
+    expect(budgetPayloadSchema.safeParse({ ...payload, endDate: "2026-09-01" }).success).toBe(true)
   })
 
   it("rejects a rollover on an income", () => {

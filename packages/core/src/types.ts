@@ -92,4 +92,5 @@ export type Budget = SyncColumns & {
   period: Periodicity
   rollover: boolean
   startDate: IsoDate
+  endDate: IsoDate | null
 }

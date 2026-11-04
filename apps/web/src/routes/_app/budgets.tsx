@@ -115,7 +115,7 @@ function PlanContent({ month, budgets, onEditBudget, onCreateBudget }: PlanConte
         {budgets.budgets.length > 0 && (
           <Card className="py-0">
             <CardContent className="px-0">
-              <PlanTable budgets={budgets.budgets} themes={themes} onEdit={onEditBudget} />
+              <PlanTable budgets={budgets.budgets} themes={themes} month={month} onEdit={onEditBudget} />
             </CardContent>
           </Card>
         )}
@@ -126,7 +126,7 @@ function PlanContent({ month, budgets, onEditBudget, onCreateBudget }: PlanConte
             {budgets.incomes.length === 0 ? (
               <p className="p-6 text-center text-sm text-muted-foreground">{t("budgetsPage.emptyIncome")}</p>
             ) : (
-              <IncomeTable incomes={budgets.incomes} onEdit={onEditBudget} />
+              <IncomeTable incomes={budgets.incomes} month={month} onEdit={onEditBudget} />
             )}
           </CardContent>
         </Card>

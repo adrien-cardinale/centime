@@ -235,6 +235,7 @@ describe("aggregations", () => {
       period: "monthly",
       rollover: false,
       startDate: "2026-01-01",
+      endDate: null,
     })
     await splitInHalf(await insertTransaction())
 

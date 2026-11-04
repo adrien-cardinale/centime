@@ -1,5 +1,6 @@
+import type { PeriodRange } from "@centime/core"
 import { Link } from "@tanstack/react-router"
-import { List, Trash2 } from "lucide-react"
+import { CircleStop, List } from "lucide-react"
 import { Fragment, type MouseEvent, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { Amount } from "@/components/amount"
@@ -13,12 +14,13 @@ import { BUDGET_CURRENCY, budgetStateIndicatorClasses, budgetStateTextClasses, p
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { PlanCardList } from "./plan-card-list"
-import { budgetDetails, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./plan-groups"
+import { budgetDetails, endDateNote, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./plan-groups"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
 export type PlanTableProps = {
   budgets: BudgetOverviewItem[]
   themes: Theme[]
+  month: PeriodRange
   onEdit: (budget: BudgetOverviewItem) => void
 }
 
@@ -27,7 +29,7 @@ export function PlanTable(props: PlanTableProps) {
   return isMobile ? <PlanCardList {...props} /> : <DesktopPlanTable {...props} />
 }
 
-function DesktopPlanTable({ budgets, themes, onEdit }: PlanTableProps) {
+function DesktopPlanTable({ budgets, themes, month, onEdit }: PlanTableProps) {
   const { t } = useTranslation()
   return (
     <Table>
@@ -47,7 +49,7 @@ function DesktopPlanTable({ budgets, themes, onEdit }: PlanTableProps) {
           <Fragment key={group.theme?.id ?? "none"}>
             <ThemeRow group={group} />
             {group.budgets.map((budget) => (
-              <BudgetRow key={budget.id} budget={budget} onEdit={onEdit} />
+              <BudgetRow key={budget.id} budget={budget} month={month} onEdit={onEdit} />
             ))}
           </Fragment>
         ))}
@@ -78,10 +80,16 @@ function ThemeRow({ group }: { group: ThemeBudgets }) {
   )
 }
 
-function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (budget: BudgetOverviewItem) => void }) {
+type BudgetRowProps = {
+  budget: BudgetOverviewItem
+  month: PeriodRange
+  onEdit: (budget: BudgetOverviewItem) => void
+}
+
+function BudgetRow({ budget, month, onEdit }: BudgetRowProps) {
   const { t } = useTranslation()
   const { status } = budget
-  const details = budgetDetails(status)
+  const details = [...budgetDetails(status), ...endDateNote(budget)]
   const edit = (event: MouseEvent) => {
     event.stopPropagation()
     onEdit(budget)
@@ -126,13 +134,13 @@ function BudgetRow({ budget, onEdit }: { budget: BudgetOverviewItem; onEdit: (bu
         </span>
       </TableCell>
       <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
-        <BudgetRowActions budget={budget} />
+        <BudgetRowActions budget={budget} month={month} />
       </TableCell>
     </TableRow>
   )
 }
 
-function BudgetRowActions({ budget }: { budget: BudgetOverviewItem }) {
+function BudgetRowActions({ budget, month }: { budget: BudgetOverviewItem; month: PeriodRange }) {
   const { t } = useTranslation()
   const [confirmOpen, setConfirmOpen] = useState(false)
   return (
@@ -150,12 +158,12 @@ function BudgetRowActions({ budget }: { budget: BudgetOverviewItem }) {
       <Button
         variant="ghost"
         size="icon"
-        aria-label={t("budgets.table.delete", { name: budget.categoryName })}
+        aria-label={t("budgets.table.stop", { name: budget.categoryName })}
         onClick={() => setConfirmOpen(true)}
       >
-        <Trash2 />
+        <CircleStop />
       </Button>
-      <DeleteBudgetDialog budget={budget} open={confirmOpen} onOpenChange={setConfirmOpen} />
+      <DeleteBudgetDialog budget={budget} month={month} open={confirmOpen} onOpenChange={setConfirmOpen} />
     </div>
   )
 }

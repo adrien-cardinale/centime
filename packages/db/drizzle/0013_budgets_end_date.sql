@@ -1,0 +1,1 @@
+ALTER TABLE `budgets` ADD `end_date` text;

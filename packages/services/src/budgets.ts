@@ -1,4 +1,5 @@
 import {
+  budgetCoversRange,
   type BudgetPayload,
   type BudgetStatus,
   computeBudgetStatus,
@@ -12,6 +13,7 @@ import {
   periodContaining,
   previousPeriods,
   roundCents,
+  stopDateFor,
 } from "@centime/core"
 import { budgets, categories, type Db, type DbExecutor, transactions, transactionSplits } from "@centime/db"
 import { and, eq, gte, isNotNull, isNull, lte, ne } from "drizzle-orm"
@@ -85,6 +87,7 @@ function loadBudgetRows(db: DbExecutor, onlyId?: string) {
       rollover: budgets.rollover,
       amount: budgets.amount,
       startDate: budgets.startDate,
+      endDate: budgets.endDate,
     })
     .from(budgets)
     .innerJoin(categories, eq(budgets.categoryId, categories.id))
@@ -165,6 +168,18 @@ export async function deleteBudget(db: DbExecutor, { id }: { id: string }, clock
     .where(activeBudget(id))
     .returning({ id: budgets.id })
   if (!deleted) throw notFound(NOT_FOUND)
+  return { id }
+}
+
+export async function stopBudget(
+  db: DbExecutor,
+  { id, date }: { id: string; date: IsoDate },
+  clock: Clock = systemClock,
+) {
+  const budget = await requireBudget(db, id)
+  const endDate = stopDateFor(budget.period, budget.startDate, date)
+  if (endDate === null) return deleteBudget(db, { id }, clock)
+  await db.update(budgets).set({ endDate }).where(activeBudget(id))
   return { id }
 }
 
@@ -249,12 +264,18 @@ function spendingIn(rows: EligibleTransaction[], range: PeriodRange): PeriodSpen
   }
 }
 
+function coveredPeriods(budget: BudgetEntry, current: PeriodRange, count: number): PeriodRange[] {
+  return previousPeriods(budget.period, current, count).filter((range) => budgetCoversRange(budget, range))
+}
+
 function planBudget(budget: BudgetEntry, date: IsoDate): BudgetPlan {
   const current = periodContaining(budget.period, date)
-  const carryPeriods = budget.rollover
-    ? previousPeriods(budget.period, current, MAX_ROLLOVER_PERIODS).filter((range) => range.end >= budget.startDate)
-    : []
-  return { budget, current, carryPeriods, history: previousPeriods(budget.period, current, HISTORY_PERIODS) }
+  const carryPeriods = budget.rollover ? coveredPeriods(budget, current, MAX_ROLLOVER_PERIODS) : []
+  return { budget, current, carryPeriods, history: coveredPeriods(budget, current, HISTORY_PERIODS) }
+}
+
+function isActiveOn(budget: BudgetEntry, date: IsoDate): boolean {
+  return budgetCoversRange(budget, periodContaining(budget.period, date))
 }
 
 function loadWindow(plans: BudgetPlan[], month: PeriodRange): { from: IsoDate; to: IsoDate } {
@@ -386,7 +407,8 @@ function unbudgetedCategories(
 }
 
 export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoDate) {
-  const [allEntries, nodes] = await Promise.all([listBudgets(db), loadCategoryNodes(db)])
+  const [budgetEntries, nodes] = await Promise.all([listBudgets(db), loadCategoryNodes(db)])
+  const allEntries = budgetEntries.filter((entry) => isActiveOn(entry, date))
   const entries = allEntries.filter((entry) => entry.kind === "envelope")
   const month = periodContaining("monthly", date)
   const plans = entries.map((budget) => planBudget(budget, date))

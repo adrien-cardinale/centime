@@ -87,6 +87,7 @@ export type Api = {
     create(input: BudgetPayloadInput): Out<Surface["budgets"]["create"]>
     update(id: string, input: BudgetPayloadInput): Out<Surface["budgets"]["update"]>
     remove(id: string): Out<Surface["budgets"]["remove"]>
+    stop(id: string, date: string): Out<Surface["budgets"]["stop"]>
     overview(date: string): Out<Surface["budgets"]["overview"]>
   }
   dashboard: {

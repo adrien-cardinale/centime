@@ -66,4 +66,9 @@ export const GENERATED_MIGRATIONS: readonly Migration[] = [
     when: 1792265701624,
     sql: "UPDATE `budgets` SET `kind` = 'envelope', `updated_at` = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), `sync_version` = NULL WHERE `kind` = 'expense';--> statement-breakpoint\nALTER TABLE `budgets` DROP COLUMN `due_day`;--> statement-breakpoint\nALTER TABLE `budgets` DROP COLUMN `due_month`;--> statement-breakpoint\nALTER TABLE `budgets` DROP COLUMN `end_date`;",
   },
+  {
+    tag: "0013_budgets_end_date",
+    when: 1793798550641,
+    sql: "ALTER TABLE `budgets` ADD `end_date` text;",
+  },
 ]

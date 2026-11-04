@@ -1,4 +1,5 @@
-import { Pencil, Trash2 } from "lucide-react"
+import type { PeriodRange } from "@centime/core"
+import { CircleStop, Pencil } from "lucide-react"
 import { useState } from "react"
 import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
@@ -9,10 +10,11 @@ import { useIsMobile } from "@/hooks/use-mobile"
 import type { IncomeOverviewItem } from "@/lib/api"
 import { progressPercent } from "@/lib/budgets"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
-import { money } from "./plan-groups"
+import { endDateNote, money } from "./plan-groups"
 
 type IncomeTableProps = {
   incomes: IncomeOverviewItem[]
+  month: PeriodRange
   onEdit: (income: IncomeOverviewItem) => void
 }
 
@@ -21,7 +23,7 @@ export function IncomeTable(props: IncomeTableProps) {
   return isMobile ? <IncomeCardList {...props} /> : <DesktopIncomeTable {...props} />
 }
 
-function DesktopIncomeTable({ incomes, onEdit }: IncomeTableProps) {
+function DesktopIncomeTable({ incomes, month, onEdit }: IncomeTableProps) {
   const { t } = useTranslation()
   return (
     <Table>
@@ -41,6 +43,7 @@ function DesktopIncomeTable({ incomes, onEdit }: IncomeTableProps) {
           <TableRow key={income.id} className="cursor-pointer" onClick={() => onEdit(income)}>
             <TableCell className="max-w-56 pl-6">
               <CategoryBadge name={income.categoryName} color={income.categoryColor} />
+              <EndDateLine income={income} />
             </TableCell>
             <TableCell className="text-muted-foreground">{income.status.range.label}</TableCell>
             <TableCell className="text-right tabular-nums">{money(income.status.expected)}</TableCell>
@@ -50,7 +53,7 @@ function DesktopIncomeTable({ incomes, onEdit }: IncomeTableProps) {
             </TableCell>
             <TableCell className="text-right tabular-nums">{money(Math.max(0, income.status.remaining))}</TableCell>
             <TableCell className="pr-6" onClick={(event) => event.stopPropagation()}>
-              <IncomeActions income={income} onEdit={onEdit} />
+              <IncomeActions income={income} month={month} onEdit={onEdit} />
             </TableCell>
           </TableRow>
         ))}
@@ -59,7 +62,7 @@ function DesktopIncomeTable({ incomes, onEdit }: IncomeTableProps) {
   )
 }
 
-function IncomeCardList({ incomes, onEdit }: IncomeTableProps) {
+function IncomeCardList({ incomes, month, onEdit }: IncomeTableProps) {
   const { t } = useTranslation()
   return (
     <ul className="divide-y">
@@ -71,6 +74,7 @@ function IncomeCardList({ incomes, onEdit }: IncomeTableProps) {
             className="flex min-w-0 flex-1 flex-col gap-2 text-left outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50"
           >
             <CategoryBadge name={income.categoryName} color={income.categoryColor} className="max-w-full" />
+            <EndDateLine income={income} />
             <span className="flex flex-wrap items-baseline justify-between gap-x-3 text-sm tabular-nums">
               <span>
                 {money(income.status.received)} / {money(income.status.expected)}
@@ -82,20 +86,26 @@ function IncomeCardList({ incomes, onEdit }: IncomeTableProps) {
               {t("budgets.card.remaining", { amount: money(Math.max(0, income.status.remaining)) })}
             </span>
           </button>
-          <IncomeActions income={income} onEdit={onEdit} />
+          <IncomeActions income={income} month={month} onEdit={onEdit} />
         </li>
       ))}
     </ul>
   )
 }
 
-function IncomeActions({
-  income,
-  onEdit,
-}: {
+function EndDateLine({ income }: { income: IncomeOverviewItem }) {
+  const [note] = endDateNote(income)
+  if (note === undefined) return null
+  return <p className="mt-1 text-xs text-muted-foreground">{note}</p>
+}
+
+type IncomeActionsProps = {
   income: IncomeOverviewItem
+  month: PeriodRange
   onEdit: (income: IncomeOverviewItem) => void
-}) {
+}
+
+function IncomeActions({ income, month, onEdit }: IncomeActionsProps) {
   const { t } = useTranslation()
   const [confirmOpen, setConfirmOpen] = useState(false)
   return (
@@ -111,12 +121,12 @@ function IncomeActions({
       <Button
         variant="ghost"
         size="icon"
-        aria-label={t("budgets.table.delete", { name: income.categoryName })}
+        aria-label={t("budgets.table.stop", { name: income.categoryName })}
         onClick={() => setConfirmOpen(true)}
       >
-        <Trash2 />
+        <CircleStop />
       </Button>
-      <DeleteBudgetDialog budget={income} open={confirmOpen} onOpenChange={setConfirmOpen} />
+      <DeleteBudgetDialog budget={income} month={month} open={confirmOpen} onOpenChange={setConfirmOpen} />
     </div>
   )
 }

@@ -1,8 +1,8 @@
 import { roundCents } from "@centime/core"
-import type { BudgetOverviewItem, Theme } from "@/lib/api"
+import type { Budget, BudgetOverviewItem, Theme } from "@/lib/api"
 import { BUDGET_CURRENCY } from "@/lib/budgets"
 import i18n from "@/i18n"
-import { formatAmount } from "@/lib/format"
+import { formatAmount, formatDate } from "@/lib/format"
 
 export type ThemeTotals = { available: number; spent: number; remaining: number }
 
@@ -45,6 +45,10 @@ export function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
       status.projected !== 0 &&
       i18n.t("budgets.table.projected", { amount: money(status.projected) }),
   ].filter((detail) => detail !== false)
+}
+
+export function endDateNote({ endDate }: Pick<Budget, "endDate">): string[] {
+  return endDate === null ? [] : [i18n.t("budgets.table.until", { date: formatDate(endDate) })]
 }
 
 export function transactionsSearchOf(budget: Pick<BudgetOverviewItem, "categoryId" | "status">) {

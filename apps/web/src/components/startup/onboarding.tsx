@@ -1,4 +1,4 @@
-import { Check, Copy, KeyRound, Plus } from "lucide-react"
+import { Check, Copy, KeyRound, Plus, ShieldAlert } from "lucide-react"
 import { useEffect, useState } from "react"
 import { useTranslation } from "react-i18next"
 import { toast } from "sonner"
@@ -169,11 +169,25 @@ function RestoreKeyStep({ onDone, onBack }: StepProps) {
   )
 }
 
+function InsecureContextNotice() {
+  const { t } = useTranslation()
+  return (
+    <CardContent>
+      <Alert variant="destructive">
+        <ShieldAlert />
+        <AlertTitle>{t("boot.insecureTitle")}</AlertTitle>
+        <AlertDescription>{t("boot.insecureDescription")}</AlertDescription>
+      </Alert>
+    </CardContent>
+  )
+}
+
 export function OnboardingSteps({ onDone }: { onDone: () => void }) {
   const { t } = useTranslation()
   const [mode, setMode] = useState<Mode>("choose")
   const back = () => setMode("choose")
 
+  if (!window.isSecureContext) return <InsecureContextNotice />
   if (mode === "create") return <CreateKeyStep onDone={onDone} onBack={back} />
   if (mode === "restore") return <RestoreKeyStep onDone={onDone} onBack={back} />
   return (

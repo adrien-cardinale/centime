@@ -298,7 +298,9 @@
       "settingsDescription": "Camera access was denied. Allow it in the device settings to scan a QR code.",
       "openSettings": "Open settings"
     },
-    "enterKeyManually": "Enter the key manually"
+    "enterKeyManually": "Enter the key manually",
+    "insecureTitle": "Insecure connection",
+    "insecureDescription": "The browser only encrypts data over HTTPS or from localhost. Open centime at http://localhost, or put an HTTPS proxy in front of the server."
   },
   "periodNavigator": {
     "previous": "Previous month",

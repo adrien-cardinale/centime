@@ -298,7 +298,9 @@
       "settingsDescription": "L'accès à la caméra a été refusé. Autorisez-le dans les réglages de l'appareil pour scanner un QR code.",
       "openSettings": "Ouvrir les réglages"
     },
-    "enterKeyManually": "Saisir la clé à la main"
+    "enterKeyManually": "Saisir la clé à la main",
+    "insecureTitle": "Connexion non sécurisée",
+    "insecureDescription": "Le navigateur ne chiffre les données qu'en HTTPS ou depuis localhost. Ouvrez centime sur http://localhost, ou placez un proxy HTTPS devant le serveur."
   },
   "periodNavigator": {
     "previous": "Mois précédent",

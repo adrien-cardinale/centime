@@ -4,6 +4,21 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.7.0] - 2026-11-04
+
+### Added
+
+- Budgets: a budget now runs from a start month to an optional end month, both set in the budget dialog. **Stop** ends a budget at the close of the period before the one on screen and keeps the history of earlier months; **Delete permanently** erases it from every period.
+- Categories: after you file 3 similar transactions under the same category by hand, centime creates the matching rule and tells you. Turn this off under **Settings › Automatic rules**.
+- Categories: a theme can be created from the category dialog, without leaving it.
+- Web: when the page is not served over HTTPS or from localhost, the first screen explains that the browser cannot create the encryption key there, instead of failing silently.
+
+### Changed
+
+- Categories and themes get a color automatically on creation, the least used one of the palette, so the dialogs no longer ask for one. Editing still lets you pick another swatch.
+- Dashboard: the spending by category chart uses each category's and theme's own color. **Other** and uncategorized spending stay muted.
+- Dashboard: the month navigator stays visible while scrolling, and changing month keeps the scroll position.
+
 ## [0.6.0] - 2026-10-17
 
 **Update every device together.** The synchronized data no longer contains fixed items, so an older version cannot sync with this one.

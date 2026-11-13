@@ -79,7 +79,7 @@ export const CAMT_053 = camtDocument([
     },
     {
       amount: "15.00",
-      indicator: "DBIT",
+      indicator: "CRDT",
       reversal: true,
       bookingDate: "2026-03-05",
       valueDate: "2026-03-05",

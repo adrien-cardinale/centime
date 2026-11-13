@@ -1,8 +1,9 @@
 import { type BudgetPayload, budgetPayloadSchema } from "@centime/core"
 import { categories, type Db } from "@centime/db"
 import { beforeEach, describe, expect, it } from "bun:test"
-import { budgetsOverview, createBudget } from "./budgets"
+import { budgetsOverview, createBudget, findBudget, updateBudget } from "./budgets"
 import { ServiceError } from "./errors"
+import { createRule, listRules } from "./rules"
 import { createTestAccount, createTestDb } from "./test-support/database"
 import { createTransaction } from "./transaction-create"
 
@@ -69,5 +70,50 @@ describe("income budgets", () => {
     const creation = createBudget(db, payload({ kind: "envelope", categoryId: salary, amount: 200 }))
 
     await expect(creation).rejects.toBeInstanceOf(ServiceError)
+  })
+})
+
+describe("budget rules", () => {
+  const matcher = { pattern: "Salaire SA", matchKind: "contains", field: "raw_label" } as const
+
+  it("leave the existing rules of the category alone when created without a rule", async () => {
+    const userRule = await createRule(db, { ...matcher, categoryId: salary, markAsTransfer: false, priority: 0 })
+
+    const budget = await createBudget(db, payload({ kind: "income", categoryId: salary, amount: 5000, rule: null }))
+
+    expect(budget.rule).toBeNull()
+    expect((await listRules(db)).map((rule) => rule.id)).toEqual([userRule.id])
+  })
+
+  it("own the rule they create and remove only that one", async () => {
+    const userRule = await createRule(db, { ...matcher, categoryId: salary, markAsTransfer: false, priority: 0 })
+    const budget = await createBudget(
+      db,
+      payload({ kind: "income", categoryId: salary, amount: 5000, rule: { ...matcher, pattern: "Bonus" } }),
+    )
+    expect(budget.rule).toMatchObject({ pattern: "Bonus" })
+
+    await updateBudget(db, {
+      id: budget.id,
+      ...payload({ kind: "income", categoryId: salary, amount: 5000, rule: null }),
+    })
+
+    expect((await listRules(db)).map((rule) => rule.id)).toEqual([userRule.id])
+  })
+
+  it("never move a rule they do not own to another category", async () => {
+    const other = await insertCategory("Prime")
+    const userRule = await createRule(db, { ...matcher, categoryId: salary, markAsTransfer: false, priority: 0 })
+    const budget = await createBudget(db, payload({ kind: "income", categoryId: salary, amount: 5000 }))
+
+    await updateBudget(db, {
+      id: budget.id,
+      ...payload({ kind: "income", categoryId: other, amount: 5000, rule: { ...matcher, pattern: "Prime" } }),
+    })
+
+    const rules = await listRules(db)
+    expect(rules.find((rule) => rule.id === userRule.id)).toMatchObject({ categoryId: salary, budgetId: null })
+    expect(rules.find((rule) => rule.id !== userRule.id)).toMatchObject({ categoryId: other, budgetId: budget.id })
+    expect((await findBudget(db, budget.id))?.rule).toMatchObject({ pattern: "Prime" })
   })
 })

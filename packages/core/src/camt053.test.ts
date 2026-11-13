@@ -32,8 +32,25 @@ describe("parseCamt053", () => {
     expect(result.transactions[2]?.status).toBe("pending")
   })
 
-  it("inverts the sign of reversal entries", () => {
+  it("takes the sign of reversal entries from the credit/debit indicator", () => {
     expect(result.transactions[3]).toMatchObject({ amount: 15, rawLabel: "Annulation achat Kiosque & Co" })
+  })
+
+  it("keeps a reversed credit negative", () => {
+    const document = camtDocument([
+      statement(CAMT_IBAN, [
+        {
+          amount: "20",
+          indicator: "DBIT",
+          reversal: true,
+          bookingDate: "2026-04-03",
+          valueDate: "2026-04-03",
+          reference: "R1",
+          label: "Annulation virement reçu",
+        },
+      ]),
+    ])
+    expect(parseCamt053(encodeUtf8(document)).transactions[0]?.amount).toBe(-20)
   })
 
   it("tolerates entry details", () => {

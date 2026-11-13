@@ -79,6 +79,7 @@ export type Rule = SyncColumns & {
   categoryId: string | null
   markAsTransfer: boolean
   priority: number
+  budgetId: string | null
 }
 
 export type BudgetKind = "envelope" | "income"

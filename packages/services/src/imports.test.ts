@@ -38,10 +38,14 @@ const CAMT_XML = utf8(`<?xml version="1.0" encoding="UTF-8"?>
 const CARD_HEADER =
   "Date transaction,Libellé,Marchand,Numéro de carte,Devise,Montant,Devise d'origine,Montant d'origine,Sens,Statut,Catégorie,Code catégorie"
 
-function cardCsv(status: string): Uint8Array {
-  return utf8(
-    `${CARD_HEADER}\n"25.03.2026","EPICERIE FICTIVE, VILLEFICTIVE","Epicerie Fictive","5555 12** **** 3456","CHF","11.95","","","Débit","${status}","Alimentation","GROCERY"\n`,
+type CardEntry = { date?: string; label?: string; amount?: string }
+
+function cardCsv(status: string, entries: CardEntry[] = [{}]): Uint8Array {
+  const lines = entries.map(
+    ({ date = "25.03.2026", label = "EPICERIE FICTIVE, VILLEFICTIVE", amount = "11.95" }) =>
+      `"${date}","${label}","Epicerie Fictive","5555 12** **** 3456","CHF","${amount}","","","Débit","${status}","Alimentation","GROCERY"`,
   )
+  return utf8(`${CARD_HEADER}\n${lines.join("\n")}\n`)
 }
 
 const PROFILE_WITHOUT_ACCOUNT: CsvProfileInput = {
@@ -89,6 +93,48 @@ describe("import service", () => {
     expect(outcome).toMatchObject({ inserted: 0, updated: 1 })
     const stored = await db.select().from(transactions)
     expect(stored.map((transaction) => transaction.status)).toEqual(["booked"])
+  })
+
+  it("promotes a pending transaction booked later under another label", async () => {
+    await commitImport(db, { bytes: cardCsv("En attente"), fileName: "card-1.csv" })
+    const bookedCsv = cardCsv("Comptabilisée", [{ date: "27.03.2026", label: "EPICERIE FICTIVE SA" }])
+    const analysis = await analyzeImport(db, { bytes: bookedCsv, fileName: "card-2.csv" })
+    expect(summarizeAnalysis(analysis)).toMatchObject({ new: 0, duplicates: 0, pendingToBooked: 1 })
+    const outcome = await commitImport(db, { bytes: bookedCsv, fileName: "card-2.csv" })
+    expect(outcome).toMatchObject({ inserted: 0, updated: 1 })
+    const stored = await db.select().from(transactions)
+    expect(stored).toHaveLength(1)
+    expect(stored[0]).toMatchObject({ status: "booked", bookingDate: "2026-03-27", rawLabel: "EPICERIE FICTIVE SA" })
+    const again = await analyzeImport(db, { bytes: bookedCsv, fileName: "card-3.csv" })
+    expect(summarizeAnalysis(again)).toMatchObject({ new: 0, duplicates: 1, pendingToBooked: 0 })
+  })
+
+  it("promotes each stale pending transaction once, closest date first", async () => {
+    const pending = cardCsv("En attente", [{ date: "20.03.2026" }, { date: "24.03.2026", label: "AUTRE LIBELLE" }])
+    await commitImport(db, { bytes: pending, fileName: "card-1.csv" })
+    const booked = cardCsv("Comptabilisée", [
+      { date: "26.03.2026", label: "EPICERIE FICTIVE SA" },
+      { date: "27.03.2026", label: "EPICERIE FICTIVE SA" },
+      { date: "28.03.2026", label: "EPICERIE FICTIVE SA" },
+    ])
+    const outcome = await commitImport(db, { bytes: booked, fileName: "card-2.csv" })
+    expect(outcome).toMatchObject({ inserted: 1, updated: 2 })
+    const stored = await db.select().from(transactions)
+    expect(stored.map((transaction) => [transaction.bookingDate, transaction.status]).sort()).toEqual([
+      ["2026-03-26", "booked"],
+      ["2026-03-27", "booked"],
+      ["2026-03-28", "booked"],
+    ])
+  })
+
+  it("does not promote a pending transaction with another amount or booked too late", async () => {
+    await commitImport(db, { bytes: cardCsv("En attente"), fileName: "card-1.csv" })
+    const booked = cardCsv("Comptabilisée", [
+      { date: "26.03.2026", amount: "12.95" },
+      { date: "02.04.2026", label: "EPICERIE FICTIVE SA" },
+    ])
+    const analysis = await analyzeImport(db, { bytes: booked, fileName: "card-2.csv" })
+    expect(summarizeAnalysis(analysis)).toMatchObject({ new: 2, pendingToBooked: 0 })
   })
 
   it("keeps a promoted transaction when the promoting import is deleted", async () => {

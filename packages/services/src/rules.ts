@@ -1,4 +1,4 @@
-import { applyCompiledRules, compileRules, type RuleMatcherInput, type RulePayload } from "@centime/core"
+import { compileRule, prepareRuleSubject, type RuleMatcherInput, type RulePayload } from "@centime/core"
 import { type Db, rules, transactions } from "@centime/db"
 import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { z } from "zod"
@@ -55,7 +55,7 @@ export async function deleteRule(db: Db, { id }: { id: string }, clock: Clock = 
 }
 
 export async function testRule(db: Db, matcher: RuleMatcherInput) {
-  const { compiled } = compileRules([{ ...matcher, id: "test", categoryId: null, markAsTransfer: false, priority: 0 }])
+  const compiled = compileRule({ ...matcher, id: "test", categoryId: null, markAsTransfer: false, priority: 0 })
   const rows = await db
     .select({
       id: transactions.id,
@@ -68,7 +68,7 @@ export async function testRule(db: Db, matcher: RuleMatcherInput) {
     .from(transactions)
     .where(isNull(transactions.deletedAt))
     .orderBy(desc(transactions.bookingDate), desc(transactions.createdAt))
-  const matches = rows.filter((row) => applyCompiledRules(compiled, row) !== null)
+  const matches = compiled ? rows.filter((row) => compiled.test(prepareRuleSubject(row))) : []
   return {
     count: matches.length,
     samples: matches.slice(0, SAMPLE_SIZE).map(({ id, bookingDate, rawLabel, merchant, amount }) => ({

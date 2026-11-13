@@ -71,4 +71,14 @@ export const GENERATED_MIGRATIONS: readonly Migration[] = [
     when: 1793798550641,
     sql: "ALTER TABLE `budgets` ADD `end_date` text;",
   },
+  {
+    tag: "0014_rules_budget_id",
+    when: 1794575238572,
+    sql: "ALTER TABLE `rules` ADD `budget_id` text;--> statement-breakpoint\nCREATE INDEX `rules_budget_id_idx` ON `rules` (`budget_id`);--> statement-breakpoint\nUPDATE `rules` SET `budget_id` = (SELECT `b`.`id` FROM `budgets` `b` WHERE `b`.`category_id` = `rules`.`category_id` AND `b`.`deleted_at` IS NULL ORDER BY `b`.`created_at` DESC LIMIT 1), `updated_at` = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), `sync_version` = NULL\nWHERE `deleted_at` IS NULL AND `mark_as_transfer` = 0 AND `priority` = 60 AND `category_id` IS NOT NULL\nAND EXISTS (SELECT 1 FROM `budgets` `b` WHERE `b`.`category_id` = `rules`.`category_id` AND `b`.`deleted_at` IS NULL)\nAND `id` = (SELECT `r`.`id` FROM `rules` `r` WHERE `r`.`category_id` = `rules`.`category_id` AND `r`.`mark_as_transfer` = 0 AND `r`.`deleted_at` IS NULL ORDER BY `r`.`created_at` LIMIT 1);--> statement-breakpoint\nUPDATE `rules` SET `deleted_at` = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), `updated_at` = strftime('%Y-%m-%dT%H:%M:%fZ', 'now'), `sync_version` = NULL\nWHERE `deleted_at` IS NULL AND `category_id` IS NULL AND `mark_as_transfer` = 0;\n",
+  },
+  {
+    tag: "0015_transactions_import_id_index",
+    when: 1794575239572,
+    sql: "CREATE INDEX `transactions_import_id_idx` ON `transactions` (`import_id`);",
+  },
 ]

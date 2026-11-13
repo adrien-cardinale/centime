@@ -70,7 +70,7 @@ function activeBudget(id: string) {
 export async function listBudgets(db: DbExecutor, onlyId?: string) {
   const [rows, linkedRules] = await Promise.all([loadBudgetRows(db, onlyId), loadLinkedRules(db)])
   return rows
-    .map((row) => ({ ...row, rule: linkedRules.get(row.categoryId) ?? null }))
+    .map((row) => ({ ...row, rule: linkedRules.get(row.id) ?? null }))
     .sort((left, right) => left.categoryName.localeCompare(right.categoryName, "fr"))
 }
 
@@ -141,7 +141,7 @@ export async function createBudget(db: Db, payload: BudgetPayload, clock: Clock 
   const id = await db.transaction(async (tx) => {
     const [created] = await tx.insert(budgets).values(toRow(payload)).returning({ id: budgets.id })
     if (!created) throw new Error("Insertion du budget impossible")
-    await syncLinkedRule(tx, payload.categoryId, payload.categoryId, payload.rule, clock)
+    await syncLinkedRule(tx, created.id, payload.categoryId, payload.rule, clock)
     return created.id
   })
   return requireBudget(db, id)
@@ -152,11 +152,11 @@ export async function updateBudget(
   { id, ...payload }: BudgetUpdate,
   clock: Clock = systemClock,
 ): Promise<BudgetEntry> {
-  const current = await requireBudget(db, id)
+  await requireBudget(db, id)
   await assertBudgetable(db, payload.categoryId, id)
   await db.transaction(async (tx) => {
     await tx.update(budgets).set(toRow(payload)).where(activeBudget(id))
-    await syncLinkedRule(tx, current.categoryId, payload.categoryId, payload.rule, clock)
+    await syncLinkedRule(tx, id, payload.categoryId, payload.rule, clock)
   })
   return requireBudget(db, id)
 }

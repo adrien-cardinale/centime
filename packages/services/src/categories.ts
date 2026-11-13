@@ -106,6 +106,10 @@ export async function updateCategory(db: Db, { id, ...input }: CategoryUpdate) {
 async function detachCategory(db: DbExecutor, id: string, deletedAt: string): Promise<void> {
   await db.update(transactions).set({ categoryId: null }).where(eq(transactions.categoryId, id))
   await db.update(transactionSplits).set({ categoryId: null }).where(eq(transactionSplits.categoryId, id))
+  await db
+    .update(rules)
+    .set({ deletedAt })
+    .where(and(eq(rules.categoryId, id), eq(rules.markAsTransfer, false), isNull(rules.deletedAt)))
   await db.update(rules).set({ categoryId: null }).where(eq(rules.categoryId, id))
   await db
     .update(budgets)

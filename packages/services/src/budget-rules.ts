@@ -10,35 +10,34 @@ export type LinkedRule = RuleMatcherInput & { id: string }
 
 type RuleChange = RuleMatcherInput | null | undefined
 
-function linkedRuleCondition(categoryId: string) {
-  return and(eq(rules.categoryId, categoryId), eq(rules.markAsTransfer, false), isNull(rules.deletedAt))
+function ownedRuleCondition(budgetId: string) {
+  return and(eq(rules.budgetId, budgetId), isNull(rules.deletedAt))
 }
 
 export async function loadLinkedRules(db: DbExecutor): Promise<Map<string, LinkedRule>> {
   const rows = await db
     .select({
       id: rules.id,
-      categoryId: rules.categoryId,
+      budgetId: rules.budgetId,
       pattern: rules.pattern,
       matchKind: rules.matchKind,
       field: rules.field,
     })
     .from(rules)
-    .where(and(isNotNull(rules.categoryId), eq(rules.markAsTransfer, false), isNull(rules.deletedAt)))
+    .where(and(isNotNull(rules.budgetId), isNull(rules.deletedAt)))
     .orderBy(asc(rules.createdAt))
-  const byCategory = new Map<string, LinkedRule>()
-  for (const { categoryId, ...rule } of rows) {
-    if (categoryId !== null && !byCategory.has(categoryId)) byCategory.set(categoryId, rule)
+  const byBudget = new Map<string, LinkedRule>()
+  for (const { budgetId, ...rule } of rows) {
+    if (budgetId !== null && !byBudget.has(budgetId)) byBudget.set(budgetId, rule)
   }
-  return byCategory
+  return byBudget
 }
 
-async function findLinkedRule(db: DbExecutor, categoryId: string | null) {
-  if (categoryId === null) return undefined
+async function findOwnedRule(db: DbExecutor, budgetId: string) {
   const [existing] = await db
     .select({ id: rules.id })
     .from(rules)
-    .where(linkedRuleCondition(categoryId))
+    .where(ownedRuleCondition(budgetId))
     .orderBy(asc(rules.createdAt))
     .limit(1)
   return existing
@@ -46,13 +45,13 @@ async function findLinkedRule(db: DbExecutor, categoryId: string | null) {
 
 export async function syncLinkedRule(
   db: DbExecutor,
-  previousCategoryId: string | null,
+  budgetId: string,
   categoryId: string,
   rule: RuleChange,
   clock: Clock,
 ): Promise<void> {
   if (rule === undefined) return
-  const existing = await findLinkedRule(db, previousCategoryId)
+  const existing = await findOwnedRule(db, budgetId)
   if (rule === null) {
     if (existing)
       await db
@@ -66,6 +65,9 @@ export async function syncLinkedRule(
       .update(rules)
       .set({ ...rule, categoryId })
       .where(eq(rules.id, existing.id))
-  else await db.insert(rules).values({ ...rule, categoryId, markAsTransfer: false, priority: BUDGET_RULE_PRIORITY })
+  else
+    await db
+      .insert(rules)
+      .values({ ...rule, categoryId, budgetId, markAsTransfer: false, priority: BUDGET_RULE_PRIORITY })
   await categorizeTransactions(db, await loadCategorizableTransactions(db), "uncategorized")
 }

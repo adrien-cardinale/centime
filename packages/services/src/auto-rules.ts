@@ -1,4 +1,12 @@
-import { type RulePayload, ruleMatches, type RuleSubject, suggestRulePattern } from "@centime/core"
+import {
+  type CompiledRule,
+  compileRule,
+  type PreparedRuleSubject,
+  prepareRuleSubject,
+  type RulePayload,
+  type RuleSubject,
+  suggestRulePattern,
+} from "@centime/core"
 import { type Db, type DbExecutor, type RuleRow, transactions } from "@centime/db"
 import { and, eq, inArray, isNull } from "drizzle-orm"
 import { z } from "zod"
@@ -27,10 +35,13 @@ export type AutoRuleResult = { created: RuleRow[] }
 
 type CategorizedSubject = RuleSubject & { categoryId: string }
 
+type PreparedCandidate = { transaction: CategorizableTransaction; subject: PreparedRuleSubject }
+
 type AutoRuleContext = {
   categorize: Categorizer
-  candidates: CategorizableTransaction[]
+  candidates: PreparedCandidate[]
   created: RuleRow[]
+  createdMatchers: CompiledRule[]
 }
 
 function candidateRule(subject: CategorizedSubject): RulePayload | null {
@@ -40,12 +51,15 @@ function candidateRule(subject: CategorizedSubject): RulePayload | null {
 }
 
 function isCoveredByExistingRule(context: AutoRuleContext, subject: RuleSubject): boolean {
-  return context.categorize(subject) !== null || context.created.some((rule) => ruleMatches(rule, subject))
+  if (context.categorize(subject) !== null) return true
+  const prepared = prepareRuleSubject(subject)
+  return context.createdMatchers.some((matcher) => matcher.test(prepared))
 }
 
-function isConsistentRepetition(candidate: RulePayload, candidates: CategorizableTransaction[]): boolean {
-  const rule = { ...candidate, id: "candidate" }
-  const matching = candidates.filter((transaction) => ruleMatches(rule, transaction))
+function isConsistentRepetition(candidate: RulePayload, candidates: PreparedCandidate[]): boolean {
+  const matcher = compileRule({ ...candidate, id: "candidate" })
+  if (!matcher) return false
+  const matching = candidates.filter(({ subject }) => matcher.test(subject)).map(({ transaction }) => transaction)
   const sameCategory = matching.filter((transaction) => transaction.categoryId === candidate.categoryId)
   const otherCategory = matching.some(
     (transaction) => transaction.categoryId !== null && transaction.categoryId !== candidate.categoryId,
@@ -70,15 +84,23 @@ async function createRuleIfRepeated(db: DbExecutor, context: AutoRuleContext, su
   if (isCoveredByExistingRule(context, subject)) return
   const candidate = candidateRule(subject)
   if (!candidate || !isConsistentRepetition(candidate, context.candidates)) return
-  context.created.push(await createRule(db, candidate))
+  const created = await createRule(db, candidate)
+  context.created.push(created)
+  const matcher = compileRule(created)
+  if (matcher) context.createdMatchers.push(matcher)
+}
+
+function prepareCandidates(transactions: CategorizableTransaction[]): PreparedCandidate[] {
+  return transactions.map((transaction) => ({ transaction, subject: prepareRuleSubject(transaction) }))
 }
 
 export function createRulesFromRepeatedCategorization(db: Db, { ids }: AutoRuleInput): Promise<AutoRuleResult> {
   return db.transaction(async (tx) => {
     const context: AutoRuleContext = {
       categorize: await loadCategorizer(tx),
-      candidates: await loadCategorizableTransactions(tx),
+      candidates: prepareCandidates(await loadCategorizableTransactions(tx)),
       created: [],
+      createdMatchers: [],
     }
     for (const subject of await loadCategorizedSubjects(tx, [...new Set(ids)])) {
       await createRuleIfRepeated(tx, context, subject)

@@ -1,5 +1,15 @@
 import { describe, expect, it } from "bun:test"
-import { applyRules, compileRules, type RuleInput, ruleMatches, type RuleSubject, suggestRulePattern } from "./rules"
+import {
+  applyCompiledRules,
+  applyRules,
+  compileRule,
+  compileRules,
+  prepareRuleSubject,
+  type RuleInput,
+  ruleMatches,
+  type RuleSubject,
+  suggestRulePattern,
+} from "./rules"
 
 function rule(overrides: Partial<RuleInput> & Pick<RuleInput, "id" | "pattern">): RuleInput {
   return {
@@ -59,8 +69,8 @@ describe("ruleMatches", () => {
 describe("compileRules", () => {
   it("reports invalid regexes and keeps the others", () => {
     const { compiled, invalid } = compileRules([
-      rule({ id: "broken", pattern: "[a-", matchKind: "regex" }),
-      rule({ id: "valid", pattern: "fictive" }),
+      rule({ id: "broken", pattern: "[a-", matchKind: "regex", categoryId: "c" }),
+      rule({ id: "valid", pattern: "fictive", categoryId: "c" }),
     ])
     expect(compiled.map((entry) => entry.rule.id)).toEqual(["valid"])
     expect(invalid.map((entry) => entry.rule.id)).toEqual(["broken"])
@@ -68,11 +78,21 @@ describe("compileRules", () => {
 
   it("sorts by descending priority then by creation date", () => {
     const { compiled } = compileRules([
-      rule({ id: "low", pattern: "a", priority: 1, createdAt: "2026-01-01T00:00:00.000Z" }),
-      rule({ id: "newer", pattern: "a", priority: 5, createdAt: "2026-03-01T00:00:00.000Z" }),
-      rule({ id: "older", pattern: "a", priority: 5, createdAt: "2026-02-01T00:00:00.000Z" }),
+      rule({ id: "low", pattern: "a", categoryId: "c", priority: 1, createdAt: "2026-01-01T00:00:00.000Z" }),
+      rule({ id: "newer", pattern: "a", categoryId: "c", priority: 5, createdAt: "2026-03-01T00:00:00.000Z" }),
+      rule({ id: "older", pattern: "a", categoryId: "c", priority: 5, createdAt: "2026-02-01T00:00:00.000Z" }),
     ])
     expect(compiled.map((entry) => entry.rule.id)).toEqual(["older", "newer", "low"])
+  })
+
+  it("leaves out rules with neither a category nor a transfer mark", () => {
+    const { compiled, invalid } = compileRules([
+      rule({ id: "no-effect", pattern: "fictive" }),
+      rule({ id: "no-effect-broken", pattern: "(", matchKind: "regex" }),
+      rule({ id: "transfer", pattern: "fictive", markAsTransfer: true }),
+    ])
+    expect(compiled.map((entry) => entry.rule.id)).toEqual(["transfer"])
+    expect(invalid).toEqual([])
   })
 })
 
@@ -112,6 +132,32 @@ describe("applyRules", () => {
       subject(),
     )
     expect(outcome).toMatchObject({ ruleId: "transfer", markAsTransfer: true })
+  })
+})
+
+describe("applyCompiledRules", () => {
+  it("skips a matching rule without effect and keeps looking", () => {
+    const noEffect = compileRule(rule({ id: "no-effect", pattern: "fictive", priority: 10 }))
+    const category = compileRule(rule({ id: "category", pattern: "fictive", categoryId: "food" }))
+    if (!noEffect || !category) throw new Error("Règles de test invalides")
+
+    expect(applyCompiledRules([noEffect, category], subject())?.ruleId).toBe("category")
+    expect(applyCompiledRules([noEffect], subject())).toBeNull()
+  })
+})
+
+describe("compileRule", () => {
+  it("returns null for an invalid pattern", () => {
+    expect(compileRule(rule({ id: "r", pattern: "(", matchKind: "regex" }))).toBeNull()
+  })
+
+  it("tests a prepared subject on several rules", () => {
+    const prepared = prepareRuleSubject(subject({ merchant: "Épicerie" }))
+    const merchant = compileRule(rule({ id: "m", pattern: "epicerie", field: "merchant" }))
+    const label = compileRule(rule({ id: "l", pattern: "boulangerie" }))
+
+    expect(merchant?.test(prepared)).toBe(true)
+    expect(label?.test(prepared)).toBe(false)
   })
 })
 

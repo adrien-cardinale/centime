@@ -5,8 +5,11 @@ import type { IsoDate, TransactionStatus } from "./types"
 export class CsvValueError extends Error {}
 
 const REFERENCE_DATE = new Date(2000, 0, 1)
-const THOUSANDS_SEPARATORS = /['’\s  ]/g
-const AMOUNT_PATTERN = /^[+-]?(\d+(\.\d*)?|\.\d+)$/
+const SIGNED_AMOUNT_PATTERN = /^([+-]?)\s*(.*)$/su
+const GROUPED_INTEGER_PATTERN = /^\d{1,3}(\D)\d{3}(?:\1\d{3})*$/u
+const PLAIN_DIGITS_PATTERN = /^\d+$/
+const FRACTION_PATTERN = /^\d*$/
+const SPACING_SEPARATOR_PATTERN = /^['’\s]$/u
 
 function parseWithFormat(value: string, dateFormat: string): Date {
   try {
@@ -23,13 +26,26 @@ export function parseDateValue(value: string, dateFormat: string): IsoDate {
   return format(parsed, "yyyy-MM-dd")
 }
 
+function isThousandsSeparator(separator: string, decimalSeparator: DecimalSeparator): boolean {
+  if (SPACING_SEPARATOR_PATTERN.test(separator)) return true
+  return separator === (decimalSeparator === "," ? "." : ",")
+}
+
+function integerDigits(integer: string, decimalSeparator: DecimalSeparator): string | null {
+  if (integer === "" || PLAIN_DIGITS_PATTERN.test(integer)) return integer
+  const separator = GROUPED_INTEGER_PATTERN.exec(integer)?.[1]
+  if (separator === undefined || !isThousandsSeparator(separator, decimalSeparator)) return null
+  return integer.replaceAll(separator, "")
+}
+
 export function parseAmountValue(value: string, decimalSeparator: DecimalSeparator): number {
-  const compact = value.trim().replace(THOUSANDS_SEPARATORS, "").replace("−", "-")
-  // Le séparateur opposé au séparateur décimal du profil est un séparateur de milliers (« 1.234,56 », « 1,234.56 »).
-  const normalized =
-    decimalSeparator === "," ? compact.replaceAll(".", "").replace(",", ".") : compact.replaceAll(",", "")
-  if (!AMOUNT_PATTERN.test(normalized)) throw new CsvValueError(`Montant invalide : « ${value} »`)
-  return Number(normalized)
+  const invalid = new CsvValueError(`Montant invalide : « ${value} »`)
+  const [, sign = "", body = ""] = SIGNED_AMOUNT_PATTERN.exec(value.trim().replace("−", "-")) ?? []
+  const [integer = "", fraction, ...extra] = body.split(decimalSeparator)
+  if (extra.length > 0 || (fraction !== undefined && !FRACTION_PATTERN.test(fraction))) throw invalid
+  const digits = integerDigits(integer, decimalSeparator)
+  if (digits === null || (digits === "" && !fraction)) throw invalid
+  return Number(`${sign}${digits === "" ? "0" : digits}.${fraction ?? ""}`)
 }
 
 const CURRENCY_PATTERN = /^[A-Za-z]{3}$/

@@ -114,6 +114,7 @@ export const transactions = sqliteTable(
     index("transactions_account_id_idx").on(table.accountId),
     index("transactions_booking_date_idx").on(table.bookingDate),
     index("transactions_category_id_idx").on(table.categoryId),
+    index("transactions_import_id_idx").on(table.importId),
     uniqueIndex("transactions_fingerprint_idx").on(table.fingerprint),
     syncVersionIndex("transactions", table),
   ],
@@ -175,8 +176,9 @@ export const rules = sqliteTable(
     categoryId: text("category_id").references(() => categories.id),
     markAsTransfer: integer("mark_as_transfer", { mode: "boolean" }).notNull().default(false),
     priority: integer("priority").notNull().default(0),
+    budgetId: text("budget_id"),
   },
-  (table) => [syncVersionIndex("rules", table)],
+  (table) => [syncVersionIndex("rules", table), index("rules_budget_id_idx").on(table.budgetId)],
 )
 
 export const budgets = sqliteTable(

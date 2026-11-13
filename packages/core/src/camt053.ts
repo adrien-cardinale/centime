@@ -90,8 +90,7 @@ function readAmount(entry: unknown): number {
   if (amount === null || !AMOUNT_PATTERN.test(amount))
     throw new CamtEntryError(`Montant invalide : « ${amount ?? ""} »`)
   const isDebit = text(child(entry, "CdtDbtInd")) === "DBIT"
-  const isReversal = text(child(entry, "RvslInd")) === "true"
-  return isDebit !== isReversal ? -Number(amount) : Number(amount)
+  return isDebit ? -Number(amount) : Number(amount)
 }
 
 function toTransaction(entry: unknown, statement: StatementContext): ParsedTransaction {

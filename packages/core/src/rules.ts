@@ -18,9 +18,14 @@ export type RuleOutcome = {
   markAsTransfer: boolean
 }
 
+export type PreparedRuleSubject = {
+  raw: (field: RuleField) => string | null
+  normalized: (field: RuleField) => string | null
+}
+
 export type CompiledRule = {
   rule: RuleInput
-  test: (value: string) => boolean
+  test: (subject: PreparedRuleSubject) => boolean
 }
 
 export type InvalidRule = {
@@ -38,7 +43,7 @@ export type RulePatternSuggestion = {
   pattern: string
 }
 
-type Matcher = { ok: true; test: (value: string) => boolean } | { ok: false; message: string }
+type Matcher = { ok: true; test: (subject: PreparedRuleSubject) => boolean } | { ok: false; message: string }
 
 export function regexError(pattern: string): string | null {
   try {
@@ -49,22 +54,28 @@ export function regexError(pattern: string): string | null {
   }
 }
 
-function containsMatcher(pattern: string): Matcher {
+function containsMatcher(field: RuleField, pattern: string): Matcher {
   const needle = normalizeLabel(pattern)
   if (needle === "") return { ok: false, message: "Motif vide" }
-  return { ok: true, test: (value) => normalizeLabel(value).includes(needle) }
+  return { ok: true, test: (subject) => subject.normalized(field)?.includes(needle) ?? false }
 }
 
-function regexMatcher(pattern: string): Matcher {
+function regexMatcher(field: RuleField, pattern: string): Matcher {
   if (pattern === "") return { ok: false, message: "Motif vide" }
   const error = regexError(pattern)
   if (error !== null) return { ok: false, message: error }
   const regex = new RegExp(pattern, "iu")
-  return { ok: true, test: (value) => regex.test(value) }
+  return {
+    ok: true,
+    test: (subject) => {
+      const value = subject.raw(field)
+      return value !== null && regex.test(value)
+    },
+  }
 }
 
 function buildMatcher(rule: RuleInput): Matcher {
-  return rule.matchKind === "regex" ? regexMatcher(rule.pattern) : containsMatcher(rule.pattern)
+  return rule.matchKind === "regex" ? regexMatcher(rule.field, rule.pattern) : containsMatcher(rule.field, rule.pattern)
 }
 
 function fieldValue(field: RuleField, subject: RuleSubject): string | null {
@@ -78,16 +89,40 @@ function fieldValue(field: RuleField, subject: RuleSubject): string | null {
   }
 }
 
+export function prepareRuleSubject(subject: RuleSubject): PreparedRuleSubject {
+  const normalized = new Map<RuleField, string | null>()
+  return {
+    raw: (field) => fieldValue(field, subject),
+    normalized: (field) => {
+      const cached = normalized.get(field)
+      if (cached !== undefined) return cached
+      const value = fieldValue(field, subject)
+      const result = value === null ? null : normalizeLabel(value)
+      normalized.set(field, result)
+      return result
+    },
+  }
+}
+
+export function hasEffect(rule: Pick<RuleInput, "categoryId" | "markAsTransfer">): boolean {
+  return rule.categoryId !== null || rule.markAsTransfer
+}
+
 function byPriorityThenAge(left: RuleInput, right: RuleInput): number {
   if (left.priority !== right.priority) return right.priority - left.priority
   if (left.createdAt === undefined || right.createdAt === undefined) return 0
   return left.createdAt.localeCompare(right.createdAt)
 }
 
+export function compileRule(rule: RuleInput): CompiledRule | null {
+  const matcher = buildMatcher(rule)
+  return matcher.ok ? { rule, test: matcher.test } : null
+}
+
 export function compileRules(rules: RuleInput[]): CompiledRules {
   const compiled: CompiledRule[] = []
   const invalid: InvalidRule[] = []
-  for (const rule of [...rules].sort(byPriorityThenAge)) {
+  for (const rule of rules.filter(hasEffect).sort(byPriorityThenAge)) {
     const matcher = buildMatcher(rule)
     if (matcher.ok) compiled.push({ rule, test: matcher.test })
     else invalid.push({ rule, message: matcher.message })
@@ -95,14 +130,8 @@ export function compileRules(rules: RuleInput[]): CompiledRules {
   return { compiled, invalid }
 }
 
-function compiledMatches(compiled: CompiledRule, subject: RuleSubject): boolean {
-  const value = fieldValue(compiled.rule.field, subject)
-  return value !== null && compiled.test(value)
-}
-
 export function ruleMatches(rule: RuleInput, subject: RuleSubject): boolean {
-  const [compiled] = compileRules([rule]).compiled
-  return compiled !== undefined && compiledMatches(compiled, subject)
+  return compileRule(rule)?.test(prepareRuleSubject(subject)) ?? false
 }
 
 function toOutcome(rule: RuleInput): RuleOutcome {
@@ -114,7 +143,8 @@ function toOutcome(rule: RuleInput): RuleOutcome {
 }
 
 export function applyCompiledRules(compiled: CompiledRule[], subject: RuleSubject): RuleOutcome | null {
-  const winner = compiled.find((candidate) => compiledMatches(candidate, subject))
+  const prepared = prepareRuleSubject(subject)
+  const winner = compiled.find((candidate) => hasEffect(candidate.rule) && candidate.test(prepared))
   return winner ? toOutcome(winner.rule) : null
 }
 

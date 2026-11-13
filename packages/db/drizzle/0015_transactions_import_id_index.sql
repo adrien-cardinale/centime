@@ -1,0 +1,1 @@
+CREATE INDEX `transactions_import_id_idx` ON `transactions` (`import_id`);

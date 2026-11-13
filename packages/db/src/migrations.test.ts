@@ -208,4 +208,55 @@ describe("runMigrations", () => {
     expect(ruleRows.get("r-home")).toMatchObject({ categoryId: "item-home", deletedAt: null })
     expect(ruleRows.get("r-orphan")?.deletedAt).not.toBeNull()
   })
+
+  it("hands each budget the rule it created and drops rules without effect", async () => {
+    const db = createDb(":memory:")
+    await simulateDrizzleMigratedDatabase(
+      db,
+      MIGRATIONS.findIndex((migration) => migration.tag === "0014_rules_budget_id"),
+    )
+    const stamp = "2026-01-01T00:00:00.000Z"
+    const later = "2026-02-01T00:00:00.000Z"
+    for (const id of ["food", "home", "fun"])
+      await db.run(
+        sql`insert into categories (id, created_at, updated_at, name, color)
+            values (${id}, ${stamp}, ${stamp}, ${id}, ${"#4a84c4"})`,
+      )
+    for (const [id, categoryId] of [
+      ["budget-food", "food"],
+      ["budget-home", "home"],
+    ])
+      await db.run(
+        sql`insert into budgets (id, created_at, updated_at, category_id, amount, period, start_date)
+            values (${id}, ${stamp}, ${stamp}, ${categoryId}, ${100}, ${"monthly"}, ${"2026-01-01"})`,
+      )
+    const insertRule = (
+      id: string,
+      categoryId: string | null,
+      markAsTransfer: number,
+      priority: number,
+      createdAt = stamp,
+    ) =>
+      db.run(
+        sql`insert into rules (id, created_at, updated_at, pattern, match_kind, field, category_id, mark_as_transfer, priority, sync_version)
+            values (${id}, ${createdAt}, ${createdAt}, ${"coop"}, ${"contains"}, ${"raw_label"}, ${categoryId}, ${markAsTransfer}, ${priority}, 4)`,
+      )
+    await insertRule("budget-rule", "food", 0, 60)
+    await insertRule("later-food-rule", "food", 0, 60, later)
+    await insertRule("user-rule", "home", 0, 50)
+    await insertRule("no-budget-rule", "fun", 0, 60)
+    await insertRule("transfer", null, 1, 0)
+    await insertRule("no-effect", null, 0, 0)
+
+    await runMigrations(db)
+
+    const rows = new Map((await db.select().from(rules)).map((row) => [row.id, row]))
+    expect(rows.get("budget-rule")).toMatchObject({ budgetId: "budget-food", deletedAt: null, syncVersion: null })
+    expect(rows.get("later-food-rule")).toMatchObject({ budgetId: null, syncVersion: 4 })
+    expect(rows.get("user-rule")).toMatchObject({ budgetId: null, deletedAt: null, syncVersion: 4 })
+    expect(rows.get("no-budget-rule")).toMatchObject({ budgetId: null, deletedAt: null, syncVersion: 4 })
+    expect(rows.get("transfer")).toMatchObject({ budgetId: null, deletedAt: null, syncVersion: 4 })
+    expect(rows.get("no-effect")?.deletedAt).not.toBeNull()
+    expect(rows.get("no-effect")?.syncVersion).toBeNull()
+  })
 })

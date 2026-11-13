@@ -6,7 +6,9 @@ import {
   detectCsvProfile,
   detectImportFormat,
   type ImportFormat,
+  matchPendingToBooked,
   normalizeAccountIdentifier,
+  type PendingCandidate,
   parseCamt053,
   parseCsv,
   type ParseError,
@@ -166,13 +168,58 @@ function classify(transaction: LocatedTransaction, existing: ExistingTransaction
   return existing.status === "pending" && transaction.status === "booked" ? "pendingToBooked" : "duplicate"
 }
 
+async function findPendingCandidates(db: DbExecutor, accountIds: string[]): Promise<PendingCandidate[]> {
+  if (accountIds.length === 0) return []
+  return db
+    .select({
+      id: transactions.id,
+      accountId: transactions.accountId,
+      bookingDate: transactions.bookingDate,
+      amount: transactions.amount,
+      sourceRef: transactions.sourceRef,
+    })
+    .from(transactions)
+    .where(
+      and(
+        inArray(transactions.accountId, accountIds),
+        eq(transactions.status, "pending"),
+        isNull(transactions.deletedAt),
+      ),
+    )
+}
+
+function isUnseenBooked(transaction: LocatedTransaction, existing: ExistingTransaction | undefined): boolean {
+  return existing === undefined && transaction.status === "booked" && transaction.accountId !== null
+}
+
+async function matchStalePending(db: DbExecutor, rows: AnalyzedRow[], unseenBooked: boolean[]): Promise<AnalyzedRow[]> {
+  const accountIds = [
+    ...new Set(rows.flatMap((row, index) => (unseenBooked[index] && row.accountId ? [row.accountId] : []))),
+  ]
+  const claimedIds = new Set(rows.flatMap((row) => (row.existingId === null ? [] : [row.existingId])))
+  const candidates = (await findPendingCandidates(db, accountIds)).filter((candidate) => !claimedIds.has(candidate.id))
+  const entries = rows.map((row, index) =>
+    unseenBooked[index] && row.accountId !== null ? { ...row, accountId: row.accountId } : null,
+  )
+  const matches = matchPendingToBooked(entries, candidates)
+  return rows.map((row, index) => {
+    const match = matches.get(index)
+    return match ? { ...row, state: "pendingToBooked", existingId: match.id } : row
+  })
+}
+
 async function classifyTransactions(db: DbExecutor, located: LocatedTransaction[]): Promise<AnalyzedRow[]> {
   const fingerprints = located.flatMap((transaction) => (transaction.fingerprint ? [transaction.fingerprint] : []))
   const existingByFingerprint = await findExistingTransactions(db, fingerprints)
-  return located.map((transaction) => {
-    const existing = transaction.fingerprint ? existingByFingerprint.get(transaction.fingerprint) : undefined
+  const existingRows = located.map((transaction) =>
+    transaction.fingerprint ? existingByFingerprint.get(transaction.fingerprint) : undefined,
+  )
+  const rows = located.map((transaction, index): AnalyzedRow => {
+    const existing = existingRows[index]
     return { ...transaction, state: classify(transaction, existing), existingId: existing?.id ?? null }
   })
+  const unseenBooked = located.map((transaction, index) => isUnseenBooked(transaction, existingRows[index]))
+  return matchStalePending(db, rows, unseenBooked)
 }
 
 function resolutionFor(parsed: ParsedFile): AccountResolution {
@@ -322,6 +369,9 @@ async function promotePendingTransactions(db: DbExecutor, rows: AnalyzedRow[]): 
       .update(transactions)
       .set({
         status: "booked",
+        bookingDate: row.bookingDate,
+        rawLabel: row.rawLabel,
+        fingerprint: row.fingerprint ?? undefined,
         valueDate: row.valueDate,
         balanceAfter: row.balanceAfter,
         sourceRef: row.sourceRef,

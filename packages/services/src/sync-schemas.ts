@@ -79,6 +79,7 @@ export const SYNC_ROW_SCHEMAS: SyncRowSchemas = {
     categoryId: reference,
     markAsTransfer: z.boolean(),
     priority: z.number().int(),
+    budgetId: reference.default(null),
   }),
   budgets: z.object({
     ...syncFields,

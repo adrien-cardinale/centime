@@ -11,7 +11,8 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { MonthlyPoint } from "@/lib/api"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth, visibleMonths } from "@/lib/dashboard"
+import { useMoney } from "@/lib/base-currency"
+import { CHART_HEIGHT_CLASS, compactAmount, shortMonth, visibleMonths } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
@@ -24,6 +25,7 @@ function chartConfigOf(labels: { income: string; expenses: string }) {
 
 export function IncomeExpensesChart({ series: fullSeries }: { series: MonthlyPoint[] }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   const isMobile = useIsMobile()
   const series = visibleMonths(fullSeries, isMobile)
   const labels = new Map(series.map((point) => [point.month, point.label]))
@@ -72,6 +74,7 @@ export function IncomeExpensesChart({ series: fullSeries }: { series: MonthlyPoi
 
 function MonthlyTable({ series }: { series: MonthlyPoint[] }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <Table>
       <TableHeader>

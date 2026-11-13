@@ -1,8 +1,8 @@
 import type { DbExecutor } from "@centime/db"
+import { readPreference, writePreference } from "@centime/services"
 import { type UseMutationResult, useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { z } from "zod"
 import { getLocalDatabase } from "@/lib/local-db/current-database"
-import { readPreference, writePreference } from "@/lib/preferences"
 
 export type AiExtractionSettings = { enabled: boolean; apiKey: string; model: string }
 

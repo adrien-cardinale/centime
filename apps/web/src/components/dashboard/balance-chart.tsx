@@ -5,7 +5,8 @@ import { type ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } f
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import type { BalancePoint } from "@/lib/api"
 import { useIsMobile } from "@/hooks/use-mobile"
-import { CHART_HEIGHT_CLASS, compactAmount, money, shortMonth, visibleMonths } from "@/lib/dashboard"
+import { useMoney } from "@/lib/base-currency"
+import { CHART_HEIGHT_CLASS, compactAmount, shortMonth, visibleMonths } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
 import { ChartCard } from "./chart-card"
 
@@ -15,6 +16,7 @@ function chartConfigOf(label: string) {
 
 export function BalanceChart({ series: fullSeries }: { series: BalancePoint[] }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   const isMobile = useIsMobile()
   const series = visibleMonths(fullSeries, isMobile)
   if (series.length === 0) return <EmptyBalance />
@@ -90,6 +92,7 @@ function EmptyBalance() {
 
 function BalanceTable({ series }: { series: BalancePoint[] }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <Table>
       <TableHeader>

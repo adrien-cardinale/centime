@@ -221,7 +221,7 @@ describe("aggregations", () => {
   it("spreads the dashboard spending over the categories of the lines", async () => {
     await splitInHalf(await insertTransaction())
 
-    const breakdown = await categoryBreakdown(db, periodContaining("monthly", BOOKING_DATE))
+    const breakdown = await categoryBreakdown(db, periodContaining("monthly", BOOKING_DATE), "CHF")
 
     const spentByCategory = Object.fromEntries(breakdown.map((entry) => [entry.categoryId, entry.amount]))
     expect(spentByCategory).toEqual({ [groceries]: 60, [household]: 40 })

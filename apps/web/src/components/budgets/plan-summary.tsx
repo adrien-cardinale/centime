@@ -1,8 +1,7 @@
 import type { MonthPlan } from "@centime/core"
 import { useTranslation } from "react-i18next"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BUDGET_CURRENCY } from "@/lib/budgets"
-import { formatAmount } from "@/lib/format"
+import { useMoney } from "@/lib/base-currency"
 import { cn } from "@/lib/utils"
 
 type PlanTileProps = {
@@ -12,11 +11,8 @@ type PlanTileProps = {
   className?: string
 }
 
-function money(amount: number): string {
-  return formatAmount(amount, BUDGET_CURRENCY)
-}
-
 function PlanTile({ title, value, hint, className }: PlanTileProps) {
+  const { money } = useMoney()
   return (
     <Card className="min-w-0 gap-2 py-3 sm:gap-6 sm:py-6">
       <CardHeader className="gap-1 px-3 sm:gap-2 sm:px-6">
@@ -30,6 +26,7 @@ function PlanTile({ title, value, hint, className }: PlanTileProps) {
 
 export function PlanSummary({ plan }: { plan: MonthPlan }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   const { income, envelopes, remaining } = plan
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">

@@ -1,4 +1,4 @@
-import { ACCOUNT_KINDS } from "@centime/core"
+import { ACCOUNT_KINDS, FALLBACK_BASE_CURRENCY } from "@centime/core"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { Plus } from "lucide-react"
@@ -22,7 +22,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import i18n from "@/i18n"
 import { api } from "@/lib/api"
 import { accountKindLabels } from "@/lib/labels"
-import { accountsQuery, invalidateImportPreviews } from "@/lib/queries"
+import { useBaseCurrencySetting } from "@/lib/base-currency"
+import { invalidateAccountData } from "@/lib/queries"
 import { useTranslation } from "react-i18next"
 
 // Messages résolus à la validation (pas au chargement du module) pour suivre la langue courante.
@@ -44,23 +45,25 @@ const accountFormSchema = z.object({
 
 type AccountFormValues = z.infer<typeof accountFormSchema>
 
-const defaultValues: AccountFormValues = { name: "", kind: "bank", identifier: "", currency: "CHF" }
+function blankValues(currency: string): AccountFormValues {
+  return { name: "", kind: "bank", identifier: "", currency }
+}
 
 export function CreateAccountDialog() {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const queryClient = useQueryClient()
-  const form = useForm<AccountFormValues>({ resolver: zodResolver(accountFormSchema), defaultValues })
+  const baseCurrency = useBaseCurrencySetting().data?.currency ?? FALLBACK_BASE_CURRENCY
+  const form = useForm<AccountFormValues>({
+    resolver: zodResolver(accountFormSchema),
+    defaultValues: blankValues(baseCurrency),
+  })
 
   const createAccount = useMutation({
     mutationFn: api.accounts.create,
     onSuccess: async (account) => {
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey }),
-        invalidateImportPreviews(queryClient),
-      ])
+      await invalidateAccountData(queryClient)
       toast.success(t("accounts.dialog.created", { name: account.name }))
-      form.reset(defaultValues)
       setOpen(false)
     },
     onError: (error) => toast.error(error.message),
@@ -70,8 +73,13 @@ export function CreateAccountDialog() {
     createAccount.mutate({ ...values, currency: values.currency.toUpperCase() }),
   )
 
+  const changeOpen = (next: boolean) => {
+    if (next) form.reset(blankValues(baseCurrency))
+    setOpen(next)
+  }
+
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={changeOpen}>
       <DialogTrigger asChild>
         <Button>
           <Plus />

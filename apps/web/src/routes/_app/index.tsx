@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next"
 import { BalanceChart } from "@/components/dashboard/balance-chart"
 import { BudgetsCard } from "@/components/dashboard/budgets-card"
 import { CategoryBreakdownChart } from "@/components/dashboard/category-breakdown-chart"
+import { CurrencyNote } from "@/components/dashboard/currency-note"
 import { DashboardAlerts } from "@/components/dashboard/dashboard-alerts"
 import { IncomeExpensesChart } from "@/components/dashboard/income-expenses-chart"
 import { KpiTiles } from "@/components/dashboard/kpi-tiles"
@@ -15,6 +16,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { DashboardOverview } from "@/lib/api"
+import { BaseCurrencyProvider } from "@/lib/base-currency"
 import { isIsoDate, todayIso } from "@/lib/budgets"
 import { dashboardQuery } from "@/lib/queries"
 
@@ -53,9 +55,10 @@ function DashboardPage() {
 function DashboardContent({ overview }: { overview: DashboardOverview }) {
   if (overview.recentTransactions.length === 0) return <EmptyDashboard />
   return (
-    <>
+    <BaseCurrencyProvider currency={overview.currency}>
       <div className="space-y-3">
         <KpiTiles kpis={overview.kpis} />
+        <CurrencyNote currency={overview.currency} otherAccounts={overview.otherCurrencyAccounts} />
         <DashboardAlerts kpis={overview.kpis} />
       </div>
       <IncomeExpensesChart series={overview.monthlySeries} />
@@ -67,7 +70,7 @@ function DashboardContent({ overview }: { overview: DashboardOverview }) {
         <BudgetsCard budgets={overview.budgets} />
         <RecentTransactionsCard transactions={overview.recentTransactions} />
       </div>
-    </>
+    </BaseCurrencyProvider>
   )
 }
 

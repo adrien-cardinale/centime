@@ -1,5 +1,5 @@
 import { type BudgetPayload, budgetPayloadSchema } from "@centime/core"
-import { categories, type Db } from "@centime/db"
+import { accounts, categories, type Db } from "@centime/db"
 import { beforeEach, describe, expect, it } from "bun:test"
 import { budgetsOverview, createBudget, findBudget, updateBudget } from "./budgets"
 import { ServiceError } from "./errors"
@@ -23,17 +23,16 @@ function payload(input: Record<string, unknown>): BudgetPayload {
   return budgetPayloadSchema.parse({ period: "monthly", rollover: false, startDate: "2026-01-01", ...input })
 }
 
+const TRANSACTION = {
+  bookingDate: "2026-03-02",
+  rawLabel: "Mouvement",
+  merchant: null,
+  status: "booked",
+  isTransfer: false,
+} as const
+
 async function insertTransaction(categoryId: string | null, amount: number, bookingDate = "2026-03-02") {
-  await createTransaction(db, {
-    accountId,
-    bookingDate,
-    rawLabel: "Mouvement",
-    merchant: null,
-    amount,
-    status: "booked",
-    categoryId,
-    isTransfer: false,
-  })
+  await createTransaction(db, { ...TRANSACTION, accountId, bookingDate, amount, categoryId })
 }
 
 beforeEach(async () => {
@@ -115,5 +114,25 @@ describe("budget rules", () => {
     expect(rules.find((rule) => rule.id === userRule.id)).toMatchObject({ categoryId: salary, budgetId: null })
     expect(rules.find((rule) => rule.id !== userRule.id)).toMatchObject({ categoryId: other, budgetId: budget.id })
     expect((await findBudget(db, budget.id))?.rule).toMatchObject({ pattern: "Prime" })
+  })
+})
+
+describe("base currency", () => {
+  it("leave out the transactions of accounts in another currency", async () => {
+    const groceries = await insertCategory("Courses")
+    await createBudget(db, payload({ kind: "envelope", categoryId: groceries, amount: 400 }))
+    await insertTransaction(groceries, -100)
+    const [euroAccount] = await db
+      .insert(accounts)
+      .values({ name: "Euro", kind: "bank", identifier: "DE0000000000000000000", currency: "EUR" })
+      .returning({ id: accounts.id })
+    if (!euroAccount) throw new Error("Compte de test impossible à créer")
+    await createTransaction(db, { ...TRANSACTION, accountId: euroAccount.id, categoryId: groceries, amount: -900 })
+
+    const overview = await budgetsOverview(db, DATE, DATE)
+
+    expect(overview.currency).toBe("CHF")
+    expect(overview.budgets[0]?.status.spent).toBe(100)
+    expect(overview.envelopes.actual).toBe(100)
   })
 })

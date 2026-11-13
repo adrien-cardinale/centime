@@ -2,13 +2,14 @@ import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Progress } from "@/components/ui/progress"
 import type { BudgetOverviewItem } from "@/lib/api"
+import { useMoney } from "@/lib/base-currency"
 import { budgetStateIndicatorClasses, progressPercent } from "@/lib/budgets"
-import { money } from "@/lib/dashboard"
 import { budgetStateLabels } from "@/lib/labels"
 import { SummaryCard } from "./summary-card"
 
 export function BudgetsCard({ budgets }: { budgets: BudgetOverviewItem[] }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <SummaryCard
       title={t("dashboardPage.budgets.title")}

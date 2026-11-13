@@ -7,7 +7,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { CategoryBreakdownEntry } from "@/lib/api"
-import { CATEGORY_LABEL_MAX_LENGTH, CHART_HEIGHT_CLASS, money, truncateLabel, wholeMoney } from "@/lib/dashboard"
+import { useMoney } from "@/lib/base-currency"
+import { CATEGORY_LABEL_MAX_LENGTH, CHART_HEIGHT_CLASS, truncateLabel } from "@/lib/dashboard"
 import { cn } from "@/lib/utils"
 import { entryColor, entryKey, type MonthRange, transactionsSearchOf } from "./category-breakdown"
 import { CategoryBreakdownList } from "./category-breakdown-list"
@@ -45,6 +46,7 @@ export function CategoryBreakdownChart({ entries, month }: CategoryBreakdownChar
 
 function BreakdownBarChart({ entries, month }: CategoryBreakdownChartProps) {
   const { t } = useTranslation()
+  const { money, wholeMoney } = useMoney()
   const navigate = useNavigate()
   const data = entries.map((entry) => ({ ...entry, fill: entryColor(entry) }))
   const openTransactions = (index: number) => {
@@ -131,6 +133,7 @@ function EmptyBreakdown({ description }: { description: string }) {
 
 function BreakdownTable({ entries, month }: CategoryBreakdownChartProps) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <Table>
       <TableHeader>

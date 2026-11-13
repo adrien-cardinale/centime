@@ -16,7 +16,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Skeleton } from "@/components/ui/skeleton"
 import type { BudgetsOverview } from "@/lib/api"
-import { BUDGET_CURRENCY, isIsoDate, todayIso } from "@/lib/budgets"
+import { BaseCurrencyProvider } from "@/lib/base-currency"
+import { isIsoDate, todayIso } from "@/lib/budgets"
 import type { EditableBudget } from "@/components/budgets/budget-form-values"
 import i18n from "@/i18n"
 import { formatAmount } from "@/lib/format"
@@ -42,10 +43,6 @@ export const Route = createFileRoute("/_app/budgets")({
 })
 
 type DialogState = { open: boolean; target: BudgetDialogTarget }
-
-function money(amount: number): string {
-  return formatAmount(amount, BUDGET_CURRENCY)
-}
 
 function BudgetsPage() {
   const { t } = useTranslation()
@@ -76,12 +73,14 @@ function BudgetsPage() {
       <LatestDataNotice month={month} onSelect={changeDate} />
       {budgets.error && <p className="text-sm text-destructive">{budgets.error.message}</p>}
       {budgets.data ? (
-        <PlanContent
-          month={month}
-          budgets={budgets.data}
-          onEditBudget={(budget) => openDialog({ budget })}
-          onCreateBudget={(categoryId) => openDialog(categoryId ? { categoryId } : {})}
-        />
+        <BaseCurrencyProvider currency={budgets.data.currency}>
+          <PlanContent
+            month={month}
+            budgets={budgets.data}
+            onEditBudget={(budget) => openDialog({ budget })}
+            onCreateBudget={(categoryId) => openDialog(categoryId ? { categoryId } : {})}
+          />
+        </BaseCurrencyProvider>
       ) : (
         !budgets.error && <PlanSkeleton />
       )}
@@ -105,6 +104,11 @@ function PlanContent({ month, budgets, onEditBudget, onCreateBudget }: PlanConte
   const { t } = useTranslation()
   const { data: themes = [] } = useQuery(themesQuery)
   const plan = monthPlanOf(budgets.income, budgets.envelopes)
+  const progressText = (key: string, line: PlanLine) =>
+    i18n.t(key, {
+      actual: formatAmount(line.actual, budgets.currency),
+      expected: formatAmount(line.expected, budgets.currency),
+    })
 
   return (
     <>
@@ -133,10 +137,6 @@ function PlanContent({ month, budgets, onEditBudget, onCreateBudget }: PlanConte
       </PlanSection>
     </>
   )
-}
-
-function progressText(key: string, line: PlanLine): string {
-  return i18n.t(key, { actual: money(line.actual), expected: money(line.expected) })
 }
 
 function PlanSection({ title, aside, children }: { title: string; aside: string; children: ReactNode }) {

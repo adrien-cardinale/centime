@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import type { CategoryBreakdownEntry } from "@/lib/api"
-import { wholeMoney } from "@/lib/dashboard"
+import { useMoney } from "@/lib/base-currency"
 import { entryColor, entryKey, type MonthRange, transactionsSearchOf } from "./category-breakdown"
 
 type CategoryBreakdownListProps = { entries: CategoryBreakdownEntry[]; month: MonthRange }
@@ -31,6 +31,7 @@ export function CategoryBreakdownList({ entries, month }: CategoryBreakdownListP
 }
 
 function BreakdownRowContent({ entry, largest }: { entry: CategoryBreakdownEntry; largest: number }) {
+  const { wholeMoney } = useMoney()
   const width = largest > 0 ? (entry.amount / largest) * 100 : 0
   const color = entryColor(entry)
   return (

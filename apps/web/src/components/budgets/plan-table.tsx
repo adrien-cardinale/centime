@@ -10,11 +10,12 @@ import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { BudgetOverviewItem, Theme } from "@/lib/api"
-import { BUDGET_CURRENCY, budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
+import { useMoney } from "@/lib/base-currency"
+import { budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { PlanCardList } from "./plan-card-list"
-import { budgetDetails, endDateNote, groupByTheme, money, type ThemeBudgets, transactionsSearchOf } from "./plan-groups"
+import { budgetDetails, endDateNote, groupByTheme, type ThemeBudgets, transactionsSearchOf } from "./plan-groups"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
 
 export type PlanTableProps = {
@@ -60,6 +61,7 @@ function DesktopPlanTable({ budgets, themes, month, onEdit }: PlanTableProps) {
 
 function ThemeRow({ group }: { group: ThemeBudgets }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <TableRow className="bg-muted/40 hover:bg-muted/40">
       <TableCell colSpan={2} className="pl-6 font-semibold">
@@ -88,8 +90,9 @@ type BudgetRowProps = {
 
 function BudgetRow({ budget, month, onEdit }: BudgetRowProps) {
   const { t } = useTranslation()
+  const { currency, money } = useMoney()
   const { status } = budget
-  const details = [...budgetDetails(status), ...endDateNote(budget)]
+  const details = [...budgetDetails(status, currency), ...endDateNote(budget)]
   const edit = (event: MouseEvent) => {
     event.stopPropagation()
     onEdit(budget)
@@ -111,10 +114,10 @@ function BudgetRow({ budget, month, onEdit }: BudgetRowProps) {
       </TableCell>
       <TableCell className="text-muted-foreground">{status.range.label}</TableCell>
       <TableCell className="text-right">
-        <Amount amount={status.available} currency={BUDGET_CURRENCY} />
+        <Amount amount={status.available} currency={currency} />
       </TableCell>
       <TableCell className="text-right">
-        <Amount amount={status.spent} currency={BUDGET_CURRENCY} />
+        <Amount amount={status.spent} currency={currency} />
       </TableCell>
       <TableCell className="min-w-36">
         <div className="space-y-1">

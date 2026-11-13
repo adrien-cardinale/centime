@@ -17,6 +17,7 @@ import {
 } from "@centime/core"
 import { budgets, categories, type Db, type DbExecutor, transactions, transactionSplits } from "@centime/db"
 import { and, eq, gte, isNotNull, isNull, lte, ne } from "drizzle-orm"
+import { loadBaseCurrency } from "./base-currency"
 import { type CategoryNode, loadCategoryNodes } from "./categories"
 import { type Clock, nowIso, systemClock, todayOf } from "./clock"
 import { loadLinkedRules, syncLinkedRule } from "./budget-rules"
@@ -189,9 +190,12 @@ function withCategory(rows: EligibleRow[]): EligibleTransaction[] {
   return rows.flatMap(({ categoryId, ...row }) => (categoryId === null ? [] : [{ ...row, categoryId }]))
 }
 
-function eligibleCondition(from: IsoDate, to: IsoDate, isSplit: boolean) {
+type EligibleWindow = { from: IsoDate; to: IsoDate; currency: string }
+
+function eligibleCondition({ from, to, currency }: EligibleWindow, isSplit: boolean) {
   return and(
     isNull(transactions.deletedAt),
+    eq(transactions.currency, currency),
     eq(transactions.isTransfer, false),
     eq(transactions.isSplit, isSplit),
     gte(transactions.bookingDate, from),
@@ -199,7 +203,7 @@ function eligibleCondition(from: IsoDate, to: IsoDate, isSplit: boolean) {
   )
 }
 
-function loadDirectTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleRow[]> {
+function loadDirectTransactions(db: DbExecutor, window: EligibleWindow): Promise<EligibleRow[]> {
   return db
     .select({
       categoryId: transactions.categoryId,
@@ -208,10 +212,10 @@ function loadDirectTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Pro
       status: transactions.status,
     })
     .from(transactions)
-    .where(and(eligibleCondition(from, to, false), isNotNull(transactions.categoryId)))
+    .where(and(eligibleCondition(window, false), isNotNull(transactions.categoryId)))
 }
 
-function loadSplitLines(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleRow[]> {
+function loadSplitLines(db: DbExecutor, window: EligibleWindow): Promise<EligibleRow[]> {
   return db
     .select({
       categoryId: transactionSplits.categoryId,
@@ -223,15 +227,15 @@ function loadSplitLines(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<Eli
     .innerJoin(transactions, eq(transactionSplits.transactionId, transactions.id))
     .where(
       and(
-        eligibleCondition(from, to, true),
+        eligibleCondition(window, true),
         isNull(transactionSplits.deletedAt),
         isNotNull(transactionSplits.categoryId),
       ),
     )
 }
 
-async function loadEligibleTransactions(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<EligibleTransaction[]> {
-  const [direct, split] = await Promise.all([loadDirectTransactions(db, from, to), loadSplitLines(db, from, to)])
+async function loadEligibleTransactions(db: DbExecutor, window: EligibleWindow): Promise<EligibleTransaction[]> {
+  const [direct, split] = await Promise.all([loadDirectTransactions(db, window), loadSplitLines(db, window)])
   return withCategory([...direct, ...split])
 }
 
@@ -407,14 +411,18 @@ function unbudgetedCategories(
 }
 
 export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoDate) {
-  const [budgetEntries, nodes] = await Promise.all([listBudgets(db), loadCategoryNodes(db)])
+  const [budgetEntries, nodes, currency] = await Promise.all([
+    listBudgets(db),
+    loadCategoryNodes(db),
+    loadBaseCurrency(db),
+  ])
   const allEntries = budgetEntries.filter((entry) => isActiveOn(entry, date))
   const entries = allEntries.filter((entry) => entry.kind === "envelope")
   const month = periodContaining("monthly", date)
   const plans = entries.map((budget) => planBudget(budget, date))
   const incomePlans = allEntries.filter((entry) => entry.kind === "income").map((budget) => planBudget(budget, date))
   const window = loadWindow([...plans, ...incomePlans], month)
-  const rows = await loadEligibleTransactions(db, window.from, window.to)
+  const rows = await loadEligibleTransactions(db, { ...window, currency })
   const mapping = budgetedCategoryMap(nodes, new Set(entries.map((entry) => entry.categoryId)))
   const grouped = groupByBudgetedCategory(rows, mapping)
   const items = plans.map((plan) =>
@@ -428,6 +436,7 @@ export async function budgetsOverview(db: DbExecutor, date: IsoDate, today: IsoD
   return {
     date,
     today,
+    currency,
     budgets: items,
     incomes: incomePlans.map((plan) => toIncomeItem(plan, rowsOf(rows, plan.budget.categoryId))),
     totals: overviewTotals(items),

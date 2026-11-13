@@ -143,6 +143,12 @@
       "deleteConfirm": "Supprimer définitivement",
       "deleteFailed": "Suppression du compte impossible"
     },
+    "baseCurrency": {
+      "title": "Devise de référence",
+      "description": "Le tableau de bord et les budgets n'additionnent que les montants dans cette devise. Les comptes dans une autre devise sont exclus.",
+      "label": "Devise",
+      "saveFailed": "Enregistrement de la devise impossible"
+    },
     "autoRules": {
       "title": "Règles automatiques",
       "description_one": "Crée une règle quand vous classez manuellement {{count}} transaction similaire dans la même catégorie.",
@@ -189,7 +195,10 @@
     "uncategorized_other": "{{count}} transactions non catégorisées",
     "budgetsExceeded_one": "{{count}} budget dépassé",
     "budgetsExceeded_other": "{{count}} budgets dépassés",
-    "pending": "{{count}} en suspens"
+    "pending": "{{count}} en suspens",
+    "otherCurrencies_one": "{{count}} compte dans une autre devise est exclu des totaux, affichés en {{currency}}.",
+    "otherCurrencies_other": "{{count}} comptes dans d'autres devises sont exclus des totaux, affichés en {{currency}}.",
+    "changeBaseCurrency": "Changer la devise de référence"
   },
   "labels": {
     "accountKind": {

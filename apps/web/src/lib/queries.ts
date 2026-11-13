@@ -104,6 +104,8 @@ export function dashboardQuery(date: string) {
   })
 }
 
+export const BASE_CURRENCY_KEY = ["preferences", "currency.base"] as const
+
 export async function invalidateBudgetData(queryClient: QueryClient): Promise<void> {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: budgetsQuery.queryKey }),
@@ -143,10 +145,20 @@ export async function invalidateCsvProfileData(queryClient: QueryClient): Promis
   ])
 }
 
+export async function invalidateAccountData(queryClient: QueryClient): Promise<void> {
+  await Promise.all([
+    queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey }),
+    queryClient.invalidateQueries({ queryKey: BASE_CURRENCY_KEY }),
+    invalidateImportPreviews(queryClient),
+    invalidateBudgetData(queryClient),
+  ])
+}
+
 export async function invalidateAfterImport(queryClient: QueryClient): Promise<void> {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey }),
+    queryClient.invalidateQueries({ queryKey: BASE_CURRENCY_KEY }),
     queryClient.invalidateQueries({ queryKey: importsQuery.queryKey }),
     queryClient.invalidateQueries({ queryKey: ["receipts"] }),
     queryClient.invalidateQueries({ queryKey: categoriesQuery.queryKey }),

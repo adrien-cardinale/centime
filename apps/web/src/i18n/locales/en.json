@@ -143,6 +143,12 @@
       "deleteConfirm": "Delete for good",
       "deleteFailed": "Unable to delete the account"
     },
+    "baseCurrency": {
+      "title": "Base currency",
+      "description": "The dashboard and budget totals only add up amounts in this currency. Accounts in another currency are left out.",
+      "label": "Currency",
+      "saveFailed": "Unable to save the currency"
+    },
     "autoRules": {
       "title": "Automatic rules",
       "description_one": "Creates a rule when you manually file {{count}} similar transaction under the same category.",
@@ -189,7 +195,10 @@
     "uncategorized_other": "{{count}} uncategorized transactions",
     "budgetsExceeded_one": "{{count}} budget exceeded",
     "budgetsExceeded_other": "{{count}} budgets exceeded",
-    "pending": "{{count}} pending"
+    "pending": "{{count}} pending",
+    "otherCurrencies_one": "{{count}} account in another currency is left out of the totals, shown in {{currency}}.",
+    "otherCurrencies_other": "{{count}} accounts in other currencies are left out of the totals, shown in {{currency}}.",
+    "changeBaseCurrency": "Change the base currency"
   },
   "labels": {
     "accountKind": {

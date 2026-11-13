@@ -3,11 +3,12 @@ import { useTranslation } from "react-i18next"
 import { CategoryBadge } from "@/components/categories/category-badge"
 import { Progress } from "@/components/ui/progress"
 import type { BudgetOverviewItem } from "@/lib/api"
+import { useMoney } from "@/lib/base-currency"
 import { budgetStateIndicatorClasses, budgetStateTextClasses, progressPercent } from "@/lib/budgets"
 import { budgetStateLabels } from "@/lib/labels"
 import { cn } from "@/lib/utils"
 import { BudgetActionsMenu } from "./budget-actions-menu"
-import { budgetDetails, endDateNote, groupByTheme, money, type ThemeBudgets } from "./plan-groups"
+import { budgetDetails, endDateNote, groupByTheme, type ThemeBudgets } from "./plan-groups"
 import type { PlanTableProps } from "./plan-table"
 
 export function PlanCardList({ budgets, themes, month, onEdit }: PlanTableProps) {
@@ -29,6 +30,7 @@ export function PlanCardList({ budgets, themes, month, onEdit }: PlanTableProps)
 
 function ThemeHeader({ group }: { group: ThemeBudgets }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <div className="flex flex-wrap items-baseline justify-between gap-x-3 bg-muted/40 px-4 py-2">
       <h3 className="text-sm font-semibold">{group.theme?.name ?? t("budgets.table.noTheme")}</h3>
@@ -47,8 +49,9 @@ type BudgetCardProps = {
 
 function BudgetCard({ budget, month, onEdit }: BudgetCardProps) {
   const { t } = useTranslation()
+  const { currency, money } = useMoney()
   const { status } = budget
-  const details = [...budgetDetails(status), ...endDateNote(budget)]
+  const details = [...budgetDetails(status, currency), ...endDateNote(budget)]
   return (
     <li className="relative px-4 py-3 has-[>button:hover]:bg-muted/50">
       <button

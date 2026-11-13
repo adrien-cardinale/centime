@@ -1,7 +1,5 @@
 import { type BudgetState, isoDateOf, isoDateSchema, type Periodicity, periodContaining } from "@centime/core"
 
-export const BUDGET_CURRENCY = "CHF"
-
 export const budgetStateIndicatorClasses: Record<BudgetState, string> = {
   ok: "bg-zinc-700 dark:bg-zinc-300",
   warning: "bg-amber-500 dark:bg-amber-400",

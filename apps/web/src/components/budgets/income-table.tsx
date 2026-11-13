@@ -8,9 +8,10 @@ import { Progress } from "@/components/ui/progress"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useIsMobile } from "@/hooks/use-mobile"
 import type { IncomeOverviewItem } from "@/lib/api"
+import { useMoney } from "@/lib/base-currency"
 import { progressPercent } from "@/lib/budgets"
 import { DeleteBudgetDialog } from "./delete-budget-dialog"
-import { endDateNote, money } from "./plan-groups"
+import { endDateNote } from "./plan-groups"
 
 type IncomeTableProps = {
   incomes: IncomeOverviewItem[]
@@ -25,6 +26,7 @@ export function IncomeTable(props: IncomeTableProps) {
 
 function DesktopIncomeTable({ incomes, month, onEdit }: IncomeTableProps) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <Table>
       <TableHeader>
@@ -64,6 +66,7 @@ function DesktopIncomeTable({ incomes, month, onEdit }: IncomeTableProps) {
 
 function IncomeCardList({ incomes, month, onEdit }: IncomeTableProps) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <ul className="divide-y">
       {incomes.map((income) => (

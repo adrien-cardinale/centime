@@ -13,6 +13,7 @@ import {
 } from "@centime/core"
 import { accounts, type DbExecutor, themes, transactions, transactionSplits } from "@centime/db"
 import { and, asc, count, eq, gte, isNotNull, isNull, lte, type SQL, sql } from "drizzle-orm"
+import { loadBaseCurrencyContext } from "./base-currency"
 import { budgetsOverview } from "./budgets"
 import { loadCategoryNodes } from "./categories"
 import { type Clock, systemClock, todayOf } from "./clock"
@@ -30,9 +31,10 @@ type Comparison = { current: number; previous: number }
 
 const monthKey = sql<string>`substr(${transactions.bookingDate}, 1, 7)`
 
-function countedCondition(from: IsoDate, to: IsoDate): SQL | undefined {
+function countedCondition(from: IsoDate, to: IsoDate, currency: string): SQL | undefined {
   return and(
     isNull(transactions.deletedAt),
+    eq(transactions.currency, currency),
     eq(transactions.status, "booked"),
     eq(transactions.isTransfer, false),
     gte(transactions.bookingDate, from),
@@ -40,7 +42,12 @@ function countedCondition(from: IsoDate, to: IsoDate): SQL | undefined {
   )
 }
 
-async function loadMonthTotals(db: DbExecutor, from: IsoDate, to: IsoDate): Promise<Map<string, MonthTotals>> {
+async function loadMonthTotals(
+  db: DbExecutor,
+  from: IsoDate,
+  to: IsoDate,
+  currency: string,
+): Promise<Map<string, MonthTotals>> {
   const rows = await db
     .select({
       month: monthKey,
@@ -48,7 +55,7 @@ async function loadMonthTotals(db: DbExecutor, from: IsoDate, to: IsoDate): Prom
       expenses: sql<number>`coalesce(sum(case when ${transactions.amount} < 0 then -${transactions.amount} else 0 end), 0)`,
     })
     .from(transactions)
-    .where(countedCondition(from, to))
+    .where(countedCondition(from, to, currency))
     .groupBy(monthKey)
   return new Map(
     rows.map((row) => [
@@ -58,11 +65,11 @@ async function loadMonthTotals(db: DbExecutor, from: IsoDate, to: IsoDate): Prom
   )
 }
 
-export async function monthlySeries(db: DbExecutor, months: PeriodRange[]): Promise<MonthlyPoint[]> {
+export async function monthlySeries(db: DbExecutor, months: PeriodRange[], currency: string): Promise<MonthlyPoint[]> {
   const first = months[0]
   const last = months.at(-1)
   if (!first || !last) return []
-  const totals = await loadMonthTotals(db, first.start, last.end)
+  const totals = await loadMonthTotals(db, first.start, last.end, currency)
   return months.map((range) => ({
     month: range.start,
     label: range.label,
@@ -103,23 +110,27 @@ function countPending(db: DbExecutor): Promise<number> {
 
 type CategorySpendingRow = { categoryId: string | null; amount: number }
 
-async function loadDirectSpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
+async function loadDirectSpending(
+  db: DbExecutor,
+  month: PeriodRange,
+  currency: string,
+): Promise<CategorySpendingRow[]> {
   const rows = await db
     .select({ categoryId: transactions.categoryId, amount: sql<number>`sum(-${transactions.amount})` })
     .from(transactions)
-    .where(and(countedCondition(month.start, month.end), eq(transactions.isSplit, false)))
+    .where(and(countedCondition(month.start, month.end, currency), eq(transactions.isSplit, false)))
     .groupBy(transactions.categoryId)
   return rows.map((row) => ({ categoryId: row.categoryId, amount: Number(row.amount) }))
 }
 
-async function loadSplitSpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
+async function loadSplitSpending(db: DbExecutor, month: PeriodRange, currency: string): Promise<CategorySpendingRow[]> {
   const rows = await db
     .select({ categoryId: transactionSplits.categoryId, amount: sql<number>`sum(-${transactionSplits.amount})` })
     .from(transactionSplits)
     .innerJoin(transactions, eq(transactionSplits.transactionId, transactions.id))
     .where(
       and(
-        countedCondition(month.start, month.end),
+        countedCondition(month.start, month.end, currency),
         eq(transactions.isSplit, true),
         isNull(transactionSplits.deletedAt),
       ),
@@ -129,8 +140,15 @@ async function loadSplitSpending(db: DbExecutor, month: PeriodRange): Promise<Ca
 }
 
 // Dépenses nettes des remboursements, la même convention que les budgets (voir expenseOf dans budgets.ts).
-async function loadCategorySpending(db: DbExecutor, month: PeriodRange): Promise<CategorySpendingRow[]> {
-  const [direct, split] = await Promise.all([loadDirectSpending(db, month), loadSplitSpending(db, month)])
+async function loadCategorySpending(
+  db: DbExecutor,
+  month: PeriodRange,
+  currency: string,
+): Promise<CategorySpendingRow[]> {
+  const [direct, split] = await Promise.all([
+    loadDirectSpending(db, month, currency),
+    loadSplitSpending(db, month, currency),
+  ])
   return [...direct, ...split]
 }
 
@@ -171,9 +189,13 @@ function loadThemes(db: DbExecutor) {
     .where(isNull(themes.deletedAt))
 }
 
-export async function categoryBreakdown(db: DbExecutor, month: PeriodRange): Promise<BreakdownEntry[]> {
+export async function categoryBreakdown(
+  db: DbExecutor,
+  month: PeriodRange,
+  currency: string,
+): Promise<BreakdownEntry[]> {
   const [spending, nodes, themeRows] = await Promise.all([
-    loadCategorySpending(db, month),
+    loadCategorySpending(db, month, currency),
     loadCategoryNodes(db),
     loadThemes(db),
   ])
@@ -193,7 +215,7 @@ export async function categoryBreakdown(db: DbExecutor, month: PeriodRange): Pro
   return limitBreakdown(spent.map(([key, amount]) => toBreakdownEntry(key, amount, labels)))
 }
 
-async function loadBankBalances(db: DbExecutor): Promise<BalancePoint[]> {
+async function loadBankBalances(db: DbExecutor, currency: string): Promise<BalancePoint[]> {
   const rows = await db
     .select({
       accountId: transactions.accountId,
@@ -207,6 +229,7 @@ async function loadBankBalances(db: DbExecutor): Promise<BalancePoint[]> {
         isNull(transactions.deletedAt),
         isNull(accounts.deletedAt),
         eq(accounts.kind, "bank"),
+        eq(accounts.currency, currency),
         isNotNull(transactions.balanceAfter),
       ),
     )
@@ -225,10 +248,11 @@ async function budgetHighlights(db: DbExecutor, date: IsoDate, today: IsoDate) {
 export async function dashboardOverview(db: DbExecutor, date: IsoDate, today: IsoDate) {
   const month = periodContaining("monthly", date)
   const months = lastMonths(month, SERIES_MONTHS)
+  const { currency, otherCurrencyAccounts } = await loadBaseCurrencyContext(db)
   const [series, breakdown, allBalances, uncategorizedCount, pendingCount, budgets, recent] = await Promise.all([
-    monthlySeries(db, months),
-    categoryBreakdown(db, month),
-    loadBankBalances(db),
+    monthlySeries(db, months, currency),
+    categoryBreakdown(db, month, currency),
+    loadBankBalances(db, currency),
     countUncategorized(db),
     countPending(db),
     budgetHighlights(db, date, today),
@@ -236,6 +260,8 @@ export async function dashboardOverview(db: DbExecutor, date: IsoDate, today: Is
   ])
   return {
     month,
+    currency,
+    otherCurrencyAccounts,
     kpis: {
       bankBalance: latestBalance(allBalances),
       expenses: compare(series, (point) => point.expenses),

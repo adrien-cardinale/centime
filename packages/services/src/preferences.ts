@@ -1,8 +1,9 @@
 import { type DbExecutor, preferences } from "@centime/db"
-import { and, eq, isNull } from "@centime/db/orm"
+import { and, eq, isNull } from "drizzle-orm"
 
 // Un id fixe par clé : tous les appareils écrivent la même ligne, la plus récente gagne à la synchronisation.
 const PREFERENCE_IDS = {
+  "currency.base": "3f6b0d52-8a1e-4c7b-9e25-6d4f1a0c8b93",
   "receipts.ai": "64a2e8cc-ced4-4753-bacf-34e21c2e3d97",
   "rules.auto": "11923d92-f69c-4987-bed7-7e932e47c729",
 } as const

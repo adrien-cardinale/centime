@@ -1,10 +1,11 @@
 import { useTranslation } from "react-i18next"
 import type { DashboardKpis } from "@/lib/api"
-import { money } from "@/lib/dashboard"
+import { useMoney } from "@/lib/base-currency"
 import { MonthDelta, StatTile } from "./stat-tile"
 
 export function KpiTiles({ kpis }: { kpis: DashboardKpis }) {
   const { t } = useTranslation()
+  const { money } = useMoney()
   return (
     <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">
       <StatTile

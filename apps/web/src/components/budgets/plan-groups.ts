@@ -1,6 +1,5 @@
 import { roundCents } from "@centime/core"
 import type { Budget, BudgetOverviewItem, Theme } from "@/lib/api"
-import { BUDGET_CURRENCY } from "@/lib/budgets"
 import i18n from "@/i18n"
 import { formatAmount, formatDate } from "@/lib/format"
 
@@ -8,12 +7,9 @@ export type ThemeTotals = { available: number; spent: number; remaining: number 
 
 export type ThemeBudgets = { theme: Theme | null; budgets: BudgetOverviewItem[]; totals: ThemeTotals }
 
-export function money(amount: number): string {
-  return formatAmount(amount, BUDGET_CURRENCY)
-}
-
-function signedMoney(amount: number): string {
-  return amount > 0 ? `+${money(amount)}` : money(amount)
+function signedAmount(amount: number, currency: string): string {
+  const formatted = formatAmount(amount, currency)
+  return amount > 0 ? `+${formatted}` : formatted
 }
 
 function sumTotals(budgets: BudgetOverviewItem[]): ThemeTotals {
@@ -37,13 +33,13 @@ export function groupByTheme(budgets: BudgetOverviewItem[], themes: Theme[]): Th
     .map((group) => ({ ...group, totals: sumTotals(group.budgets) }))
 }
 
-export function budgetDetails(status: BudgetOverviewItem["status"]): string[] {
+export function budgetDetails(status: BudgetOverviewItem["status"], currency: string): string[] {
   return [
-    status.carry !== 0 && i18n.t("budgets.table.carry", { amount: signedMoney(status.carry) }),
-    status.pending > 0 && i18n.t("budgets.table.pending", { amount: money(status.pending) }),
+    status.carry !== 0 && i18n.t("budgets.table.carry", { amount: signedAmount(status.carry, currency) }),
+    status.pending > 0 && i18n.t("budgets.table.pending", { amount: formatAmount(status.pending, currency) }),
     status.projected !== null &&
       status.projected !== 0 &&
-      i18n.t("budgets.table.projected", { amount: money(status.projected) }),
+      i18n.t("budgets.table.projected", { amount: formatAmount(status.projected, currency) }),
   ].filter((detail) => detail !== false)
 }
 

@@ -6,6 +6,7 @@ export const MAX_PAGE_BYTES = 8 * 1024 * 1024
 
 export type LogEntry = { seq: number; data: string }
 export type LogPage = { entries: LogEntry[]; cursor: number; hasMore: boolean }
+export type LogHead = { head: number; epoch: string | null }
 export type WriteRefusal = { kind: "unauthorized" } | { kind: "signup-closed" } | { kind: "quota-exceeded" }
 export type AppendResult = { kind: "ok"; seq: number } | WriteRefusal
 export type PutBlobResult = { kind: "ok"; created: boolean } | WriteRefusal
@@ -15,6 +16,7 @@ export type Store = {
   append(userId: string, secretHash: string, data: string): AppendResult
   check(userId: string, secretHash: string): AccessResult
   read(userId: string, since: number, limit: number): LogPage
+  head(userId: string): LogHead
   putBlob(userId: string, secretHash: string, id: string, data: Uint8Array): PutBlobResult
   getBlob(userId: string, id: string): Uint8Array | null
   deleteBlob(userId: string, id: string): void
@@ -23,12 +25,13 @@ export type Store = {
   close(): void
 }
 
-export type StoreOptions = { allowSignup?: boolean; maxUserBytes?: number }
+export type StoreOptions = { allowSignup?: boolean; maxUserBytes?: number; maxTotalBytes?: number }
 
 /** Quota par défaut : assez large pour des années de journal chiffré, assez étroit pour protéger le disque. */
 export const DEFAULT_MAX_USER_BYTES = 512 * 1024 * 1024
+export const DEFAULT_MAX_TOTAL_BYTES = 10 * 1024 * 1024 * 1024
 
-type UserRow = { secret_hash: string }
+type UserRow = { secret_hash: string; created_at: string }
 type MetaRow = { seq: number; size: number }
 
 const SCHEMA = `
@@ -41,6 +44,7 @@ const SCHEMA = `
     user_id text not null references users(id) on delete cascade,
     seq integer not null,
     data text not null,
+    size integer not null,
     created_at text not null,
     primary key (user_id, seq)
   );
@@ -61,28 +65,45 @@ export function hashesMatch(expected: string, actual: string): boolean {
   return left.length === right.length && crypto.timingSafeEqual(left, right)
 }
 
+function migrateLogSize(db: Database): void {
+  const columns = db.query<{ name: string }, []>("select name from pragma_table_info('log')").all()
+  if (columns.some((column) => column.name === "size")) return
+  db.transaction(() => {
+    db.run("alter table log add column size integer not null default 0")
+    db.run("update log set size = length(data)")
+  })()
+}
+
 export function openStore(
   path: string,
-  { allowSignup = true, maxUserBytes = DEFAULT_MAX_USER_BYTES }: StoreOptions = {},
+  {
+    allowSignup = true,
+    maxUserBytes = DEFAULT_MAX_USER_BYTES,
+    maxTotalBytes = DEFAULT_MAX_TOTAL_BYTES,
+  }: StoreOptions = {},
 ): Store {
   if (path !== ":memory:") mkdirSync(dirname(path), { recursive: true })
   const db = new Database(path, { create: true })
   db.run("pragma journal_mode = wal")
   db.run("pragma foreign_keys = on")
   db.run(SCHEMA)
+  migrateLogSize(db)
 
-  const findUser = db.query<UserRow, [string]>("select secret_hash from users where id = ?")
+  const findUser = db.query<UserRow, [string]>("select secret_hash, created_at from users where id = ?")
   const insertUser = db.query("insert into users (id, secret_hash, created_at) values (?, ?, ?)")
-  const nextSeq = db.query<{ next: number }, [string]>(
-    "select coalesce(max(seq), 0) + 1 as next from log where user_id = ?",
+  const lastSeq = db.query<{ last: number }, [string]>(
+    "select coalesce(max(seq), 0) as last from log where user_id = ?",
   )
   const usedBytes = db.query<{ used: number }, [string, string]>(
-    `select (select coalesce(sum(length(data)), 0) from log where user_id = ?)
+    `select (select coalesce(sum(size), 0) from log where user_id = ?)
           + (select coalesce(sum(size), 0) from blobs where user_id = ?) as used`,
   )
-  const insertEntry = db.query("insert into log (user_id, seq, data, created_at) values (?, ?, ?, ?)")
+  const totalBytes = db.query<{ used: number }, []>(
+    `select (select coalesce(sum(size), 0) from log) + (select coalesce(sum(size), 0) from blobs) as used`,
+  )
+  const insertEntry = db.query("insert into log (user_id, seq, data, size, created_at) values (?, ?, ?, ?, ?)")
   const readMeta = db.query<MetaRow, [string, number, number]>(
-    "select seq, length(data) as size from log where user_id = ? and seq > ? order by seq limit ?",
+    "select seq, size from log where user_id = ? and seq > ? order by seq limit ?",
   )
   const readEntries = db.query<LogEntry, [string, number, number]>(
     "select seq, data from log where user_id = ? and seq >= ? and seq <= ? order by seq",
@@ -101,6 +122,8 @@ export function openStore(
   const removeBlob = db.query("delete from blobs where user_id = ? and id = ?")
   const listBlobIds = db.query<{ id: string }, [string]>("select id from blobs where user_id = ? order by id")
 
+  let storedBytes = maxTotalBytes > 0 ? (totalBytes.get()?.used ?? 0) : 0
+
   function admitWriter(userId: string, secretHash: string, now: string): WriteRefusal | null {
     const user = findUser.get(userId)
     if (user) return hashesMatch(user.secret_hash, secretHash) ? null : { kind: "unauthorized" }
@@ -109,11 +132,22 @@ export function openStore(
     return null
   }
 
-  function exceedsQuota(userId: string, addedBytes: number, releasedBytes = 0): boolean {
-    // maxUserBytes <= 0 désactive le quota.
+  function exceedsUserQuota(userId: string, addedBytes: number, releasedBytes: number): boolean {
     if (maxUserBytes <= 0) return false
     const used = usedBytes.get(userId, userId)?.used ?? 0
     return used - releasedBytes + addedBytes > maxUserBytes
+  }
+
+  function exceedsTotalQuota(addedBytes: number, releasedBytes: number): boolean {
+    return maxTotalBytes > 0 && addedBytes > releasedBytes && storedBytes - releasedBytes + addedBytes > maxTotalBytes
+  }
+
+  function exceedsQuota(userId: string, addedBytes: number, releasedBytes = 0): boolean {
+    return exceedsTotalQuota(addedBytes, releasedBytes) || exceedsUserQuota(userId, addedBytes, releasedBytes)
+  }
+
+  function track(addedBytes: number, releasedBytes = 0): void {
+    if (maxTotalBytes > 0) storedBytes += addedBytes - releasedBytes
   }
 
   const appendTransaction = db.transaction((userId: string, secretHash: string, data: string): AppendResult => {
@@ -121,8 +155,9 @@ export function openStore(
     const refusal = admitWriter(userId, secretHash, now)
     if (refusal) return refusal
     if (exceedsQuota(userId, data.length)) return { kind: "quota-exceeded" }
-    const seq = nextSeq.get(userId)?.next ?? 1
-    insertEntry.run(userId, seq, data, now)
+    const seq = (lastSeq.get(userId)?.last ?? 0) + 1
+    insertEntry.run(userId, seq, data, data.length, now)
+    track(data.length)
     return { kind: "ok", seq }
   })
 
@@ -134,9 +169,23 @@ export function openStore(
       const existing = findBlobSize.get(userId, id)
       if (exceedsQuota(userId, data.byteLength, existing?.size ?? 0)) return { kind: "quota-exceeded" }
       upsertBlob.run(userId, id, data, data.byteLength, now, now)
+      track(data.byteLength, existing?.size ?? 0)
       return { kind: "ok", created: !existing }
     },
   )
+
+  const deleteBlobTransaction = db.transaction((userId: string, id: string): void => {
+    const existing = findBlobSize.get(userId, id)
+    if (!existing) return
+    removeBlob.run(userId, id)
+    track(0, existing.size)
+  })
+
+  const deleteUserTransaction = db.transaction((userId: string): void => {
+    const released = maxTotalBytes > 0 ? (usedBytes.get(userId, userId)?.used ?? 0) : 0
+    removeUser.run(userId)
+    track(0, released)
+  })
 
   return {
     append: (userId, secretHash, data) => appendTransaction(userId, secretHash, data),
@@ -163,11 +212,16 @@ export function openStore(
         hasMore: meta.length > chosen.length,
       }
     },
+    head(userId) {
+      const user = findUser.get(userId)
+      if (!user) return { head: 0, epoch: null }
+      return { head: lastSeq.get(userId)?.last ?? 0, epoch: user.created_at }
+    },
     putBlob: (userId, secretHash, id, data) => putBlobTransaction(userId, secretHash, id, data),
     getBlob: (userId, id) => findBlob.get(userId, id)?.data ?? null,
-    deleteBlob: (userId, id) => void removeBlob.run(userId, id),
+    deleteBlob: (userId, id) => deleteBlobTransaction(userId, id),
     listBlobs: (userId) => listBlobIds.all(userId).map((row) => row.id),
-    deleteUser: (userId) => void removeUser.run(userId),
+    deleteUser: (userId) => deleteUserTransaction(userId),
     close: () => db.close(),
   }
 }

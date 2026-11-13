@@ -106,7 +106,8 @@
       "location": "Location",
       "size": "Size",
       "androidBackup": "On Android, your data stays on this device. Connect a sync server to back it up.",
-      "configureSync": "Set up sync"
+      "configureSync": "Set up sync",
+      "browserStorage": "Browser storage (IndexedDB)"
     },
     "account": {
       "title": "Accounts",
@@ -266,7 +267,23 @@
   },
   "errors": {
     "unexpected": "Unexpected error",
-    "retry": "Try again"
+    "retry": "Try again",
+    "unsupportedReceiptFile": "Unsupported format: choose a photo or a PDF",
+    "fileTooLarge": "File too large ({{max}} MB maximum)",
+    "unreadableImage": "Unreadable image: try another photo",
+    "imageEncodingFailed": "Could not convert the image",
+    "ocrCancelled": "Receipt reading cancelled",
+    "ocrPhotosOnly": "Only photos can be read",
+    "invalidRequest": "Invalid request",
+    "invalidDate": "Invalid date (YYYY-MM-DD)",
+    "internal": "Internal error",
+    "missingFile": "Missing or invalid file",
+    "invalidReceiptId": "Invalid receipt identifier",
+    "missingReceiptImage": "Receipt image not found",
+    "unknownDatabaseFormat": "Unknown local database format",
+    "indexedDbUnavailable": "Browser storage (IndexedDB) unavailable",
+    "indexedDbWriteFailed": "Could not write to browser storage (IndexedDB)",
+    "indexedDbAborted": "Browser storage (IndexedDB) transaction aborted"
   },
   "boot": {
     "opening": "Opening the local database…",
@@ -649,7 +666,8 @@
     "serverStatus": "Server error ({{status}})",
     "unexpected": "Unexpected synchronization error",
     "blobTooLarge": "A receipt image exceeds 8 MB: it stays on this device",
-    "blobCorrupted": "A receipt image received from the server is unreadable: it was skipped"
+    "blobCorrupted": "A receipt image received from the server is unreadable: it was skipped",
+    "updateRequired": "The server holds data written by a newer version of centime: update the app to resume synchronization"
   },
   "importPage": {
     "title": "Import",

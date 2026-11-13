@@ -1,5 +1,6 @@
 import { join } from "@tauri-apps/api/path"
 import { exists, readDir, remove } from "@tauri-apps/plugin-fs"
+import i18n from "@/i18n"
 import { getVault } from "@/lib/crypto/current-vault"
 import { accountDirectory, accountEntry } from "@/lib/local-db/account-paths"
 import { idbDelete, idbKeysWithPrefix } from "@/lib/local-db/idb"
@@ -10,15 +11,13 @@ const RECEIPTS_DIRECTORY = "receipts"
 const RECEIPT_ENTRY = "receipt"
 const IMAGE_EXTENSION = ".bin"
 const SAFE_ID = /^[A-Za-z0-9-]+$/
-const INVALID_ID = "Identifiant de ticket invalide"
-const MISSING_IMAGE = "Image du ticket introuvable"
 
 function currentAccountId(): string {
   return getVault().credentials.userId
 }
 
 function checkedId(id: string): string {
-  if (!SAFE_ID.test(id)) throw new Error(INVALID_ID)
+  if (!SAFE_ID.test(id)) throw new Error(i18n.t("errors.invalidReceiptId"))
   return id
 }
 
@@ -63,7 +62,7 @@ export async function deleteReceiptImage(id: string): Promise<void> {
 export async function moveReceiptImage(fromId: string, toId: string): Promise<void> {
   const source = await rawImageStore(fromId)
   const sealed = await source.load()
-  if (sealed === null) throw new Error(MISSING_IMAGE)
+  if (sealed === null) throw new Error(i18n.t("errors.missingReceiptImage"))
   await (await rawImageStore(toId)).save(sealed)
   await source.remove()
 }

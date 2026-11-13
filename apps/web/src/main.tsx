@@ -12,13 +12,19 @@ import { setApi } from "@/lib/api/api-ref"
 import { createApi } from "@/lib/api/create-api"
 import { takePendingServerUrl } from "@/lib/account/accounts"
 import { loadVault } from "@/lib/crypto/onboarding"
+import { flushLocalDatabase } from "@/lib/local-db/current-database"
 import { notifyMutationSettled } from "@/lib/queries"
 import { setServerUrl, startSyncScheduler } from "@/lib/sync/sync-store"
 import { routeTree } from "./routeTree.gen"
 import "./index.css"
 
 const queryClient = new QueryClient({
-  mutationCache: new MutationCache({ onSuccess: notifyMutationSettled }),
+  mutationCache: new MutationCache({
+    onSuccess: () => {
+      notifyMutationSettled()
+      flushLocalDatabase()
+    },
+  }),
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 })
 

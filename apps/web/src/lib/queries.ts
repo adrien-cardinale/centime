@@ -21,9 +21,11 @@ function fileKey(file: File): string {
   return `${file.name}:${file.size}:${file.lastModified}`
 }
 
+const IMPORT_PREVIEW_KEY = ["imports", "preview"] as const
+
 export function importPreviewQuery(upload: ImportUpload) {
   return queryOptions({
-    queryKey: ["imports", "preview", fileKey(upload.file), upload.profileId ?? null, upload.accountId ?? null],
+    queryKey: [...IMPORT_PREVIEW_KEY, fileKey(upload.file), upload.profileId ?? null, upload.accountId ?? null],
     queryFn: () => api.imports.preview(upload),
     staleTime: Number.POSITIVE_INFINITY,
   })
@@ -109,8 +111,13 @@ export async function invalidateBudgetData(queryClient: QueryClient): Promise<vo
   ])
 }
 
+export async function invalidateImportPreviews(queryClient: QueryClient): Promise<void> {
+  await queryClient.invalidateQueries({ queryKey: IMPORT_PREVIEW_KEY })
+}
+
 export async function invalidateTransactionData(queryClient: QueryClient): Promise<void> {
   await Promise.all([
+    invalidateImportPreviews(queryClient),
     queryClient.invalidateQueries({ queryKey: ["transactions"] }),
     queryClient.invalidateQueries({ queryKey: categoriesQuery.queryKey }),
     queryClient.invalidateQueries({ queryKey: themesQuery.queryKey }),
@@ -132,7 +139,7 @@ export async function invalidatePlanEdits(queryClient: QueryClient): Promise<voi
 export async function invalidateCsvProfileData(queryClient: QueryClient): Promise<void> {
   await Promise.all([
     queryClient.invalidateQueries({ queryKey: csvProfilesQuery.queryKey }),
-    queryClient.invalidateQueries({ queryKey: ["imports", "preview"] }),
+    invalidateImportPreviews(queryClient),
   ])
 }
 

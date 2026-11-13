@@ -68,5 +68,9 @@ async function flushOnExit(flush: () => Promise<void>): Promise<void> {
     })
     return
   }
-  window.addEventListener("pagehide", () => void flush().catch(() => undefined))
+  const flushQuietly = () => void flush().catch(() => undefined)
+  window.addEventListener("pagehide", flushQuietly)
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") flushQuietly()
+  })
 }

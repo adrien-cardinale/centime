@@ -164,13 +164,25 @@ function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : i18n.t("syncErrors.unexpected")
 }
 
+function affectsEveryOperation(error: unknown): boolean {
+  return error instanceof SyncError && (error.kind === "network" || error.kind === "unauthorized")
+}
+
 async function runOperations(context: BlobContext, operations: BlobOperation[]): Promise<void> {
   const batch = operations.slice(0, MAX_BLOB_TRANSFERS)
   context.report.pending = operations.length
+  let firstFailure: unknown = null
   for (const operation of batch) {
-    await runOperation(context, operation)
-    context.report.pending -= 1
+    try {
+      await runOperation(context, operation)
+      context.report.pending -= 1
+    } catch (error) {
+      console.error(`Synchronisation du fichier ${operation.id} impossible`, error)
+      firstFailure ??= error
+      if (affectsEveryOperation(error)) break
+    }
   }
+  if (firstFailure !== null) context.report.error ??= messageOf(firstFailure)
 }
 
 async function reconcile(db: Db, config: SyncConfig, store: BlobStore): Promise<BlobSyncReport> {

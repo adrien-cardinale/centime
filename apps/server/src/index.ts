@@ -4,6 +4,7 @@ import { HTTPException } from "hono/http-exception"
 import { secureHeaders } from "hono/secure-headers"
 import { createApi } from "./app"
 import { ConfigError, loadConfig } from "./config"
+import { contentSecurityPolicy } from "./content-security-policy"
 import { mountSpa } from "./static"
 import { openStore } from "./store"
 
@@ -15,6 +16,7 @@ function start(): void {
   const store = openStore(config.databasePath, {
     allowSignup: config.allowSignup,
     ...(config.maxUserBytes === undefined ? {} : { maxUserBytes: config.maxUserBytes }),
+    ...(config.maxTotalBytes === undefined ? {} : { maxTotalBytes: config.maxTotalBytes }),
   })
 
   const app = new Hono()
@@ -28,11 +30,18 @@ function start(): void {
   app.notFound((c) =>
     c.req.path.startsWith("/api") ? c.json({ error: "Ressource introuvable" }, 404) : c.text("404 Not Found", 404),
   )
-  app.use(secureHeaders())
+  app.use(secureHeaders({ contentSecurityPolicy: contentSecurityPolicy(config.cspConnectSources) }))
   app.use(bodyLimit({ maxSize: MAX_BODY_BYTES, onError: (c) => c.json({ error: BODY_TOO_LARGE }, 413) }))
   app.route(
     "/",
-    createApi({ store, rateLimitPerMinute: config.rateLimitPerMinute, allowedOrigins: config.allowedOrigins }),
+    createApi({
+      store,
+      rateLimitPerMinute: config.rateLimitPerMinute,
+      writeRateLimitPerMinute: config.writeRateLimitPerMinute,
+      signupRateLimitPerHour: config.signupRateLimitPerHour,
+      trustProxy: config.trustProxy,
+      allowedOrigins: config.allowedOrigins,
+    }),
   )
   mountSpa(app, config.staticDir)
 

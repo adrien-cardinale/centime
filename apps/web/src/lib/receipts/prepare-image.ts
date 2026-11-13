@@ -1,4 +1,5 @@
 import { MAX_RECEIPT_BYTES } from "@centime/core"
+import i18n from "@/i18n"
 import { type CropRect, clampCrop, findReceiptBounds, isFullCrop } from "./receipt-crop"
 
 const MAX_SIDE = 1600
@@ -11,10 +12,23 @@ const PDF_MIME = "application/pdf"
 const PDF_EXTENSION = /\.pdf$/i
 const IMAGE_EXTENSION = /\.(jpe?g|png|webp|gif|bmp|heic|heif|avif)$/i
 
-const UNSUPPORTED_FILE = "Format non pris en charge : choisissez une photo ou un PDF"
-const FILE_TOO_LARGE = "Fichier trop volumineux (7 Mo maximum)"
-const UNREADABLE_IMAGE = "Image illisible : essayez une autre photo"
-const ENCODING_FAILED = "Conversion de l'image impossible"
+const BYTES_PER_MEGABYTE = 1024 * 1024
+
+function unsupportedFile(): Error {
+  return new Error(i18n.t("errors.unsupportedReceiptFile"))
+}
+
+function fileTooLarge(): Error {
+  return new Error(i18n.t("errors.fileTooLarge", { max: MAX_RECEIPT_BYTES / BYTES_PER_MEGABYTE }))
+}
+
+function unreadableImage(): Error {
+  return new Error(i18n.t("errors.unreadableImage"))
+}
+
+function encodingFailed(): Error {
+  return new Error(i18n.t("errors.imageEncodingFailed"))
+}
 
 export type PreparedReceiptImage = {
   bytes: Uint8Array
@@ -62,7 +76,7 @@ function loadImageElement(file: Blob): Promise<DecodedImage> {
     }))
     .catch(() => {
       URL.revokeObjectURL(url)
-      throw new Error(UNREADABLE_IMAGE)
+      throw unreadableImage()
     })
 }
 
@@ -90,7 +104,7 @@ function drawRegion(source: CanvasImageSource, region: Region, size: Size): HTML
   canvas.width = size.width
   canvas.height = size.height
   const context = canvas.getContext("2d")
-  if (!context) throw new Error(ENCODING_FAILED)
+  if (!context) throw encodingFailed()
   context.fillStyle = "#ffffff"
   context.fillRect(0, 0, size.width, size.height)
   context.drawImage(source, region.x, region.y, region.width, region.height, 0, 0, size.width, size.height)
@@ -99,7 +113,7 @@ function drawRegion(source: CanvasImageSource, region: Region, size: Size): HTML
 
 function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
-    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(new Error(ENCODING_FAILED))), JPEG_MIME, quality)
+    canvas.toBlob((blob) => (blob ? resolve(blob) : reject(encodingFailed())), JPEG_MIME, quality)
   })
 }
 
@@ -111,7 +125,7 @@ async function encodeJpeg(image: DecodedImage): Promise<{ bytes: Uint8Array; wid
 }
 
 async function preparePdf(file: File): Promise<PreparedReceiptImage> {
-  if (file.size > MAX_RECEIPT_BYTES) throw new Error(FILE_TOO_LARGE)
+  if (file.size > MAX_RECEIPT_BYTES) throw fileTooLarge()
   const bytes = new Uint8Array(await file.arrayBuffer())
   return { bytes, mime: PDF_MIME, width: null, height: null, sha256: await sha256Hex(bytes), source: null }
 }
@@ -120,7 +134,7 @@ async function preparePhoto(file: File): Promise<PreparedReceiptImage> {
   const decoded = await decodeImage(file)
   try {
     const { bytes, width, height } = await encodeJpeg(decoded)
-    if (bytes.byteLength > MAX_RECEIPT_BYTES) throw new Error(FILE_TOO_LARGE)
+    if (bytes.byteLength > MAX_RECEIPT_BYTES) throw fileTooLarge()
     return { bytes, mime: JPEG_MIME, width, height, sha256: await sha256Hex(bytes), source: file }
   } finally {
     decoded.release()
@@ -130,7 +144,7 @@ async function preparePhoto(file: File): Promise<PreparedReceiptImage> {
 export async function prepareReceiptImage(file: File): Promise<PreparedReceiptImage> {
   if (isPdf(file)) return preparePdf(file)
   if (isImage(file)) return preparePhoto(file)
-  throw new Error(UNSUPPORTED_FILE)
+  throw unsupportedFile()
 }
 
 function preparedBlob(image: PreparedReceiptImage): Blob {
@@ -168,7 +182,7 @@ async function cropDecoded(decoded: DecodedImage, rect: CropRect): Promise<Prepa
   const cropped = drawRegion(decoded.source, region, region)
   const source = await canvasToJpeg(cropped, CROPPED_SOURCE_QUALITY)
   const { bytes, width, height } = await encodeJpeg({ source: cropped, ...wholeRegion(region), release: () => {} })
-  if (bytes.byteLength > MAX_RECEIPT_BYTES) throw new Error(FILE_TOO_LARGE)
+  if (bytes.byteLength > MAX_RECEIPT_BYTES) throw fileTooLarge()
   return { bytes, mime: JPEG_MIME, width, height, sha256: await sha256Hex(bytes), source }
 }
 

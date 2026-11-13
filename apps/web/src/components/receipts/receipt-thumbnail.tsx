@@ -1,5 +1,6 @@
 import { FileText, ImageOff } from "lucide-react"
 import { useTranslation } from "react-i18next"
+import { useNearViewport } from "@/hooks/use-near-viewport"
 import type { Receipt } from "@/lib/api"
 import { useReceiptImage } from "@/lib/receipts/use-receipt-image"
 import { cn } from "@/lib/utils"
@@ -14,7 +15,8 @@ type ReceiptThumbnailProps = {
 export function ReceiptThumbnail({ receipt, className }: ReceiptThumbnailProps) {
   const { t } = useTranslation()
   const isPdf = receipt.mime === PDF_MIME
-  const url = useReceiptImage(isPdf ? null : receipt.id, receipt.mime)
+  const [frameRef, nearViewport] = useNearViewport<HTMLDivElement>()
+  const url = useReceiptImage(isPdf || !nearViewport ? null : receipt.id, receipt.mime)
   const frame = cn("flex items-center justify-center overflow-hidden bg-muted text-muted-foreground", className)
   if (isPdf) {
     return (
@@ -25,7 +27,7 @@ export function ReceiptThumbnail({ receipt, className }: ReceiptThumbnailProps) 
   }
   if (url === null) {
     return (
-      <div className={frame}>
+      <div ref={frameRef} className={frame}>
         <ImageOff className="size-6" aria-hidden />
       </div>
     )

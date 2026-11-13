@@ -106,7 +106,8 @@
       "location": "Emplacement",
       "size": "Taille",
       "androidBackup": "Sur Android, vos données restent sur cet appareil. Connectez un serveur de synchronisation pour les sauvegarder.",
-      "configureSync": "Configurer la synchronisation"
+      "configureSync": "Configurer la synchronisation",
+      "browserStorage": "Stockage du navigateur (IndexedDB)"
     },
     "account": {
       "title": "Comptes",
@@ -266,7 +267,23 @@
   },
   "errors": {
     "unexpected": "Erreur inattendue",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "unsupportedReceiptFile": "Format non pris en charge : choisissez une photo ou un PDF",
+    "fileTooLarge": "Fichier trop volumineux ({{max}} Mo maximum)",
+    "unreadableImage": "Image illisible : essayez une autre photo",
+    "imageEncodingFailed": "Conversion de l'image impossible",
+    "ocrCancelled": "Lecture du ticket annulée",
+    "ocrPhotosOnly": "Seules les photos peuvent être lues",
+    "invalidRequest": "Requête invalide",
+    "invalidDate": "Date invalide (AAAA-MM-JJ)",
+    "internal": "Erreur interne",
+    "missingFile": "Fichier manquant ou invalide",
+    "invalidReceiptId": "Identifiant de ticket invalide",
+    "missingReceiptImage": "Image du ticket introuvable",
+    "unknownDatabaseFormat": "Format de la base locale inconnu",
+    "indexedDbUnavailable": "Stockage du navigateur (IndexedDB) indisponible",
+    "indexedDbWriteFailed": "Écriture dans le stockage du navigateur (IndexedDB) impossible",
+    "indexedDbAborted": "Transaction du stockage du navigateur (IndexedDB) annulée"
   },
   "boot": {
     "opening": "Ouverture de la base locale…",
@@ -649,7 +666,8 @@
     "serverStatus": "Erreur du serveur ({{status}})",
     "unexpected": "Erreur de synchronisation inattendue",
     "blobTooLarge": "Une image de ticket dépasse 8 Mo : elle reste sur cet appareil",
-    "blobCorrupted": "Une image de ticket reçue du serveur est illisible : elle est ignorée"
+    "blobCorrupted": "Une image de ticket reçue du serveur est illisible : elle est ignorée",
+    "updateRequired": "Le serveur contient des données écrites par une version plus récente de centime : mets l'app à jour pour reprendre la synchronisation"
   },
   "importPage": {
     "title": "Import",

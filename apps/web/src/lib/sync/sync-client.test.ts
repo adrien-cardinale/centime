@@ -10,7 +10,7 @@ import { readSyncSettings } from "./sync-settings"
 
 const SERVER_URL = "https://centime.test/"
 
-type Relay = { fetch: FetchLike; entries: string[] }
+type Relay = { fetch: FetchLike; entries: string[]; wipe(): void }
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } })
@@ -20,9 +20,9 @@ function authorizationOf(init: RequestInit): string | undefined {
   return (init.headers as Record<string, string>).Authorization
 }
 
-/** Relais en mémoire : ne connaît que des blobs opaques, comme le vrai serveur. */
-function fakeRelay(vault: Vault, beforeFirstPush?: () => Promise<void>): Relay {
+function fakeRelay(vault: Vault, beforeFirstPush?: () => Promise<void>, legacy = false): Relay {
   const entries: string[] = []
+  let epoch: string | null = null
   let raced = false
   const { userId, secret } = vault.credentials
   const relayFetch: FetchLike = async (url, init) => {
@@ -33,19 +33,25 @@ function fakeRelay(vault: Vault, beforeFirstPush?: () => Promise<void>): Relay {
       const limit = Number(searchParams.get("limit"))
       const page = entries.slice(since, since + limit).map((data, index) => ({ seq: since + index + 1, data }))
       const cursor = page.at(-1)?.seq ?? since
-      return json({ entries: page, cursor, hasMore: cursor < entries.length })
+      const body = { entries: page, cursor, hasMore: cursor < entries.length }
+      return json(legacy ? body : { ...body, head: entries.length, epoch })
     }
     if (pathname === "/api/log" && init.method === "POST") {
       if (beforeFirstPush && !raced) {
         raced = true
         await beforeFirstPush()
       }
+      epoch ??= crypto.randomUUID()
       entries.push((JSON.parse(String(init.body)) as { data: string }).data)
-      return json({ seq: entries.length }, 201)
+      return json(legacy ? { seq: entries.length } : { seq: entries.length, epoch }, 201)
     }
     return json({ error: "Introuvable" }, 404)
   }
-  return { fetch: relayFetch, entries }
+  const wipe = () => {
+    entries.length = 0
+    epoch = null
+  }
+  return { fetch: relayFetch, entries, wipe }
 }
 
 async function createLocalDb(): Promise<Db> {
@@ -270,12 +276,75 @@ describe("synchronize", () => {
     expect((await sync(deviceB)).skipped).toBe(0)
   })
 
-  it("skips an entry written with a newer payload version", async () => {
+  it("stops at an entry written by a newer app version and asks for an update", async () => {
+    const accountId = await insertAccount(deviceA, "CH01")
+    await insertTransaction(deviceA, accountId, "fp-1")
+    await sync(deviceA)
     relay.entries.push(await vault.encryptText(JSON.stringify({ v: 2, changes: {} })))
+    relay.entries.push(relay.entries[0] ?? "")
+    await insertAccount(deviceB, "CH02")
 
-    const report = await sync(deviceA)
+    await expect(sync(deviceB)).rejects.toMatchObject({ kind: "outdated" })
 
-    expect(report).toMatchObject({ skipped: 1, cursor: 1 })
+    const settings = await readSyncSettings(deviceB)
+    expect(settings.cursor).toBe(1)
+    expect(settings.lastError).toContain("version plus récente")
+    expect(await deviceB.select().from(transactions)).toHaveLength(1)
+    expect(relay.entries).toHaveLength(3)
+    await expect(sync(deviceB)).rejects.toMatchObject({ kind: "outdated" })
+    expect((await readSyncSettings(deviceB)).cursor).toBe(1)
+  })
+
+  it("re-sends every local row after the relay log was wiped", async () => {
+    const accountId = await insertAccount(deviceA, "CH01")
+    const transactionId = await insertTransaction(deviceA, accountId, "fp-1")
+    await sync(deviceA)
+    await insertTransaction(deviceA, accountId, "fp-2")
+    await sync(deviceA)
+    await sync(deviceB)
+    expect((await readSyncSettings(deviceB)).cursor).toBe(2)
+
+    relay.wipe()
+    const report = await sync(deviceB)
+
+    expect(report.pushed).toBe(3)
+    expect(report.cursor).toBe(relay.entries.length)
+    expect((await findTransaction(deviceB, transactionId))?.syncVersion).toBe(1)
+    const fresh = await createLocalDb()
+    await sync(fresh)
+    expect(await fresh.select().from(transactions)).toHaveLength(2)
+  })
+
+  it("detects a recreated log that already grew past the local cursor", async () => {
+    const accountId = await insertAccount(deviceA, "CH01")
+    const transactionId = await insertTransaction(deviceA, accountId, "fp-a", "Achat A")
+    await sync(deviceA)
+
+    relay.wipe()
+    const otherAccountId = await insertAccount(deviceB, "CH02")
+    for (let index = 0; index < 3; index += 1) {
+      await insertTransaction(deviceB, otherAccountId, `fp-b-${index}`)
+      await sync(deviceB)
+    }
+    expect(relay.entries).toHaveLength(3)
+    await sync(deviceA)
+
+    const fresh = await createLocalDb()
+    await sync(fresh)
+    expect((await findTransaction(fresh, transactionId))?.rawLabel).toBe("Achat A")
+    expect(await fresh.select().from(transactions)).toHaveLength(4)
+    expect((await sync(deviceA)).pushed).toBe(0)
+  })
+
+  it("still synchronizes with a relay that does not report its head", async () => {
+    relay = fakeRelay(vault, undefined, true)
+    const accountId = await insertAccount(deviceA, "CH01")
+    await insertTransaction(deviceA, accountId, "fp-1")
+    await sync(deviceA)
+
+    const report = await sync(deviceB)
+
+    expect(report).toMatchObject({ pulled: 2, cursor: 1, skipped: 0 })
   })
 
   it("ignores unknown columns added by a newer app version", async () => {

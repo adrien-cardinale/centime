@@ -1,5 +1,6 @@
 import { appDataDir, join } from "@tauri-apps/api/path"
 import { exists, mkdir, readFile, remove, rename, writeFile } from "@tauri-apps/plugin-fs"
+import i18n from "@/i18n"
 import { isSealed, type Vault } from "@/lib/crypto/envelope"
 import { isTauri } from "@/lib/runtime"
 import { accountDirectory, accountEntry } from "./account-paths"
@@ -8,10 +9,8 @@ import { idbDelete, idbGet, idbSet } from "./idb"
 const DATABASE_FILE = "centime.db"
 const TEMPORARY_SUFFIX = ".tmp"
 
-const BROWSER_LOCATION = "Stockage du navigateur (IndexedDB)"
 const BROWSER_ENTRY = "database"
 const SQLITE_HEADER = "SQLite format 3\0"
-const UNKNOWN_FORMAT = "Format de la base locale inconnu"
 
 export type Persistence = {
   filePath: string
@@ -39,7 +38,7 @@ export async function createFileStore(directory: string, fileName: string): Prom
 
 export function createEntryStore(entry: string): Persistence {
   return {
-    filePath: BROWSER_LOCATION,
+    filePath: i18n.t("settings.localData.browserStorage"),
     load: () => idbGet(entry),
     save: (bytes) => idbSet(entry, bytes),
     remove: () => idbDelete(entry),
@@ -68,7 +67,7 @@ export function withEncryption(inner: Persistence, vault: Vault): Persistence {
       if (bytes === null) return null
       if (isSealed(bytes)) return vault.decrypt(bytes)
       if (isPlainSqlite(bytes)) return bytes
-      throw new Error(UNKNOWN_FORMAT)
+      throw new Error(i18n.t("errors.unknownDatabaseFormat"))
     },
     save: async (bytes) => inner.save(await vault.encrypt(bytes)),
     remove: () => inner.remove(),

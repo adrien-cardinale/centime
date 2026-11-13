@@ -161,6 +161,7 @@ export async function fetchMissingReceiptImage(id: string): Promise<boolean> {
     if (fetched) unavailableImageIds.delete(id)
     return fetched
   } catch (error) {
+    unavailableImageIds.delete(id)
     console.error("Téléchargement de l'image du ticket impossible", error)
     return false
   }
@@ -178,7 +179,7 @@ export async function setServerUrl(serverUrl: string): Promise<void> {
     await writeSyncSetting(db, "serverUrl", normalizeServerUrl(serverUrl))
     await writeSyncSetting(db, "cursor", 0)
     await markAllChangesPending(db)
-    await clearSyncSetting(db, "lastError")
+    await clearSyncSetting(db, "epoch", "lastError")
   })
   await refreshSyncState()
 }

@@ -11,6 +11,7 @@ import type { PreparedReceiptImage } from "@/lib/receipts/prepare-image"
 import { accountsQuery, receiptsQuery } from "@/lib/queries"
 import { ApplyLinesOffer } from "./apply-lines-offer"
 import { ReceiptDetailsForm } from "./receipt-details-form"
+import { type DetailsDraft, detailsStart } from "./receipt-draft"
 import { detailsFormValues, type ReceiptDetails } from "./receipt-form"
 import { canSplitFromLines } from "./receipt-lines"
 import { ReceiptLinkPanel } from "./receipt-link-panel"
@@ -63,6 +64,7 @@ function ReceiptFlow({ transaction, onClose }: ReceiptFlowProps) {
   const [step, setStep] = useState<Step>("photo")
   const [image, setImage] = useState<PreparedReceiptImage | null>(null)
   const [receipt, setReceipt] = useState<Receipt | null>(null)
+  const [draft, setDraft] = useState<DetailsDraft | null>(null)
   const { data: accounts = [] } = useQuery(accountsQuery)
   const { data: receipts = [] } = useQuery(receiptsQuery())
 
@@ -95,17 +97,21 @@ function ReceiptFlow({ transaction, onClose }: ReceiptFlowProps) {
     const source = transaction
       ? transactionDefaults(transaction)
       : { accountId: defaultAccountId(accounts, receipts), receiptDate: todayIso() }
+    const details = detailsStart(draft, image, detailsFormValues(source))
     return (
       <ReceiptDetailsForm
-        defaultValues={detailsFormValues(source)}
+        defaultValues={details.values}
         showAccount={!transaction}
         submitLabel={t("receipts.actions.save")}
         pendingLabel={t("receipts.actions.saving")}
         pending={create.isPending}
         onSubmit={save}
-        onBack={() => setStep("photo")}
+        onBack={(values) => {
+          setDraft({ image, values })
+          setStep("photo")
+        }}
         ocrImage={image}
-        autoOcr
+        autoOcr={details.autoOcr}
         aiSettingsHint
       />
     )

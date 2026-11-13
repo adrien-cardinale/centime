@@ -47,7 +47,7 @@ bun install
 cp .env.example .env
 ```
 
-All server variables have defaults; edit `.env` only to change them. `ALLOWED_ORIGINS` (comma-separated, for example `https://you.github.io`) lets a web UI hosted on another origin reach the relay; leave it empty when the relay serves the UI itself.
+All server variables have defaults; edit `.env` only to change them (see the [self-hosting guide](site/docs/self-hosting.html) for the full list). `ALLOWED_ORIGINS` (comma-separated, for example `https://you.github.io`) lets a web UI hosted on another origin reach the relay; leave it empty when the relay serves the UI itself.
 
 ### Static hosting (GitHub Pages)
 
@@ -110,15 +110,15 @@ All routes live under `/api`. Log bodies are JSON; `data` is base64 of a sealed 
 | Route | Description |
 | --- | --- |
 | `GET /api/health` | Returns `{ "status": "ok" }` |
-| `POST /api/log` | Appends `{ "data" }` to the user's log and returns `{ "seq" }` (201). The first append from an unknown user id creates the account (403 if signups are closed); later appends need the matching secret (401 otherwise) |
-| `GET /api/log?since=<seq>&limit=<n>` | Returns `{ entries: [{ seq, data }], cursor, hasMore }` for entries after `since`. `limit` defaults to 200 and is capped at 500; a page is also capped at 8 MiB. Call again with the returned `cursor` while `hasMore` is `true` |
+| `POST /api/log` | Appends `{ "data" }` to the user's log and returns `{ "seq", "epoch" }` (201). The first append from an unknown user id creates the account (403 if signups are closed); later appends need the matching secret (401 otherwise) |
+| `GET /api/log?since=<seq>&limit=<n>` | Returns `{ entries: [{ seq, data }], cursor, hasMore, head, epoch }` for entries after `since`. `limit` defaults to 200 and is capped at 500; a page is also capped at 8 MiB. Call again with the returned `cursor` while `hasMore` is `true`. `head` is the last `seq` of the log (0 if empty) and `epoch` identifies the account's creation (`null` if unknown) |
 | `PUT /api/blob/<id>` | Stores the request body as the file `<id>` (a UUID, 400 otherwise). Returns 201 on creation and 204 on replacement. Creates the account like `POST /api/log` (403 if signups are closed); 413 if the file exceeds 8 MiB or the quota |
 | `GET /api/blob/<id>` | Returns the file bytes as `application/octet-stream`; 404 if the file does not exist |
 | `DELETE /api/blob/<id>` | Deletes the file (204, even if it does not exist) |
 | `GET /api/blob` | Returns `{ ids: [...] }`, the ids of the user's files, sorted |
 | `DELETE /api/account` | Deletes the user, the whole log and every file (204) |
 
-The log is append-only: entries are numbered per user with a gapless sequence (`seq`), stored in SQLite (WAL mode). Files hold encrypted attachments such as receipt photos; the log and the files share the same per-user quota (`MAX_USER_BYTES`).
+The log is append-only: entries are numbered per user with a gapless sequence (`seq`), stored in SQLite (WAL mode). Files hold encrypted attachments such as receipt photos; the log and the files share the same per-user quota (`MAX_USER_BYTES`) and the server-wide cap (`MAX_TOTAL_BYTES`).
 
 ## Synchronization
 
@@ -127,7 +127,8 @@ The server is a dumb, ordered log; clients do the merging.
 1. **Pull**: a client reads the log from its stored cursor, page by page, decrypts each entry and applies the rows it contains.
 2. **Push**: local rows not yet sent (`sync_version` is `NULL`) are sent in batches, each sealed and appended to the log. Accepted rows get their sequence number as `sync_version`.
 3. **Conflicts** are resolved locally when a row is applied: the most recent `updatedAt` wins, even over an already-synchronized local row, so a server cannot replay a stale entry. When two devices create the same account or import the same transaction offline, the smallest id wins everywhere; the losing account is recorded as an alias (`sync_alias:<id>` setting) so transactions that still reference it are remapped.
-4. An entry that fails to decrypt aborts the sync with an error: the key does not match, or the data was tampered with.
+4. An entry that fails to decrypt is skipped: the server authenticated the client with the same key, so the entry is corrupt. An entry written by a newer app version stops the sync at that entry, with an error asking to update the app.
+5. When the server log is behind the client cursor (`head < cursor`) or its `epoch` changed, the account was deleted or the server restored from a backup. The client then restarts from cursor 0 and sends all its rows again.
 
 Synchronization runs at startup, every 5 minutes, 5 seconds after each change and on demand from the sidebar.
 

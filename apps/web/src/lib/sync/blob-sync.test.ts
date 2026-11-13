@@ -235,6 +235,25 @@ describe("synchronizeBlobs", () => {
     expect(report.pending).toBe(2)
   })
 
+  it("keeps transferring the other images when one upload fails", async () => {
+    const db = await createLocalDb()
+    const store = memoryStore()
+    for (const id of [ID_A, ID_B, ID_C]) {
+      const image = new Uint8Array([id.charCodeAt(id.length - 1)])
+      await insertReceipt(db, id, image)
+      store.blobs.set(id, await vault.encrypt(image))
+    }
+    const rejectingB: FetchLike = (url, init) =>
+      init.method === "PUT" && url.endsWith(ID_B)
+        ? Promise.resolve(json({ error: "Fichier refusé" }, 500))
+        : relay.fetch(url, init)
+
+    const report = await synchronizeBlobs(db, { ...config, fetch: rejectingB }, store)
+
+    expect(report).toMatchObject({ uploaded: 2, pending: 1, error: "Fichier refusé" })
+    expect([...relay.blobs.keys()].sort()).toEqual([ID_A, ID_C])
+  })
+
   it("stops on a network error without throwing", async () => {
     const db = await createLocalDb()
     const failing: SyncConfig = { ...config, fetch: () => Promise.reject(new Error("offline")) }

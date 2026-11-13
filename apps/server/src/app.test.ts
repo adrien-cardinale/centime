@@ -1,5 +1,10 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test"
+import { Database } from "bun:sqlite"
+import { Hono } from "hono"
+import { secureHeaders } from "hono/secure-headers"
 import { createApi } from "./app"
+import { contentSecurityPolicy } from "./content-security-policy"
+import { createLimiter } from "./rate-limit"
 import { openStore, type Store } from "./store"
 
 const USER_A = "a".repeat(32)
@@ -73,7 +78,7 @@ describe("POST /api/log", () => {
     for (const expected of [1, 2, 3]) {
       const response = await post("QUJD")
       expect(response.status).toBe(201)
-      expect(await response.json()).toEqual({ seq: expected })
+      expect(await response.json()).toEqual({ seq: expected, epoch: expect.any(String) })
     }
   })
 
@@ -81,7 +86,7 @@ describe("POST /api/log", () => {
     await post("QUJD")
     await post("QUJD")
     const response = await post("QUJD", bearer(USER_B, OTHER_SECRET))
-    expect(await response.json()).toEqual({ seq: 1 })
+    expect(await response.json()).toMatchObject({ seq: 1 })
   })
 
   test("refuse un mauvais secret pour un utilisateur connu", async () => {
@@ -160,7 +165,28 @@ describe("GET /api/log", () => {
       ],
       cursor: 3,
       hasMore: false,
+      head: 3,
+      epoch: expect.any(String),
     })
+  })
+
+  test("renvoie la tête du journal même quand since la dépasse", async () => {
+    await post("QUJD")
+    await post("REVG")
+    const body = await (await get("?since=500")).json()
+    expect(body).toMatchObject({ entries: [], cursor: 500, hasMore: false, head: 2 })
+  })
+
+  test("change d'époque quand l'utilisateur est recréé", async () => {
+    const created = await (await post("QUJD")).json()
+    const before = (await (await get()).json()).epoch
+    expect(created.epoch).toBe(before)
+    await api.request("/api/account", { method: "DELETE", headers: bearer(USER_A) })
+    await Bun.sleep(2)
+    await post("QUJD")
+    const after = await (await get("?since=7")).json()
+    expect(after).toMatchObject({ head: 1, entries: [] })
+    expect(after.epoch).not.toBe(before)
   })
 
   test("pagine avec limit et hasMore", async () => {
@@ -181,7 +207,7 @@ describe("GET /api/log", () => {
 
   test("utilisateur inconnu : liste vide sans création", async () => {
     const response = await get("?since=7")
-    expect(await response.json()).toEqual({ entries: [], cursor: 7, hasMore: false })
+    expect(await response.json()).toEqual({ entries: [], cursor: 7, hasMore: false, head: 0, epoch: null })
     expect(store.check(USER_A, "x")).toBe("unknown")
   })
 
@@ -216,7 +242,7 @@ describe("DELETE /api/account", () => {
     await post("QUJD", bearer(USER_B, OTHER_SECRET))
     const response = await api.request("/api/account", { method: "DELETE", headers: bearer(USER_A) })
     expect(response.status).toBe(204)
-    expect(await (await get()).json()).toEqual({ entries: [], cursor: 0, hasMore: false })
+    expect(await (await get()).json()).toEqual({ entries: [], cursor: 0, hasMore: false, head: 0, epoch: null })
     expect((await get("", bearer(USER_B, OTHER_SECRET))).status).toBe(200)
     expect(store.read(USER_B, 0, 10).entries).toHaveLength(1)
     expect(store.read(USER_A, 0, 10).entries).toHaveLength(0)
@@ -264,7 +290,85 @@ describe("quota de stockage", () => {
   })
 })
 
+describe("quota global de stockage", () => {
+  test("refuse les écritures de tous les utilisateurs au-delà du plafond", async () => {
+    store.close()
+    store = openStore(":memory:", { maxUserBytes: 0, maxTotalBytes: 10 })
+    api = createApi({ store })
+    expect((await post("QUJD")).status).toBe(201)
+    expect((await putBlob(BLOB_ID, new Uint8Array(4), bearer(USER_B, OTHER_SECRET))).status).toBe(201)
+    expect((await post("QUJD", bearer(USER_B, OTHER_SECRET))).status).toBe(413)
+    expect((await putBlob(OTHER_BLOB_ID, new Uint8Array(3))).status).toBe(413)
+  })
+
+  test("libère le plafond après une suppression de fichier ou de compte", async () => {
+    store.close()
+    store = openStore(":memory:", { maxUserBytes: 0, maxTotalBytes: 10 })
+    api = createApi({ store })
+    await putBlob(BLOB_ID, new Uint8Array(6))
+    await post("QUJD", bearer(USER_B, OTHER_SECRET))
+    expect((await post("QUJD")).status).toBe(413)
+    await deleteBlob(BLOB_ID)
+    expect((await post("QUJD")).status).toBe(201)
+    await api.request("/api/account", { method: "DELETE", headers: bearer(USER_A) })
+    expect((await putBlob(OTHER_BLOB_ID, new Uint8Array(6), bearer(USER_B, OTHER_SECRET))).status).toBe(201)
+  })
+
+  test("compte les données déjà présentes à l'ouverture", async () => {
+    const path = `${import.meta.dir}/../.tmp-relay-${crypto.randomUUID()}.db`
+    try {
+      const first = openStore(path, { maxTotalBytes: 0 })
+      first.putBlob(USER_A, "hash", BLOB_ID, new Uint8Array(8))
+      first.close()
+      const reopened = openStore(path, { maxTotalBytes: 10 })
+      expect(reopened.putBlob(USER_A, "hash", OTHER_BLOB_ID, new Uint8Array(3))).toEqual({ kind: "quota-exceeded" })
+      reopened.close()
+    } finally {
+      await removeDatabase(path)
+    }
+  })
+})
+
+async function removeDatabase(path: string): Promise<void> {
+  for (const suffix of ["", "-wal", "-shm"])
+    await Bun.file(`${path}${suffix}`)
+      .delete()
+      .catch(() => undefined)
+}
+
+describe("migration du journal", () => {
+  test("ajoute et remplit la taille des entrées d'une base existante", async () => {
+    const path = `${import.meta.dir}/../.tmp-relay-${crypto.randomUUID()}.db`
+    try {
+      const legacy = new Database(path, { create: true })
+      legacy.run("create table users (id text primary key, secret_hash text not null, created_at text not null)")
+      legacy.run(`create table log (user_id text not null references users(id) on delete cascade, seq integer not null,
+        data text not null, created_at text not null, primary key (user_id, seq))`)
+      legacy.run("insert into users values (?, 'hash', '2026-01-01T00:00:00.000Z')", [USER_A])
+      legacy.run("insert into log values (?, 1, 'QUJD', '2026-01-01T00:00:00.000Z')", [USER_A])
+      legacy.run("insert into log values (?, 2, 'QUJDREVG', '2026-01-01T00:00:00.000Z')", [USER_A])
+      legacy.close()
+
+      const migrated = openStore(path, { maxUserBytes: 15 })
+      expect(migrated.read(USER_A, 0, 10).entries.map((entry) => entry.seq)).toEqual([1, 2])
+      expect(migrated.append(USER_A, "hash", "QUJD")).toEqual({ kind: "quota-exceeded" })
+      expect(migrated.append(USER_A, "hash", "QUJ")).toEqual({ kind: "ok", seq: 3 })
+      migrated.close()
+
+      const reopened = openStore(path, { maxUserBytes: 15 })
+      expect(reopened.head(USER_A)).toMatchObject({ head: 3 })
+      reopened.close()
+    } finally {
+      await removeDatabase(path)
+    }
+  })
+})
+
 describe("limitation de débit", () => {
+  function randomUser(): Record<string, string> {
+    return bearer(crypto.randomUUID().replaceAll("-", ""))
+  }
+
   test("limite les requêtes par minute et par client", async () => {
     api = createApi({ store, rateLimitPerMinute: 2 })
     expect((await post("QUJD")).status).toBe(201)
@@ -273,6 +377,70 @@ describe("limitation de débit", () => {
     expect(limited.status).toBe(429)
     expect(await limited.json()).toHaveProperty("error")
     expect((await post("QUJD", bearer(USER_B, OTHER_SECRET))).status).toBe(201)
+  })
+
+  test("limite les écritures par adresse, même avec des identifiants aléatoires", async () => {
+    api = createApi({ store, writeRateLimitPerMinute: 2 })
+    expect((await post("QUJD", randomUser())).status).toBe(201)
+    expect((await post("QUJD", randomUser())).status).toBe(201)
+    expect((await post("QUJD", randomUser())).status).toBe(429)
+    expect((await get()).status).toBe(200)
+  })
+
+  test("limite les créations de compte par adresse", async () => {
+    api = createApi({ store, signupRateLimitPerHour: 1 })
+    expect((await post("QUJD")).status).toBe(201)
+    expect((await putBlob(BLOB_ID, bytesOf(1), bearer(USER_B, OTHER_SECRET))).status).toBe(429)
+    expect(store.check(USER_B, "x")).toBe("unknown")
+    expect((await post("QUJD")).status).toBe(201)
+  })
+
+  test("ne fait confiance à X-Forwarded-For que derrière un proxy déclaré", async () => {
+    const from = (address: string) => ({ ...randomUser(), "X-Forwarded-For": `203.0.113.9, ${address}` })
+    api = createApi({ store, writeRateLimitPerMinute: 1 })
+    expect((await post("QUJD", from("198.51.100.1"))).status).toBe(201)
+    expect((await post("QUJD", from("198.51.100.2"))).status).toBe(429)
+    api = createApi({ store, writeRateLimitPerMinute: 1, trustProxy: true })
+    expect((await post("QUJD", from("198.51.100.1"))).status).toBe(201)
+    expect((await post("QUJD", from("198.51.100.2"))).status).toBe(201)
+    expect((await post("QUJD", from("198.51.100.1"))).status).toBe(429)
+  })
+})
+
+describe("createLimiter", () => {
+  test("rouvre la fenêtre une fois expirée", () => {
+    let now = 0
+    const limiter = createLimiter({ limit: 1, windowMs: 1000, now: () => now })
+    expect(limiter.consume("a")).toBe(true)
+    expect(limiter.consume("a")).toBe(false)
+    now = 1000
+    expect(limiter.consume("a")).toBe(true)
+  })
+
+  test("garde un nombre borné de clés en oubliant les plus anciennes", () => {
+    const limiter = createLimiter({ limit: 1, windowMs: 60_000, maxKeys: 2 })
+    expect(limiter.consume("a")).toBe(true)
+    expect(limiter.consume("b")).toBe(true)
+    expect(limiter.consume("c")).toBe(true)
+    expect(limiter.consume("b")).toBe(false)
+    expect(limiter.consume("a")).toBe(true)
+  })
+})
+
+describe("politique de sécurité du contenu", () => {
+  test("restreint les sources tout en autorisant OCR, IA et images locales", async () => {
+    const app = new Hono()
+      .use(secureHeaders({ contentSecurityPolicy: contentSecurityPolicy(["https://relay.example"]) }))
+      .get("/", (c) => c.text("ok"))
+    const policy = (await app.request("/")).headers.get("Content-Security-Policy") ?? ""
+    expect(policy).toContain("default-src 'self'")
+    expect(policy).toContain("script-src 'self' 'wasm-unsafe-eval'")
+    expect(policy).toContain("object-src 'none'")
+    expect(policy).toContain("frame-ancestors 'none'")
+    expect(policy).toContain("base-uri 'self'")
+    expect(policy).toContain("img-src 'self' data: blob:")
+    expect(policy).toMatch(/connect-src 'self'[^;]*https:\/\/api\.anthropic\.com[^;]*https:\/\/cdn\.jsdelivr\.net/)
+    expect(policy).toContain("https://relay.example")
   })
 })
 

@@ -10,3 +10,7 @@ export function getLocalDatabase(): LocalDatabase {
   if (!current) throw new Error("Base locale non ouverte")
   return current
 }
+
+export function flushLocalDatabase(): void {
+  void current?.flush().catch(() => undefined)
+}

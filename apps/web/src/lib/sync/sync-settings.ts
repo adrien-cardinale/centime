@@ -4,6 +4,7 @@ import { inArray } from "@centime/db/orm"
 export const SYNC_SETTING_KEYS = {
   serverUrl: "sync_server_url",
   cursor: "sync_cursor",
+  epoch: "sync_epoch",
   lastAt: "sync_last_at",
   lastError: "sync_last_error",
 } as const
@@ -13,6 +14,7 @@ type SyncSettingName = keyof typeof SYNC_SETTING_KEYS
 export type SyncSettings = {
   serverUrl: string | null
   cursor: number
+  epoch: string | null
   lastAt: string | null
   lastError: string | null
 }
@@ -27,6 +29,7 @@ export async function readSyncSettings(db: DbExecutor): Promise<SyncSettings> {
   return {
     serverUrl: valueOf("serverUrl"),
     cursor: Number(valueOf("cursor") ?? 0) || 0,
+    epoch: valueOf("epoch"),
     lastAt: valueOf("lastAt"),
     lastError: valueOf("lastError"),
   }

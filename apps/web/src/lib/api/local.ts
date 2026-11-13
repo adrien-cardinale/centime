@@ -26,6 +26,7 @@ import {
   transactionChangesSchema,
 } from "@centime/services"
 import { z } from "zod"
+import i18n from "@/i18n"
 import type { Vault } from "@/lib/crypto/envelope"
 import { setLocalDatabase } from "@/lib/local-db/current-database"
 import { type LocalDatabase, openLocalDb } from "@/lib/local-db/open-local-db"
@@ -36,18 +37,18 @@ import { normalizeTransactionFilter, type TransactionFilters } from "./filters"
 import type { ImportUpload, ReceiptFileUpload } from "./inputs"
 import type { Api } from "./types"
 
-const MAX_UPLOAD_BYTES = 10 * 1024 * 1024
-const UPLOAD_TOO_LARGE = "Fichier trop volumineux (10 Mo maximum)"
-const INVALID_REQUEST = "Requête invalide"
+const BYTES_PER_MEGABYTE = 1024 * 1024
+const MAX_UPLOAD_MEGABYTES = 10
+const MAX_UPLOAD_BYTES = MAX_UPLOAD_MEGABYTES * BYTES_PER_MEGABYTE
 const CSV_MIME_TYPE = "text/csv;charset=utf-8"
 
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date invalide (AAAA-MM-JJ)")
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, { error: () => i18n.t("errors.invalidDate") })
 const optionalIsoDate = isoDate.optional()
 const pageSchema = z.object({
   page: z.number().int().min(1),
   pageSize: z.number().int().min(1).max(200),
 })
-const idSchema = z.string().min(1, INVALID_REQUEST)
+const idSchema = z.string().min(1, { error: () => i18n.t("errors.invalidRequest") })
 const candidateOptionsSchema = z.object({
   amountTolerance: z.number().min(0).max(1000).optional(),
   dayTolerance: z.number().int().min(0).max(60).optional(),
@@ -56,14 +57,14 @@ const candidateOptionsSchema = z.object({
 function parseInput<Schema extends z.ZodType>(schema: Schema, value: unknown): z.output<Schema> {
   const parsed = schema.safeParse(value)
   if (parsed.success) return parsed.data
-  throw new ApiError(parsed.error.issues[0]?.message ?? INVALID_REQUEST, 400)
+  throw new ApiError(parsed.error.issues[0]?.message ?? i18n.t("errors.invalidRequest"), 400)
 }
 
 function toApiError(error: unknown): unknown {
   if (error instanceof ApiError) return error
   if (error instanceof ServiceError) return new ApiError(error.message, error.status)
   console.error(error)
-  return new ApiError(error instanceof Error ? error.message : "Erreur interne", 500)
+  return new ApiError(error instanceof Error ? error.message : i18n.t("errors.internal"), 500)
 }
 
 function validatedFilter(filters: TransactionFilters) {
@@ -74,8 +75,9 @@ function validatedFilter(filters: TransactionFilters) {
 }
 
 async function toImportSource(upload: ImportUpload): Promise<ImportSource> {
-  if (!(upload.file instanceof File)) throw new ApiError("Fichier manquant ou invalide", 400)
-  if (upload.file.size > MAX_UPLOAD_BYTES) throw new ApiError(UPLOAD_TOO_LARGE, 400)
+  if (!(upload.file instanceof File)) throw new ApiError(i18n.t("errors.missingFile"), 400)
+  if (upload.file.size > MAX_UPLOAD_BYTES)
+    throw new ApiError(i18n.t("errors.fileTooLarge", { max: MAX_UPLOAD_MEGABYTES }), 400)
   return {
     bytes: new Uint8Array(await upload.file.arrayBuffer()),
     fileName: upload.file.name,
@@ -86,11 +88,11 @@ async function toImportSource(upload: ImportUpload): Promise<ImportSource> {
 
 async function toPreparedImage(file: ReceiptFileUpload["file"]): Promise<PreparedReceiptImage> {
   if (isPreparedReceiptImage(file)) return file
-  if (!(file instanceof File)) throw new ApiError("Fichier manquant ou invalide", 400)
+  if (!(file instanceof File)) throw new ApiError(i18n.t("errors.missingFile"), 400)
   try {
     return await prepareReceiptImage(file)
   } catch (error) {
-    throw new ApiError(error instanceof Error ? error.message : INVALID_REQUEST, 400)
+    throw new ApiError(error instanceof Error ? error.message : i18n.t("errors.invalidRequest"), 400)
   }
 }
 

@@ -22,7 +22,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import i18n from "@/i18n"
 import { api } from "@/lib/api"
 import { accountKindLabels } from "@/lib/labels"
-import { accountsQuery } from "@/lib/queries"
+import { accountsQuery, invalidateImportPreviews } from "@/lib/queries"
 import { useTranslation } from "react-i18next"
 
 // Messages résolus à la validation (pas au chargement du module) pour suivre la langue courante.
@@ -55,7 +55,10 @@ export function CreateAccountDialog() {
   const createAccount = useMutation({
     mutationFn: api.accounts.create,
     onSuccess: async (account) => {
-      await queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey })
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: accountsQuery.queryKey }),
+        invalidateImportPreviews(queryClient),
+      ])
       toast.success(t("accounts.dialog.created", { name: account.name }))
       form.reset(defaultValues)
       setOpen(false)

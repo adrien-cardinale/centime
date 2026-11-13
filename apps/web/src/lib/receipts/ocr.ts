@@ -2,6 +2,7 @@ import { parseReceiptText, type ReceiptOcrResult } from "@centime/core"
 import coreUrl from "tesseract.js-core/tesseract-core-lstm.wasm.js?url"
 import coreSimdUrl from "tesseract.js-core/tesseract-core-simd-lstm.wasm.js?url"
 import workerUrl from "tesseract.js/dist/worker.min.js?url"
+import i18n from "@/i18n"
 import { ocrProgressRatio } from "./ocr-progress"
 import type { PreparedReceiptImage } from "./prepare-image"
 
@@ -141,7 +142,7 @@ async function preprocess({ bytes, mime, source }: OcrImage): Promise<Blob> {
 }
 
 function abortError(): DOMException {
-  return new DOMException("Lecture du ticket annulée", "AbortError")
+  return new DOMException(i18n.t("errors.ocrCancelled"), "AbortError")
 }
 
 function rejectOnAbort(signal: AbortSignal | undefined): Promise<never> {
@@ -168,7 +169,7 @@ export async function recognizeReceipt(
   image: OcrImage,
   options: RecognizeReceiptOptions = {},
 ): Promise<RecognizedReceipt> {
-  if (!isOcrSupported(image.mime)) throw new Error("Seules les photos peuvent être lues")
+  if (!isOcrSupported(image.mime)) throw new Error(i18n.t("errors.ocrPhotosOnly"))
   const { onProgress, signal } = options
   if (signal?.aborted) throw abortError()
   clearIdleTimer()

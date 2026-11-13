@@ -8,11 +8,18 @@ export type Config = {
   staticDir: string
   isProduction: boolean
   maxUserBytes: number | undefined
+  maxTotalBytes: number | undefined
   rateLimitPerMinute: number
+  writeRateLimitPerMinute: number
+  signupRateLimitPerHour: number
+  trustProxy: boolean
   allowedOrigins: string[]
+  cspConnectSources: string[]
 }
 
 const DEFAULT_RATE_LIMIT_PER_MINUTE = 300
+const DEFAULT_WRITE_RATE_LIMIT_PER_MINUTE = 240
+const DEFAULT_SIGNUP_RATE_LIMIT_PER_HOUR = 10
 
 export class ConfigError extends Error {}
 
@@ -46,21 +53,25 @@ function parseNonNegativeInt(name: string, value: string | undefined): number | 
   return parsed
 }
 
-function parseOrigins(value: string | undefined): string[] {
+function parseOrigins(name: string, value: string | undefined): string[] {
   if (value === undefined) return []
   return value
     .split(",")
     .map((origin) => origin.trim())
     .filter((origin) => origin !== "")
-    .map(parseOrigin)
+    .map((origin) => parseOrigin(name, origin))
 }
 
-function parseOrigin(value: string): string {
+function parseOrigin(name: string, value: string): string {
   try {
     const { origin } = new URL(value)
     if (origin !== "null") return origin
   } catch {}
-  throw new ConfigError(`ALLOWED_ORIGINS contient une origine invalide : ${value}`)
+  throw new ConfigError(`${name} contient une origine invalide : ${value}`)
+}
+
+function limitFrom(name: string, fallback: number): number {
+  return parseNonNegativeInt(name, optionalEnv(name)) ?? fallback
 }
 
 export function loadConfig(): Config {
@@ -72,9 +83,12 @@ export function loadConfig(): Config {
     staticDir: staticDir ? resolve(projectRoot, staticDir) : defaultStaticDir,
     isProduction: process.env.NODE_ENV === "production",
     maxUserBytes: parseNonNegativeInt("MAX_USER_BYTES", optionalEnv("MAX_USER_BYTES")),
-    rateLimitPerMinute:
-      parseNonNegativeInt("RATE_LIMIT_PER_MINUTE", optionalEnv("RATE_LIMIT_PER_MINUTE")) ??
-      DEFAULT_RATE_LIMIT_PER_MINUTE,
-    allowedOrigins: parseOrigins(optionalEnv("ALLOWED_ORIGINS")),
+    maxTotalBytes: parseNonNegativeInt("MAX_TOTAL_BYTES", optionalEnv("MAX_TOTAL_BYTES")),
+    rateLimitPerMinute: limitFrom("RATE_LIMIT_PER_MINUTE", DEFAULT_RATE_LIMIT_PER_MINUTE),
+    writeRateLimitPerMinute: limitFrom("WRITE_RATE_LIMIT_PER_MINUTE", DEFAULT_WRITE_RATE_LIMIT_PER_MINUTE),
+    signupRateLimitPerHour: limitFrom("SIGNUP_RATE_LIMIT_PER_HOUR", DEFAULT_SIGNUP_RATE_LIMIT_PER_HOUR),
+    trustProxy: parseBoolean("TRUST_PROXY", optionalEnv("TRUST_PROXY"), false),
+    allowedOrigins: parseOrigins("ALLOWED_ORIGINS", optionalEnv("ALLOWED_ORIGINS")),
+    cspConnectSources: parseOrigins("CSP_CONNECT_SOURCES", optionalEnv("CSP_CONNECT_SOURCES")),
   }
 }

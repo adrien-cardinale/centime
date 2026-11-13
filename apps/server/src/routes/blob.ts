@@ -1,7 +1,8 @@
 import { type Context, Hono } from "hono"
 import { type Credentials, parseCredentials } from "../auth"
 import type { Store } from "../store"
-import { INVALID_BODY, QUOTA_EXCEEDED, SIGNUP_CLOSED, UNAUTHORIZED } from "./log"
+import type { SignupGate } from "../rate-limit"
+import { INVALID_BODY, QUOTA_EXCEEDED, refusesSignup, SIGNUP_CLOSED, UNAUTHORIZED } from "./log"
 
 export const MAX_BLOB_BYTES = 8 * 1024 * 1024
 const BLOB_ID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -10,7 +11,7 @@ const INVALID_ID = "Identifiant de fichier invalide"
 const BLOB_TOO_LARGE = "Fichier trop volumineux (8 Mo maximum)"
 const BLOB_NOT_FOUND = "Fichier introuvable"
 
-export type BlobRouteOptions = { store: Store }
+export type BlobRouteOptions = { store: Store; admitSignup?: SignupGate }
 
 type Reader = { credentials: Credentials; known: boolean }
 
@@ -27,7 +28,7 @@ async function authorizeReader(c: Context, store: Store): Promise<Reader | null>
   return { credentials, known: access === "ok" }
 }
 
-export function createBlobRoutes({ store }: BlobRouteOptions) {
+export function createBlobRoutes({ store, admitSignup }: BlobRouteOptions) {
   return new Hono()
     .get("/", async (c) => {
       const reader = await authorizeReader(c, store)
@@ -60,6 +61,8 @@ export function createBlobRoutes({ store }: BlobRouteOptions) {
       const data = new Uint8Array(await c.req.arrayBuffer())
       if (data.byteLength === 0) return c.json({ error: INVALID_BODY }, 400)
       if (data.byteLength > MAX_BLOB_BYTES) return c.json({ error: BLOB_TOO_LARGE }, 413)
+      const refusal = refusesSignup(c, store, credentials, admitSignup)
+      if (refusal) return refusal
       const result = store.putBlob(credentials.userId, credentials.secretHash, id, data)
       if (result.kind === "unauthorized") return c.json({ error: UNAUTHORIZED }, 401)
       if (result.kind === "signup-closed") return c.json({ error: SIGNUP_CLOSED }, 403)

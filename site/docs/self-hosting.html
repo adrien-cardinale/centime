@@ -31,11 +31,16 @@ bun run start</code></pre>
 <table><thead><tr><th>Variable</th><th>Default</th><th>Purpose</th></tr></thead><tbody>
 <tr><td><code>PORT</code></td><td><code>3000</code></td><td>HTTP port</td></tr>
 <tr><td><code>DATABASE_PATH</code></td><td><code>./data/relay.db</code></td><td>Relay SQLite file</td></tr>
-<tr><td><code>ALLOW_SIGNUP</code></td><td><code>true</code></td><td>Whether unknown user ids can create an account. Set to <code>false</code> once you have created yours.</td></tr>
+<tr><td><code>ALLOW_SIGNUP</code></td><td><code>true</code></td><td>Whether unknown user ids can create an account. Anyone who reaches the server can then create accounts, each with its own quota. Set to <code>false</code> once your devices are connected.</td></tr>
 <tr><td><code>STATIC_DIR</code></td><td>empty</td><td>Override for the web build folder</td></tr>
 <tr><td><code>MAX_USER_BYTES</code></td><td><code>536870912</code></td><td>Storage quota per user id in bytes, log and files together (512&nbsp;MiB). <code>0</code> disables the quota.</td></tr>
+<tr><td><code>MAX_TOTAL_BYTES</code></td><td><code>10737418240</code></td><td>Storage cap for the whole server in bytes, all users together (10&nbsp;GiB). <code>0</code> disables the cap.</td></tr>
 <tr><td><code>RATE_LIMIT_PER_MINUTE</code></td><td><code>300</code></td><td>Maximum API requests per minute and per client. <code>0</code> disables the limit.</td></tr>
+<tr><td><code>WRITE_RATE_LIMIT_PER_MINUTE</code></td><td><code>240</code></td><td>Maximum writes (log appends, file uploads and deletions) per minute and per IP address. <code>0</code> disables the limit.</td></tr>
+<tr><td><code>SIGNUP_RATE_LIMIT_PER_HOUR</code></td><td><code>10</code></td><td>Maximum account creations per hour and per IP address. <code>0</code> disables the limit.</td></tr>
+<tr><td><code>TRUST_PROXY</code></td><td><code>false</code></td><td>Set to <code>true</code> only behind a reverse proxy: the client IP is then read from the last <code>X-Forwarded-For</code> entry. Otherwise every client behind the proxy shares its IP limits.</td></tr>
 <tr><td><code>ALLOWED_ORIGINS</code></td><td>empty</td><td>Comma-separated origins of a web app hosted elsewhere (for example <code>https://you.github.io</code>) allowed to reach the relay. Leave empty when the relay serves the web app itself.</td></tr>
+<tr><td><code>CSP_CONNECT_SOURCES</code></td><td>empty</td><td>Comma-separated extra origins the web app served by this relay may connect to, for example another relay. The app already reaches this server, the Anthropic API, GitHub releases and the OCR language data CDN.</td></tr>
 </tbody></table>
 <h2>HTTPS</h2>
 <p>Web Crypto needs a secure context, so serve the browser version over HTTPS, or from <code>localhost</code>. Put a reverse proxy (Caddy, Traefik, nginx) in front of the container.</p>

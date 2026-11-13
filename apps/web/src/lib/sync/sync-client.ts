@@ -11,6 +11,7 @@ import { and, asc, gt, isNull, sql } from "@centime/db/orm"
 import { z } from "zod"
 import i18n from "@/i18n"
 import type { Vault } from "../crypto/envelope"
+import { markAllChangesPending } from "../local-db/local-data"
 import { applyIncomingRow, type IncomingRow, stampAcceptedRow } from "./sync-apply"
 import { clearSyncSetting, readSyncSettings, writeSyncSetting } from "./sync-settings"
 
@@ -32,7 +33,7 @@ export type SyncConfig = {
 
 export type SyncReport = { pulled: number; pushed: number; cursor: number; skipped: number }
 
-export type SyncErrorKind = "unauthorized" | "network" | "server"
+export type SyncErrorKind = "unauthorized" | "network" | "server" | "outdated"
 
 export class SyncError extends Error {
   constructor(
@@ -49,9 +50,11 @@ const pullResponseSchema = z.object({
   cursor: z.number().int().min(0),
   hasMore: z.boolean(),
   entries: z.array(z.object({ seq: z.number().int().min(1), data: z.string() })),
+  head: z.number().int().min(0).optional(),
+  epoch: z.string().nullable().optional(),
 })
 
-const pushResponseSchema = z.object({ seq: z.number().int().min(1) })
+const pushResponseSchema = z.object({ seq: z.number().int().min(1), epoch: z.string().nullable().optional() })
 
 const payloadSchema = z.object({ v: z.number().int(), changes: tableRowsSchema })
 
@@ -59,7 +62,9 @@ type TableRows = z.infer<typeof tableRowsSchema>
 type PushBatch = { changes: Partial<Record<SyncTableName, SyncRow[]>>; rowCount: number }
 type PushCursorState = { exhausted: Set<SyncTableName>; lastIds: Map<SyncTableName, string> }
 
-type SyncContext = { db: Db; config: SyncConfig; exclusive: Exclusive }
+type PulledPage = z.infer<typeof pullResponseSchema>
+type ServerIdentity = { epoch: string | null; resetDone: boolean }
+type SyncContext = { db: Db; config: SyncConfig; exclusive: Exclusive; identity: ServerIdentity }
 
 const REQUEST_TIMEOUT_MS = 15_000
 
@@ -137,24 +142,24 @@ function parseRows(entry: SyncTableEntry, rows: unknown[] | undefined): ParsedRo
 }
 
 type DecodedEntry = { seq: number; changes: TableRows }
+type Decoded = { kind: "entry"; entry: DecodedEntry } | { kind: "unreadable" } | { kind: "newer" }
 
-/**
- * Le secret d'accès au serveur et la clé de chiffrement dérivent du même secret maître : si le serveur nous a
- * authentifiés, une entrée illisible est corrompue ou écrite par une version plus récente de l'app. On l'ignore
- * en avançant le curseur plutôt que de bloquer définitivement la synchronisation de tous les appareils.
- */
-async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): Promise<DecodedEntry | null> {
+// Le serveur nous a authentifiés avec un secret dérivé de la même clé : une entrée indéchiffrable est corrompue.
+// L'ignorer évite de bloquer la synchronisation pour toujours ; une version plus récente, elle, se lira après mise à jour.
+async function decodeEntry(vault: Vault, entry: { seq: number; data: string }): Promise<Decoded> {
+  let payload: z.infer<typeof payloadSchema>
   try {
-    const payload = payloadSchema.parse(JSON.parse(await vault.decryptText(entry.data)))
-    if (payload.v !== PAYLOAD_VERSION) {
-      console.warn(`Synchronisation : entrée ${entry.seq} écrite en version ${payload.v}, ignorée`)
-      return null
-    }
-    return { seq: entry.seq, changes: payload.changes }
+    payload = payloadSchema.parse(JSON.parse(await vault.decryptText(entry.data)))
   } catch {
     console.warn(`Synchronisation : entrée ${entry.seq} illisible, ignorée`)
-    return null
+    return { kind: "unreadable" }
   }
+  if (payload.v > PAYLOAD_VERSION) return { kind: "newer" }
+  if (payload.v < PAYLOAD_VERSION) {
+    console.warn(`Synchronisation : entrée ${entry.seq} écrite en version ${payload.v}, ignorée`)
+    return { kind: "unreadable" }
+  }
+  return { kind: "entry", entry: { seq: entry.seq, changes: payload.changes } }
 }
 
 async function applyEntry(db: DbExecutor, entry: DecodedEntry): Promise<{ applied: number; skipped: number }> {
@@ -170,29 +175,72 @@ async function applyEntry(db: DbExecutor, entry: DecodedEntry): Promise<{ applie
   return { applied, skipped }
 }
 
-async function pullPage(context: SyncContext, since: number) {
+type DecodedPage = { entries: DecodedEntry[]; skipped: number; cursor: number; blocked: boolean }
+
+async function decodePage(vault: Vault, page: PulledPage, since: number): Promise<DecodedPage> {
+  const decoded: DecodedPage = { entries: [], skipped: 0, cursor: since, blocked: false }
+  for (const entry of page.entries) {
+    const result = await decodeEntry(vault, entry)
+    if (result.kind === "newer") return { ...decoded, blocked: true }
+    if (result.kind === "entry") decoded.entries.push(result.entry)
+    else decoded.skipped += 1
+    decoded.cursor = entry.seq
+  }
+  return { ...decoded, cursor: page.cursor }
+}
+
+function serverWasReset(page: PulledPage, since: number, knownEpoch: string | null): boolean {
+  if (page.head !== undefined && page.head < since) return true
+  return page.epoch !== undefined && knownEpoch !== null && page.epoch !== knownEpoch
+}
+
+async function rememberEpoch(db: DbExecutor, identity: ServerIdentity, epoch: string | null | undefined) {
+  if (epoch === undefined || epoch === identity.epoch) return
+  if (epoch === null) await clearSyncSetting(db, "epoch")
+  else await writeSyncSetting(db, "epoch", epoch)
+  identity.epoch = epoch
+}
+
+async function restartFromScratch(context: SyncContext, epoch: string | null | undefined): Promise<void> {
+  if (context.identity.resetDone) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
+  console.warn("Synchronisation : le journal du serveur a été réinitialisé, renvoi de toutes les données locales")
+  await context.exclusive(() =>
+    context.db.transaction(async (tx) => {
+      await markAllChangesPending(tx)
+      await writeSyncSetting(tx, "cursor", 0)
+      await rememberEpoch(tx, context.identity, epoch ?? null)
+    }),
+  )
+  context.identity.resetDone = true
+}
+
+type PageOutcome =
+  | { kind: "reset" }
+  | { kind: "applied"; cursor: number; hasMore: boolean; applied: number; skipped: number; blocked: boolean }
+
+async function pullPage(context: SyncContext, since: number): Promise<PageOutcome> {
   const path = `/api/log?since=${since}&limit=${context.config.pullPageSize ?? PULL_PAGE_SIZE}`
   const page = await requestJson(context.config, path, { method: "GET" }, pullResponseSchema)
-  const decoded: DecodedEntry[] = []
-  let skipped = 0
-  for (const entry of page.entries) {
-    const result = await decodeEntry(context.config.vault, entry)
-    if (result) decoded.push(result)
-    else skipped += 1
+  if (serverWasReset(page, since, context.identity.epoch)) {
+    await restartFromScratch(context, page.epoch)
+    return { kind: "reset" }
   }
+  const decoded = await decodePage(context.config.vault, page, since)
   let applied = 0
+  let skipped = decoded.skipped
   await context.exclusive(() =>
     context.db.transaction(async (tx) => {
       await tx.run(sql`pragma defer_foreign_keys = on`)
-      for (const entry of decoded) {
+      for (const entry of decoded.entries) {
         const outcome = await applyEntry(tx, entry)
         applied += outcome.applied
         skipped += outcome.skipped
       }
-      await writeSyncSetting(tx, "cursor", page.cursor)
+      await writeSyncSetting(tx, "cursor", decoded.cursor)
+      await rememberEpoch(tx, context.identity, page.epoch)
     }),
   )
-  return { ...page, applied, skipped }
+  return { kind: "applied", cursor: decoded.cursor, hasMore: page.hasMore, applied, skipped, blocked: decoded.blocked }
 }
 
 type PullSummary = { cursor: number; pulled: number; skipped: number }
@@ -203,8 +251,13 @@ async function pullAll(context: SyncContext, since: number): Promise<PullSummary
   let skipped = 0
   for (;;) {
     const page = await pullPage(context, cursor)
+    if (page.kind === "reset") {
+      cursor = 0
+      continue
+    }
     pulled += page.applied
     skipped += page.skipped
+    if (page.blocked) throw new SyncError(i18n.t("syncErrors.updateRequired"), "outdated")
     if (page.hasMore && page.cursor <= cursor) throw new SyncError(i18n.t("syncErrors.invalidResponse"), "server")
     cursor = page.cursor
     if (!page.hasMore) return { cursor, pulled, skipped }
@@ -257,12 +310,13 @@ async function stampBatch(db: DbExecutor, batch: PushBatch, seq: number): Promis
 async function pushBatch(context: SyncContext, batch: PushBatch, summary: PushSummary): Promise<void> {
   const plain = JSON.stringify({ v: PAYLOAD_VERSION, changes: batch.changes })
   const body = JSON.stringify({ data: await context.config.vault.encryptText(plain) })
-  const { seq } = await requestJson(context.config, "/api/log", { method: "POST", body }, pushResponseSchema)
+  const { seq, epoch } = await requestJson(context.config, "/api/log", { method: "POST", body }, pushResponseSchema)
   const contiguous = !summary.missedChanges && seq === summary.cursor + 1
   await context.exclusive(() =>
     context.db.transaction(async (tx) => {
       await stampBatch(tx, batch, seq)
       if (contiguous) await writeSyncSetting(tx, "cursor", seq)
+      if (context.identity.epoch === null) await rememberEpoch(tx, context.identity, epoch)
     }),
   )
   summary.pushed += batch.rowCount
@@ -282,7 +336,8 @@ async function pushAll(context: SyncContext, cursor: number): Promise<PushSummar
 }
 
 async function runSync(context: SyncContext): Promise<SyncReport> {
-  const { cursor: storedCursor } = await context.exclusive(() => readSyncSettings(context.db))
+  const { cursor: storedCursor, epoch } = await context.exclusive(() => readSyncSettings(context.db))
+  context.identity.epoch = epoch
   const pulled = await pullAll(context, storedCursor)
   const pushed = await pushAll(context, pulled.cursor)
   const report = { pulled: pulled.pulled, pushed: pushed.pushed, cursor: pushed.cursor, skipped: pulled.skipped }
@@ -301,7 +356,12 @@ function messageOf(error: unknown): string {
 }
 
 export async function synchronize(db: Db, config: SyncConfig): Promise<SyncReport> {
-  const context: SyncContext = { db, config, exclusive: config.exclusive ?? runDirectly }
+  const context: SyncContext = {
+    db,
+    config,
+    exclusive: config.exclusive ?? runDirectly,
+    identity: { epoch: null, resetDone: false },
+  }
   try {
     const report = await runSync(context)
     await context.exclusive(async () => {

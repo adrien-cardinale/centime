@@ -1,6 +1,7 @@
-import { Hono } from "hono"
+import { type Context, Hono } from "hono"
 import { z } from "zod"
-import { parseCredentials } from "../auth"
+import { type Credentials, parseCredentials } from "../auth"
+import { type SignupGate, tooManyRequests } from "../rate-limit"
 import type { Store } from "../store"
 
 export const MAX_DATA_LENGTH = 8 * 1024 * 1024
@@ -21,9 +22,19 @@ const querySchema = z.object({
   limit: integer(1).default(DEFAULT_LIMIT),
 })
 
-export type LogRouteOptions = { store: Store; allowSignup?: boolean }
+export type LogRouteOptions = { store: Store; admitSignup?: SignupGate }
 
-export function createLogRoutes({ store }: LogRouteOptions) {
+export function refusesSignup(
+  c: Context,
+  store: Store,
+  credentials: Credentials,
+  admitSignup: SignupGate | undefined,
+): Response | null {
+  if (!admitSignup || store.check(credentials.userId, credentials.secretHash) !== "unknown") return null
+  return admitSignup(c) ? null : tooManyRequests(c)
+}
+
+export function createLogRoutes({ store, admitSignup }: LogRouteOptions) {
   return new Hono()
     .get("/", async (c) => {
       const credentials = await parseCredentials(c.req.header("Authorization"))
@@ -33,18 +44,21 @@ export function createLogRoutes({ store }: LogRouteOptions) {
       const access = store.check(credentials.userId, credentials.secretHash)
       if (access === "unauthorized") return c.json({ error: UNAUTHORIZED }, 401)
       const { since, limit } = query.data
-      if (access === "unknown") return c.json({ entries: [], cursor: since, hasMore: false }, 200)
-      return c.json(store.read(credentials.userId, since, Math.min(limit, MAX_LIMIT)), 200)
+      if (access === "unknown") return c.json({ entries: [], cursor: since, hasMore: false, head: 0, epoch: null }, 200)
+      const head = store.head(credentials.userId)
+      return c.json({ ...store.read(credentials.userId, since, Math.min(limit, MAX_LIMIT)), ...head }, 200)
     })
     .post("/", async (c) => {
       const credentials = await parseCredentials(c.req.header("Authorization"))
       if (!credentials) return c.json({ error: UNAUTHORIZED }, 401)
       const body = bodySchema.safeParse(await c.req.json().catch(() => null))
       if (!body.success) return c.json({ error: INVALID_BODY }, 400)
+      const refusal = refusesSignup(c, store, credentials, admitSignup)
+      if (refusal) return refusal
       const result = store.append(credentials.userId, credentials.secretHash, body.data.data)
       if (result.kind === "unauthorized") return c.json({ error: UNAUTHORIZED }, 401)
       if (result.kind === "signup-closed") return c.json({ error: SIGNUP_CLOSED }, 403)
       if (result.kind === "quota-exceeded") return c.json({ error: QUOTA_EXCEEDED }, 413)
-      return c.json({ seq: result.seq }, 201)
+      return c.json({ seq: result.seq, epoch: store.head(credentials.userId).epoch }, 201)
     })
 }

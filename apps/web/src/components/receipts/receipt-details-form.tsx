@@ -47,7 +47,7 @@ type ReceiptDetailsFormProps = {
   pendingLabel: string
   pending: boolean
   onSubmit: (details: ReceiptDetails) => void
-  onBack?: () => void
+  onBack?: (values: ReceiptDetailsValues) => void
   backLabel?: string
   ocrImage?: PreparedReceiptImage | null
   autoOcr?: boolean
@@ -277,7 +277,7 @@ export function ReceiptDetailsForm({
         />
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           {onBack && (
-            <Button type="button" variant="outline" onClick={onBack} disabled={pending}>
+            <Button type="button" variant="outline" onClick={() => onBack(form.getValues())} disabled={pending}>
               {backLabel ?? t("receipts.actions.back")}
             </Button>
           )}

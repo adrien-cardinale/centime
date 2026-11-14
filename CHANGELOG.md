@@ -4,6 +4,34 @@ All notable changes to centime are documented here. The format follows [Keep a C
 
 The section matching the released version is attached automatically as the GitHub release notes.
 
+## [0.8.0] - 2026-11-14
+
+### Added
+
+- Dashboard and budgets: totals now add up a single currency, the base currency. Set it under **Settings › Base currency**; by default it is the currency of most of your accounts, else CHF. Accounts in another currency are left out of the totals, and a note under the tiles says how many. New accounts start in the base currency.
+
+### Changed
+
+- Sync: an entry written by a newer version of centime now stops the sync with a message asking to update the app, instead of being skipped for good.
+- Sync: when the server was reset or restored from a backup, a device now restarts from zero and sends all its data again, so nothing is lost.
+
+### Fixed
+
+- Budgets: saving a budget no longer deletes or moves your own categorization rules. On update, each existing budget gets back the rule it created.
+- Categories: deleting a category also deletes its rules, and rules that change nothing no longer hide the rules below them.
+- Import: a CSV with the wrong decimal separator now fails instead of multiplying amounts by 100.
+- Import: camt.053 reversals get the right sign.
+- Import: a pending transaction is replaced by its booked version even when the bank changes its date or label (same account and amount, up to 7 days later).
+- Import: previews refresh after you change an account or a transaction.
+- Receipts: one image that fails to sync no longer blocks the others, and network failures are retried.
+- Receipts: images load as they come into view, and going back from the details keeps what you typed without reading the receipt again.
+- Web: the database is saved after each change and when the page is hidden, so closing the tab no longer loses recent edits.
+- Receipts: errors when reading or attaching a receipt now show in the app language instead of always in French.
+
+### Security
+
+- Self-hosting: the relay serves the web app with a strict Content-Security-Policy, limits writes and account creation per address, and accepts a server-wide storage cap (`MAX_TOTAL_BYTES`). See the self-hosting guide for the new variables.
+
 ## [0.7.0] - 2026-11-04
 
 ### Added

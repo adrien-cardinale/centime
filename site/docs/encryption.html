@@ -32,7 +32,8 @@
 <ol><li><strong>Pull</strong>: read the log from the stored cursor, decrypt each entry and apply its rows.</li>
 <li><strong>Push</strong>: send local rows not yet synced, in sealed batches.</li>
 <li><strong>Conflicts</strong>: the most recent <code>updatedAt</code> wins. For duplicates created offline on two devices, the smallest id wins everywhere and the loser is aliased.</li>
-<li>An entry that fails to decrypt aborts the sync: wrong key, or tampered data.</li></ol>
+<li>An entry that fails to decrypt is skipped: the server authenticated the device with the same key, so the entry is corrupt. An entry written by a newer app version stops the sync there, with a message asking to update the app.</li>
+<li>When the server log is shorter than the device cursor, or the account was recreated, the device restarts from zero and sends all its data again.</li></ol>
 <p>Sync runs at startup, every 5 minutes, 5 seconds after each change, and on demand from the sidebar.</p>
 <h2>Receipt images</h2>
 <p>Receipt images are sealed with the same AES-256-GCM key as the database and the log, in the same self-contained format. After each log sync, the device uploads the sealed bytes as they are to <code>/api/blob/&lt;receipt id&gt;</code>, and the other devices download them unchanged. The relay sees only ciphertext, its size and the receipt id; the file type and the fingerprint stay in the encrypted log.</p>
